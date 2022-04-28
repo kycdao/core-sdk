@@ -4,8 +4,9 @@
 name: Publish SDK package
 
 on:
-  release:
-    types: [push]
+  push:
+    branches:
+      - main
 
 jobs:
   build:
