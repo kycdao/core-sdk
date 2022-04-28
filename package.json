@@ -1,0 +1,22 @@
+{
+  "name": "kycdao-sdk",
+  "version": "0.0.1",
+  "description": "kycDAO SDK for TypeScript and JavaScript",
+  "main": "index.js",
+  "repository": "git@github.com:kycdao/kycdao-sdk.git",
+  "author": "Gabor Horvath <gabor@kycdao.xyz>",
+  "license": "AGPL-3.0-or-later",
+  "private": false,
+  "scripts": {
+    "build": "tsc --build",
+    "clean": "tsc --build --clean",
+    "lint": "eslint \"./src/**/*.ts\"",
+    "lint:fix": "eslint \"./src/**/*.ts\" --fix"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.21.0",
+    "@typescript-eslint/parser": "^5.21.0",
+    "eslint": "^8.14.0",
+    "typescript": "^4.6.3"
+  }
+}
