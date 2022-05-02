@@ -1,0 +1,14 @@
+{
+  "printWidth": 100,
+  "singleQuote": true,
+  "tabWidth": 2,
+  "trailingComma": "all",
+  "overrides": [
+    {
+      "files": "*.y{a,}ml",
+      "options": {
+        "singleQuote": false
+      }
+    }
+  ]
+}
