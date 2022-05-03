@@ -10,96 +10,56 @@ on:
 
 jobs:
   setup:
+    name: Set up Node and Yarn packages
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Setup Node (using cache)
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: 'yarn'
-
-      - name: Enable corepack
-        run: corepack enable
-
-      - name: Install dependencies
-        run: yarn install --prefer-offline
+      - name: Set up Node and Yarn packages with caching
+        uses: ./.github/workflows/install-and-cache-node-and-yarn
 
   lint:
+    name: Run linter check
     needs: setup
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Setup Node (using cache)
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: 'yarn'
-
-      - name: Enable corepack
-        run: corepack enable
-
-      - name: Install dependencies
-        run: yarn install --prefer-offline
+      - name: Set up Node and Yarn packages with caching
+        uses: ./.github/workflows/install-and-cache-node-and-yarn
 
       - name: Run linter check
         run: yarn lint:nofix
 
   prettier:
+    name: Run prettier check
     needs: setup
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Setup Node (using cache)
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: 'yarn'
-
-      - name: Enable corepack
-        run: corepack enable
-
-      - name: Install dependencies
-        run: yarn install --prefer-offline
+      - name: Set up Node and Yarn packages with caching
+        uses: ./.github/workflows/install-and-cache-node-and-yarn
 
       - name: Run prettier check
         run: yarn format:check
 
   build:
+    name: Build and cache package
     needs: setup
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Setup Node (using cache)
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: 'yarn'
-
-      - name: Enable corepack
-        run: corepack enable
-
-      - name: Install dependencies
-        run: yarn install --prefer-offline
+      - name: Set up Node and Yarn packages with caching
+        uses: ./.github/workflows/install-and-cache-node-and-yarn
 
       - name: Build package
         run: yarn build
 
-      - name: Cache dist
+      - name: Cache package
         uses: actions/upload-artifact@v3
         with:
           name: dist
-          path: dist
+          path: |
+            dist
+            package.json
+            README.md
 
   publish:
+    name: Publish package
     needs: build
     runs-on: ubuntu-latest
     permissions:
@@ -109,21 +69,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup Node (using cache)
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          registry-url: https://npm.pkg.github.com/
-
-      - name: Enable corepack
-        run: corepack enable
-
       - name: Restore dist
         uses: actions/download-artifact@v3
         with:
           name: dist
 
+      - name: Setup Node (using cache)
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'yarn'
+          registry-url: https://npm.pkg.github.com/
+
+      - name: Enable corepack
+        run: corepack enable
+
       - name: Publish package
-        run: npm publish
+        run: npm publish --dry-run
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
