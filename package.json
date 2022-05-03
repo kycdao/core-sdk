@@ -1,5 +1,5 @@
 {
-  "name": "kycdao-sdk",
+  "name": "@kycdao/kycdao-sdk",
   "version": "0.0.1",
   "description": "kycDAO SDK for TypeScript and JavaScript",
   "main": "index.js",
