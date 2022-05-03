@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Node and Yarn packages with caching
-        uses: ./.github/workflows/install-and-cache-node-and-yarn
+        uses: ./.github/workflows/install-and-cache-node-and-yarn.yml
 
   lint:
     name: Run linter check
@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Node and Yarn packages with caching
-        uses: ./.github/workflows/install-and-cache-node-and-yarn
+        uses: ./.github/workflows/install-and-cache-node-and-yarn.yml
 
       - name: Run linter check
         run: yarn lint:nofix
@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Node and Yarn packages with caching
-        uses: ./.github/workflows/install-and-cache-node-and-yarn
+        uses: ./.github/workflows/install-and-cache-node-and-yarn.yml
 
       - name: Run prettier check
         run: yarn format:check
@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Node and Yarn packages with caching
-        uses: ./.github/workflows/install-and-cache-node-and-yarn
+        uses: ./.github/workflows/install-and-cache-node-and-yarn.yml
 
       - name: Build package
         run: yarn build
