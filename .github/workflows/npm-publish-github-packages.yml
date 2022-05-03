@@ -13,16 +13,23 @@ jobs:
     name: Set up Node and Yarn packages
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Set up Node and Yarn packages with caching
-        uses: ./.github/workflows/install-and-cache-node-and-yarn.yml
+        uses: actions/checkout@v3
+        uses: ./.github/actions/install-and-cache-node-and-yarn
 
   lint:
     name: Run linter check
     needs: setup
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Set up Node and Yarn packages with caching
-        uses: ./.github/workflows/install-and-cache-node-and-yarn.yml
+        uses: ./.github/actions/install-and-cache-node-and-yarn
 
       - name: Run linter check
         run: yarn lint:nofix
@@ -32,8 +39,11 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Set up Node and Yarn packages with caching
-        uses: ./.github/workflows/install-and-cache-node-and-yarn.yml
+        uses: ./.github/actions/install-and-cache-node-and-yarn
 
       - name: Run prettier check
         run: yarn format:check
@@ -43,8 +53,11 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Set up Node and Yarn packages with caching
-        uses: ./.github/workflows/install-and-cache-node-and-yarn.yml
+        uses: ./.github/actions/install-and-cache-node-and-yarn
 
       - name: Build package
         run: yarn build
