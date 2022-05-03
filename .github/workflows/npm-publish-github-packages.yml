@@ -9,16 +9,86 @@ on:
       - main
 
 jobs:
-  build:
+  setup:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node (using cache)
+        uses: actions/setup-node@v3
         with:
           node-version: 16
-      - run: corepack enable
-      - run: yarn install
-      - run: yarn build
+          cache: 'yarn'
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install
+
+  lint:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node (using cache)
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'yarn'
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Run linter check
+        run: yarn lint:nofix
+
+  prettier:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node (using cache)
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'yarn'
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Run prettier check
+        run: yarn format:check
+
+  build:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node (using cache)
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'yarn'
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Build package
+        run: yarn build
+
+      - name: Cache dist
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: dist
 
   publish:
     needs: build
@@ -27,13 +97,25 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node (using cache)
+        uses: actions/setup-node@v3
         with:
           node-version: 16
+          cache: 'yarn'
           registry-url: https://npm.pkg.github.com/
-      - run: corepack enable
-      - run: yarn install
-      - run: npm publish
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Restore dist
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+
+      - name: Publish package
+        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
