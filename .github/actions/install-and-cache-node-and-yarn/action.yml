@@ -19,7 +19,7 @@ runs:
       run: echo '::set-output name=dir::$(yarn cache dir)'
       shell: bash
 
-    - name: Cache yarn dependencies
+    - name: Cache yarn downloads and dependencies
       uses: actions/cache@v3
       id: yarn-cache
       with:

@@ -5,7 +5,7 @@ export interface Configuration {
   baseUrl: string;
 }
 
-export abstract class Base {
+export abstract class ApiBase {
   private apiKey?: string;
   private baseUrl: string;
 

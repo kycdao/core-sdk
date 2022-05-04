@@ -1,4 +1,4 @@
-import { Blockchains } from '../common/types';
+export type Blockchains = 'Ethereum' | 'Near';
 
 export interface CreateSessionRequest {
   blockchain: Blockchains;
