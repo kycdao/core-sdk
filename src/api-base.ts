@@ -6,16 +6,20 @@ export interface Configuration {
 }
 
 export abstract class ApiBase {
-  private apiKey?: string;
-  private baseUrl: string;
+  private _apiKey?: string;
+  private _baseUrl: string;
+
+  get baseUrl(): string {
+    return this._baseUrl;
+  }
 
   constructor(config: Configuration) {
-    this.apiKey = config.apiKey;
-    this.baseUrl = config.baseUrl.endsWith('/') ? config.baseUrl : config.baseUrl + '/';
+    this._apiKey = config.apiKey;
+    this._baseUrl = config.baseUrl.endsWith('/') ? config.baseUrl : config.baseUrl + '/';
   }
 
   protected async request<T>(path: string, options?: RequestInit): Promise<T> {
-    let url = this.baseUrl + trim(path, '/');
+    let url = this._baseUrl + trim(path, '/');
 
     if (
       (!options?.method || options?.method === 'GET') &&
@@ -28,7 +32,7 @@ export abstract class ApiBase {
 
     const headers = pickBy({
       'Content-type': 'application/json',
-      Authorization: this.apiKey,
+      Authorization: this._apiKey,
     }) as Record<string, string>;
 
     const requestOptions: RequestInit = {

@@ -1,3 +1,14 @@
+export interface ApiStatus {
+  current_time: string;
+}
+
+export interface PackageStatus {
+  name: string;
+  version: string;
+  serverBaseUrl: string;
+  apiStatus: string;
+}
+
 export type Blockchains = 'Ethereum' | 'Near';
 
 export interface CreateSessionRequest {
