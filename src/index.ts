@@ -4,7 +4,7 @@ import { ApiStatus, ServerStatus } from './types';
 export { Configuration } from './api-base';
 export { ServerStatus } from './types';
 
-export default class KycDao extends ApiBase {
+export class KycDao extends ApiBase {
   public async getStatus(): Promise<ServerStatus> {
     let apiStatus: string;
 
