@@ -1,9 +1,11 @@
 import { ApiBase } from './api-base';
-import { name, version } from '../package.json';
-import { ApiStatus, PackageStatus } from './types';
+import { ApiStatus, ServerStatus } from './types';
+
+export { Configuration } from './api-base';
+export { ServerStatus } from './types';
 
 export default class KycDao extends ApiBase {
-  public async getStatus(): Promise<PackageStatus> {
+  public async getStatus(): Promise<ServerStatus> {
     let apiStatus: string;
 
     try {
@@ -18,8 +20,6 @@ export default class KycDao extends ApiBase {
     }
 
     return {
-      name,
-      version,
       serverBaseUrl: this.baseUrl,
       apiStatus,
     };

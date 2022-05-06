@@ -2,9 +2,7 @@ export interface ApiStatus {
   current_time: string;
 }
 
-export interface PackageStatus {
-  name: string;
-  version: string;
+export interface ServerStatus {
   serverBaseUrl: string;
   apiStatus: string;
 }
