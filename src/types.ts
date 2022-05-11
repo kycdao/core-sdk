@@ -1,3 +1,11 @@
+/* TYPES */
+
+export type Blockchain = 'Ethereum' | 'Near';
+
+export type VerificationType = 'KYB' | 'KYC';
+
+/* INTERFACES */
+
 export interface ApiStatus {
   current_time: string;
 }
@@ -7,13 +15,15 @@ export interface ServerStatus {
   apiStatus: string;
 }
 
-export type Blockchains = 'Ethereum' | 'Near';
-
-export interface CreateSessionRequest {
-  blockchain: Blockchains;
+export interface ChainAndAddress {
+  blockchain: Blockchain;
   address: string;
-  legal_entity?: boolean;
-  // 2 letter ISO CCA2 code
-  residency?: string;
-  email?: string;
+}
+
+export interface VerificationData {
+  email: string;
+  isEmailConfirmed: boolean;
+  taxResidency: string;
+  isLegalEntity: boolean;
+  verificationType: VerificationType;
 }
