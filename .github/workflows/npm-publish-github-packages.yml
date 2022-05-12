@@ -70,9 +70,37 @@ jobs:
             package.json
             README.md
 
+  browserify:
+    name: Browserify and tiniyfy code
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Restore dist
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+
+      - name: Set up Node and Yarn packages with caching
+        uses: ./.github/actions/install-and-cache-node-and-yarn
+
+      - name: Run browserify and tinyify
+        run: yarn browserify && yarn tinyify
+
+      - name: Cache package
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: |
+            dist
+            package.json
+            README.md
+
   publish:
     name: Publish package
-    needs: build
+    needs: browserify
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -90,7 +118,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
-          cache: 'yarn'
           registry-url: https://npm.pkg.github.com/
 
       - name: Enable corepack

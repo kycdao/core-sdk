@@ -1,5 +1,3 @@
-import { pickBy, trim } from 'lodash';
-
 export interface Configuration {
   apiKey?: string;
   baseUrl: string;
@@ -19,7 +17,15 @@ export abstract class ApiBase {
   }
 
   protected async request<T>(path: string, options?: RequestInit): Promise<T> {
-    let url = this._baseUrl + trim(path, '/');
+    if (path.startsWith('/')) {
+      path = path.slice(1);
+    }
+
+    if (path.endsWith('/')) {
+      path = path.slice(0, path.length - 1);
+    }
+
+    let url = this._baseUrl + path;
 
     if (
       (!options?.method || options?.method === 'GET') &&
@@ -30,10 +36,13 @@ export abstract class ApiBase {
       options.body = null;
     }
 
-    const headers = pickBy({
+    const headers = new Headers({
       'Content-type': 'application/json',
-      Authorization: this._apiKey,
-    }) as Record<string, string>;
+    });
+
+    if (this._apiKey) {
+      headers.append('Authorization', this._apiKey);
+    }
 
     const requestOptions: RequestInit = {
       ...options,

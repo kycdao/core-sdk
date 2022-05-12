@@ -1,6 +1,6 @@
 {
   "name": "@kycdao/kycdao-sdk",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "kycDAO SDK for TypeScript and JavaScript",
   "main": "./dist/index.js",
   "repository": "git@github.com:kycdao/kycdao-sdk.git",
@@ -13,17 +13,20 @@
     "lint": "eslint \"./src/**/*.ts\" --fix",
     "lint:nofix": "eslint \"./src/**/*.ts\" --fix",
     "format": "prettier \"./src/**/*.ts\" --write",
-    "format:check": "prettier \"./src/**/*.ts\" --check"
+    "format:check": "prettier \"./src/**/*.ts\" --check",
+    "browserify": "browserify -s \"kycdao\" \"./dist/index.js\" -o \"./dist/kycdao-sdk.js\"",
+    "tinyify": "browserify -s \"kycdao\" -p tinyify \"./dist/index.js\" -o \"./dist/kycdao-sdk.min.js\""
   },
   "devDependencies": {
     "@types/lodash": "^4.14.182",
     "@typescript-eslint/eslint-plugin": "^5.21.0",
     "@typescript-eslint/parser": "^5.21.0",
+    "browserify": "^17.0.0",
     "eslint": "^8.14.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "lodash": "^4.17.21",
     "prettier": "^2.6.2",
+    "tinyify": "^3.0.0",
     "typescript": "^4.6.3"
   },
   "files": [

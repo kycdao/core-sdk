@@ -1,13 +1,12 @@
 name: Set up Node and Yarn packages with caching
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - name: Setup Node
       uses: actions/setup-node@v3
       with:
         node-version: 16
-        cache: 'yarn'
 
     # this step will be obsolete soon hopefully
     - name: Enable corepack
