@@ -1,11 +1,11 @@
 {
   "name": "@kycdao/kycdao-sdk",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "kycDAO SDK for TypeScript and JavaScript",
   "main": "./dist/index.js",
   "repository": "git@github.com:kycdao/kycdao-sdk.git",
-  "author": "Gabor Horvath <gabor@kycdao.xyz>",
-  "license": "AGPL-3.0-or-later",
+  "author": "kycDAO",
+  "license": "UNLICENSED",
   "private": false,
   "scripts": {
     "build": "tsc --build",
