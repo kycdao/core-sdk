@@ -31,5 +31,9 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "dependencies": {},
+  "peerDependencies": {
+    "retypeapp": "^2.3.0"
+  }
 }
