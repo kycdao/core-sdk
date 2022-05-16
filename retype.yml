@@ -1,0 +1,13 @@
+input: .
+output: .retype
+url: https://github.com/kycdao/kycdao-js-sdk
+branding:
+  title: kycDAO SDK
+  label: JavaScript TypeScript
+#links:
+#  - text: Getting Started
+#    link: https://retype.com/guides/getting-started/
+footer:
+  copyright: "&copy; Copyright {{ year }}. All rights reserved. Happy hacking!"
+branding:
+  title: kycDAO JS/TS documentation                 # Your custom website title; keep it short.
