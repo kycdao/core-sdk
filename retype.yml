@@ -1,6 +1,6 @@
 input: .
 output: .retype
-url: https://github.com/kycdao/kycdao-js-sdk
+url: https://kycdao.github.io/kycdao-js-sdk
 branding:
   title: kycDAO SDK
   label: JavaScript TypeScript
