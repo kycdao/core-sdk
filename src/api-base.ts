@@ -1,7 +1,4 @@
-export interface Configuration {
-  apiKey?: string;
-  baseUrl: string;
-}
+import { SdkConfiguration } from './types';
 
 export abstract class ApiBase {
   private _apiKey?: string;
@@ -11,7 +8,7 @@ export abstract class ApiBase {
     return this._baseUrl;
   }
 
-  constructor(config: Configuration) {
+  constructor(config: SdkConfiguration) {
     this._apiKey = config.apiKey;
     this._baseUrl = config.baseUrl.endsWith('/') ? config.baseUrl : config.baseUrl + '/';
   }

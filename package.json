@@ -1,6 +1,6 @@
 {
   "name": "@kycdao/kycdao-sdk",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "kycDAO SDK for TypeScript and JavaScript",
   "main": "./dist/index.js",
   "repository": "git@github.com:kycdao/kycdao-sdk.git",
@@ -29,11 +29,13 @@
     "tinyify": "^3.0.0",
     "typescript": "^4.6.3"
   },
-  "files": [
-    "dist"
-  ],
-  "dependencies": {},
+  "dependencies": {
+    "near-api-js": "^0.44.2"
+  },
   "peerDependencies": {
     "retypeapp": "^2.3.0"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }

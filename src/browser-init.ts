@@ -1,5 +1,5 @@
-import { Configuration, KycDao } from './';
+import { SdkConfiguration, KycDao } from './';
 
-export function init(config: Configuration): KycDao {
+export function init(config: SdkConfiguration): KycDao {
   return new KycDao(config);
 }
