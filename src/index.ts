@@ -19,6 +19,7 @@ export { ConnectConfig as NearConnectConfig } from 'near-api-js';
 export {
   Blockchain,
   BlockchainNetwork,
+  Country,
   NftImage,
   MintingData,
   SdkConfiguration,

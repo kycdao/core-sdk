@@ -35,6 +35,11 @@ export interface ChainAndAddress {
   address: string;
 }
 
+export interface Country {
+  name: string;
+  iso_cca2: string;
+}
+
 export interface VerificationData {
   email: string;
   isEmailConfirmed: boolean;
