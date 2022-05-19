@@ -318,10 +318,13 @@ export class KycDao extends ApiBase {
               };
 
         const user = await this.post<UserDetails>('user', payload);
+        this.user = user;
         return console.log(
           'kycDAO User after registration/login: \n' + JSON.stringify(user, null, 2),
         );
       }
+
+      this.user = this.session.user;
 
       return console.log(
         'kycDAO User already in session: \n' + JSON.stringify(this.session.user, null, 2),
