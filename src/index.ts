@@ -224,7 +224,13 @@ export class KycDao extends ApiBase {
   // TODO maybe split this up
   private async registerOrLogin(): Promise<void> {
     if (this._chainAndAddress) {
-      this.session = await this.post<Session>('session', this._chainAndAddress);
+      try {
+        this.session = await this.post<Session>('session', this._chainAndAddress);
+      } catch (e) {
+        console.log(`kycDAO session creation error: ${e}`);
+        throw e;
+      }
+      console.log('kycDAO Session created: \n' + JSON.stringify(this.session, null, 2));
 
       if (!this.session.user) {
         const errorPrefix = 'kycDAO registration error';
@@ -261,13 +267,15 @@ export class KycDao extends ApiBase {
         let user: UserDetails;
         try {
           user = await this.post<UserDetails>('user', payload);
-          return console.log('User after registration/login: \n' + JSON.stringify(user, null, 2));
+          return console.log(
+            'kycDAO User after registration/login: \n' + JSON.stringify(user, null, 2),
+          );
         } catch (e) {
           if (typeof e === 'string') {
             // this seems to be unnecessary now, POST user returns the already existing user as well
             if (e === 'BlockchainAddressAlreadyRegistered') {
               user = await this.post<UserDetails>('login', payload);
-              return console.log('User after login: \n' + JSON.stringify(user, null, 2));
+              return console.log('kycDAO User after login: \n' + JSON.stringify(user, null, 2));
             }
 
             throw new Error(e);
@@ -278,7 +286,7 @@ export class KycDao extends ApiBase {
       }
 
       return console.log(
-        'User already in session: \n' + JSON.stringify(this.session.user, null, 2),
+        'kycDAO User already in session: \n' + JSON.stringify(this.session.user, null, 2),
       );
     }
 
