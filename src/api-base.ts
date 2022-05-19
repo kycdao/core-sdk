@@ -47,11 +47,21 @@ export abstract class ApiBase {
       credentials: 'include',
     };
 
-    const res = await fetch(url, requestOptions);
-    if (res.ok) {
-      return res.json();
+    const response = await fetch(url, requestOptions);
+    const isJson = response.headers.get('content-type')?.includes('application/json');
+    const data = isJson ? await response.json() : null;
+
+    if (!response.ok) {
+      const errorCode = data?.error?.error_code || response.statusText;
+      console.log(
+        `kycDAO API error - ${response.url} ${options?.method || 'GET'} - ${
+          response.status
+        } ${errorCode}`,
+      );
+      throw errorCode;
     }
-    throw new Error(res.statusText);
+
+    return data;
   }
 
   protected async get<T>(path: string, queryParams?: Record<string, string>): Promise<T> {
@@ -61,17 +71,17 @@ export abstract class ApiBase {
     });
   }
 
-  protected async post<T>(path: string, payload: BodyInit): Promise<T> {
+  protected async post<T>(path: string, payload: object): Promise<T> {
     return this.request<T>(path, {
       method: 'POST',
-      body: payload,
+      body: JSON.stringify(payload),
     });
   }
 
-  protected async put<T>(path: string, payload: BodyInit): Promise<T> {
+  protected async put<T>(path: string, payload: object): Promise<T> {
     return this.request<T>(path, {
       method: 'PUT',
-      body: payload,
+      body: JSON.stringify(payload),
     });
   }
 }

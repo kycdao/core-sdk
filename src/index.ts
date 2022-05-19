@@ -1,4 +1,6 @@
 import { ConnectConfig, keyStores, Near, WalletConnection } from 'near-api-js';
+import { Signature } from 'near-api-js/lib/utils/key_pair';
+import { base_encode } from 'near-api-js/lib/utils/serialize';
 import { ApiBase } from './api-base';
 import { BlockchainNetworks, NEAR_TESTNET_CONFIG, VerificationTypes } from './constants';
 import {
@@ -11,6 +13,8 @@ import {
   NftImage,
   SdkConfiguration,
   ServerStatus,
+  Session,
+  UserDetails,
   VerificationData,
   VerificationType,
 } from './types';
@@ -25,6 +29,7 @@ export {
   SdkConfiguration,
   ServerStatus,
   VerificationData,
+  VerificationProvider,
   VerificationType,
   WalletProvider,
 } from './types';
@@ -51,7 +56,7 @@ export class KycDao extends ApiBase {
     return this._chainAndAddress;
   }
 
-  // We will probably need to store Session/User data received from backend.
+  private session?: Session;
 
   private static validateBlockchainNetworks(
     blockchainNetworks: BlockchainNetwork[],
@@ -149,6 +154,9 @@ export class KycDao extends ApiBase {
         blockchain: 'Near',
         address,
       };
+
+      // this may not ideal without an await
+      void this.registerOrLogin();
     }
   }
 
@@ -178,7 +186,7 @@ export class KycDao extends ApiBase {
 
     try {
       const status = await this.get<ApiStatus>('status');
-      apiStatus = `OK - current server time: ${status.current_time}`;
+      apiStatus = `${this.baseUrl} - current server time: ${status.current_time}`;
     } catch (e) {
       if (e instanceof Error) {
         apiStatus = e.message;
@@ -212,9 +220,71 @@ export class KycDao extends ApiBase {
   }
 
   // This should create a session and user for the provided chain + address, or log them in.
-  // Response should be saved in this object probably + cookie will be created.
+  // A session cookie will be saved.
+  // TODO maybe split this up
   private async registerOrLogin(): Promise<void> {
-    return;
+    if (this._chainAndAddress) {
+      this.session = await this.post<Session>('session', this._chainAndAddress);
+
+      if (!this.session.user) {
+        const errorPrefix = 'kycDAO registration error';
+        const toSign = `kycDAO-login-${this.session.nonce}`;
+        let signature: Signature;
+
+        switch (this._chainAndAddress.blockchain) {
+          case 'Near':
+            if (this.near) {
+              const key = await this.near.keyStore.getKey(
+                this.near.wallet.account().connection.networkId,
+                this.near.wallet.getAccountId(),
+              );
+              signature = key.sign(Buffer.from(toSign));
+            } else {
+              throw new Error(`${errorPrefix} - Near SDK not initialized.`);
+            }
+            break;
+          // TODO case 'Ethereum':
+          default:
+            throw new Error(
+              `${errorPrefix} - Unsupported blockchain: ${this._chainAndAddress.blockchain}.`,
+            );
+        }
+
+        const payload =
+          typeof signature === 'string'
+            ? { signature }
+            : {
+                signature: `ed25519:${base_encode(signature.signature)}`,
+                public_key: signature.publicKey.toString(),
+              };
+
+        let user: UserDetails;
+        try {
+          user = await this.post<UserDetails>('user', payload);
+          return console.log('User after registration/login: \n' + JSON.stringify(user, null, 2));
+        } catch (e) {
+          if (typeof e === 'string') {
+            // this seems to be unnecessary now, POST user returns the already existing user as well
+            if (e === 'BlockchainAddressAlreadyRegistered') {
+              user = await this.post<UserDetails>('login', payload);
+              return console.log('User after login: \n' + JSON.stringify(user, null, 2));
+            }
+
+            throw new Error(e);
+          }
+
+          throw e;
+        }
+      }
+
+      return console.log(
+        'User already in session: \n' + JSON.stringify(this.session.user, null, 2),
+      );
+    }
+
+    return console.log(
+      'Cannot register or log in to kycDAO: blockchain and address is not specified.',
+    );
   }
 
   // we can ask the backend to send the email but verification is not currently required for minting (but probably will be in the future)
@@ -236,6 +306,14 @@ export class KycDao extends ApiBase {
         } catch (e) {
           throw new Error(`${errorPrefix} - ${(e as Error).message}`);
         }
+      } else {
+        const address: string = this.near.wallet.getAccountId();
+        this._chainAndAddress = {
+          blockchain: 'Near',
+          address,
+        };
+
+        await this.registerOrLogin();
       }
       return;
     }

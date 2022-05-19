@@ -4,6 +4,8 @@ export const Blockchains = ['Ethereum', 'Near'];
 
 export const BlockchainNetworks = ['NearTestnet', 'NearMainnet', 'PolygonMumbai'];
 
+export const VerificationProviders = ['ParallelMarkets', 'Persona', 'VerifyInvestor'];
+
 export const VerificationTypes = ['KYB', 'KYC'];
 
 export const WalletProviders = ['Near', 'MetaMask', 'WalletConnect'];
