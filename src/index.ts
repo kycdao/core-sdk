@@ -52,11 +52,18 @@ export class KycDao extends ApiBase {
   }
 
   private _chainAndAddress: ChainAndAddress | undefined;
-  get chainAndAddress(): ChainAndAddress | undefined {
+  get connectedChainAndAddress(): ChainAndAddress | undefined {
     return this._chainAndAddress;
+  }
+  get walletConnected(): boolean {
+    return !!this._chainAndAddress;
   }
 
   private session?: Session;
+  private user?: UserDetails;
+  get loggedIn(): boolean {
+    return !!this.user;
+  }
 
   private static validateBlockchainNetworks(
     blockchainNetworks: BlockchainNetwork[],
@@ -120,6 +127,27 @@ export class KycDao extends ApiBase {
     return validVerificationTypes;
   }
 
+  // we will need something like this when using wallet connections without redirect
+  private syncWalletWithUserAndSession(): void {
+    if (this.user) {
+      const isSameUser = this.user.blockchain_accounts.some(
+        (account) =>
+          account.blockchain === this._chainAndAddress?.blockchain &&
+          account.address === this._chainAndAddress.address,
+      );
+
+      if (!isSameUser) {
+        this.user = undefined;
+        this.session = undefined;
+      }
+    } else if (this.session) {
+      const isSameWallet = this.session.chain_and_address === this._chainAndAddress;
+      if (!isSameWallet) {
+        this.session = undefined;
+      }
+    }
+  }
+
   private initNear(network: BlockchainNetwork): void {
     const errorPrefix = 'Cannot initialize Near SDK';
     if (!network.startsWith('Near')) {
@@ -154,9 +182,6 @@ export class KycDao extends ApiBase {
         blockchain: 'Near',
         address,
       };
-
-      // this may not ideal without an await
-      void this.registerOrLogin();
     }
   }
 
@@ -219,10 +244,38 @@ export class KycDao extends ApiBase {
     return false;
   }
 
-  // This should create a session and user for the provided chain + address, or log them in.
+  // this method or init after redirect should create session and user in backend
+  public async connectWallet(blockchain: Blockchain): Promise<void> {
+    const errorPrefix = 'Cannot connect wallet';
+    if (blockchain === 'Near') {
+      if (!this.near) {
+        throw new Error(`${errorPrefix} - Near SDK not initialized.`);
+      }
+
+      if (!this.near.wallet.isSignedIn()) {
+        try {
+          await this.near.wallet.requestSignIn(this.near.contractName, 'kycDAO');
+        } catch (e) {
+          throw new Error(`${errorPrefix} - ${(e as Error).message}`);
+        }
+      } else {
+        const address: string = this.near.wallet.getAccountId();
+        this._chainAndAddress = {
+          blockchain: 'Near',
+          address,
+        };
+      }
+
+      return;
+    }
+
+    throw new Error(`${errorPrefix} - Unsupported blockchain: ${blockchain}.`);
+  }
+
+  // This creates a session and user for the connected wallet, or log them in.
   // A session cookie will be saved.
-  // TODO maybe split this up
-  private async registerOrLogin(): Promise<void> {
+  // TODO maybe split this up?
+  public async registerOrLogin(): Promise<void> {
     if (this._chainAndAddress) {
       try {
         this.session = await this.post<Session>('session', this._chainAndAddress);
@@ -264,25 +317,10 @@ export class KycDao extends ApiBase {
                 public_key: signature.publicKey.toString(),
               };
 
-        let user: UserDetails;
-        try {
-          user = await this.post<UserDetails>('user', payload);
-          return console.log(
-            'kycDAO User after registration/login: \n' + JSON.stringify(user, null, 2),
-          );
-        } catch (e) {
-          if (typeof e === 'string') {
-            // this seems to be unnecessary now, POST user returns the already existing user as well
-            if (e === 'BlockchainAddressAlreadyRegistered') {
-              user = await this.post<UserDetails>('login', payload);
-              return console.log('kycDAO User after login: \n' + JSON.stringify(user, null, 2));
-            }
-
-            throw new Error(e);
-          }
-
-          throw e;
-        }
+        const user = await this.post<UserDetails>('user', payload);
+        return console.log(
+          'kycDAO User after registration/login: \n' + JSON.stringify(user, null, 2),
+        );
       }
 
       return console.log(
@@ -291,42 +329,13 @@ export class KycDao extends ApiBase {
     }
 
     return console.log(
-      'Cannot register or log in to kycDAO: blockchain and address is not specified.',
+      'Cannot register or log in to kycDAO: blockchain and address is not specified (no connected wallet).',
     );
   }
 
   // we can ask the backend to send the email but verification is not currently required for minting (but probably will be in the future)
   private async sendEmailConfirmationCode(): Promise<void> {
     return;
-  }
-
-  // this method or init after redirect should create session and user in backend
-  public async connectWallet(blockchain: Blockchain): Promise<void> {
-    const errorPrefix = 'Cannot connect wallet';
-    if (blockchain === 'Near') {
-      if (!this.near) {
-        throw new Error(`${errorPrefix} - Near SDK not initialized.`);
-      }
-
-      if (!this.near.wallet.isSignedIn()) {
-        try {
-          await this.near.wallet.requestSignIn(this.near.contractName, 'kycDAO');
-        } catch (e) {
-          throw new Error(`${errorPrefix} - ${(e as Error).message}`);
-        }
-      } else {
-        const address: string = this.near.wallet.getAccountId();
-        this._chainAndAddress = {
-          blockchain: 'Near',
-          address,
-        };
-
-        await this.registerOrLogin();
-      }
-      return;
-    }
-
-    throw new Error(`${errorPrefix} - Unsupported blockchain: ${blockchain}.`);
   }
 
   // VERIFICATION DATA

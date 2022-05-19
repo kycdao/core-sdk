@@ -53,12 +53,14 @@ export abstract class ApiBase {
 
     if (!response.ok) {
       const errorCode = data?.error?.error_code || response.statusText;
+      const error = new Error(errorCode);
+      error.name = 'kycDAO API error';
       console.log(
-        `kycDAO API error - ${response.url} ${options?.method || 'GET'} - ${
+        `${error.name} - ${response.url} ${options?.method || 'GET'} - ${
           response.status
         } ${errorCode}`,
       );
-      throw errorCode;
+      throw error;
     }
 
     return data;
