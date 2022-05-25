@@ -1,6 +1,6 @@
 {
   "name": "@kycdao/kycdao-sdk",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "kycDAO SDK for TypeScript and JavaScript",
   "main": "./dist/index.js",
   "repository": "git@github.com:kycdao/kycdao-sdk.git",

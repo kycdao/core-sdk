@@ -51,7 +51,7 @@ export class KycDao extends ApiBase {
     return this.near?.config;
   }
 
-  private _chainAndAddress: ChainAndAddress | undefined;
+  private _chainAndAddress?: ChainAndAddress;
   get connectedChainAndAddress(): ChainAndAddress | undefined {
     return this._chainAndAddress;
   }
@@ -272,6 +272,30 @@ export class KycDao extends ApiBase {
     throw new Error(`${errorPrefix} - Unsupported blockchain: ${blockchain}.`);
   }
 
+  public async disconnectWallet(): Promise<void> {
+    const errorPrefix = 'Cannot disconnect wallet';
+    if (this._chainAndAddress) {
+      switch (this._chainAndAddress.blockchain) {
+        case 'Near':
+          if (this.near) {
+            this.near.wallet.signOut();
+          } else {
+            throw new Error(`${errorPrefix} - Near SDK not initialized.`);
+          }
+          break;
+        // TODO case 'Ethereum':
+        default:
+          throw new Error(
+            `${errorPrefix} - Unsupported blockchain: ${this._chainAndAddress.blockchain}.`,
+          );
+      }
+
+      this._chainAndAddress = undefined;
+      this.user = undefined;
+      this.session = undefined;
+    }
+  }
+
   // This creates a session and user for the connected wallet, or log them in.
   // A session cookie will be saved.
   // TODO maybe split this up?
@@ -356,6 +380,7 @@ export class KycDao extends ApiBase {
   // We have to poll the backend for the Persona callback.
   // After successful verification we have to call the backend to authorize minting for the wallet.
   public async startVerification(verificationData: VerificationData): Promise<void> {
+    console.log(JSON.stringify(verificationData, null, 2));
     return;
   }
 
