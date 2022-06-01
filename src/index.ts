@@ -1,23 +1,37 @@
 import { ConnectConfig, keyStores, Near, WalletConnection } from 'near-api-js';
 import { Signature } from 'near-api-js/lib/utils/key_pair';
 import { base_encode } from 'near-api-js/lib/utils/serialize';
-import { ApiBase } from './api-base';
-import { BlockchainNetworks, NEAR_TESTNET_CONFIG, VerificationTypes } from './constants';
+import { Client as PersonaClient } from 'persona';
+import { ApiBase, HttpError } from './api-base';
+import {
+  BlockchainNetworks,
+  KycDaoEnvironments,
+  NEAR_TESTNET_CONFIG,
+  PERSONA_SANDBOX_OPTIONS,
+  VerificationTypes,
+} from './constants';
 import {
   ApiStatus,
   Blockchain,
   BlockchainNetwork,
   ChainAndAddress,
+  Country,
+  KycDaoEnvironment,
   MintingData,
   NearSdk,
   NftImage,
+  PersonaOptions,
   SdkConfiguration,
   ServerStatus,
   Session,
   UserDetails,
   VerificationData,
+  VerificationProviderOptions,
+  VerificationStasusByType,
+  VerificationStatus,
   VerificationType,
 } from './types';
+import { default as COUNTRIES } from './countries.list.json';
 
 export { ConnectConfig as NearConnectConfig } from 'near-api-js';
 export {
@@ -30,9 +44,12 @@ export {
   ServerStatus,
   VerificationData,
   VerificationProvider,
+  VerificationStasusByType,
   VerificationType,
   WalletProvider,
 } from './types';
+
+const countries: Country[] = Array.from(COUNTRIES);
 
 function partition<T>(arr: T[], predicate: (_: T) => boolean): [T[], T[]] {
   const partitioned: [T[], T[]] = [[], []];
@@ -43,6 +60,7 @@ function partition<T>(arr: T[], predicate: (_: T) => boolean): [T[], T[]] {
 }
 
 export class KycDao extends ApiBase {
+  private environment: KycDaoEnvironment;
   private verificationTypes: VerificationType[];
   private blockchainNetworks: BlockchainNetwork[];
 
@@ -64,6 +82,24 @@ export class KycDao extends ApiBase {
   get loggedIn(): boolean {
     return !!this.user;
   }
+
+  private isVerifiedForType(verificationType: VerificationType): boolean {
+    return (
+      this.user?.verification_requests.some(
+        (req) => req.verification_type === verificationType && req.status === 'Verified',
+      ) || false
+    );
+  }
+
+  private getVerificationStatusByType(): VerificationStasusByType {
+    const status: VerificationStasusByType = {};
+    for (const verificationType of VerificationTypes) {
+      status[verificationType] = this.isVerifiedForType(verificationType);
+    }
+    return status;
+  }
+
+  private verificationStatus: VerificationStatus;
 
   private static validateBlockchainNetworks(
     blockchainNetworks: BlockchainNetwork[],
@@ -112,7 +148,7 @@ export class KycDao extends ApiBase {
       throw new Error(
         `${errorPrefix} - Invalid verification type(s) found in configuration: ${invalidVerificationTypes.join(
           ', ',
-        )}. Valid values are: ${BlockchainNetworks.join(', ')}.`,
+        )}. Valid values are: ${VerificationTypes.join(', ')}.`,
       );
     }
 
@@ -127,8 +163,55 @@ export class KycDao extends ApiBase {
     return validVerificationTypes;
   }
 
-  // we will need something like this when using wallet connections without redirect
-  private syncWalletWithUserAndSession(): void {
+  private validateVerificationData(verificationData: VerificationData): VerificationData {
+    if (!verificationData.termsAccepted) {
+      throw new Error(
+        'Terms and Conditions and Privacy Policy must be accepted to start verification.',
+      );
+    }
+
+    // verification type validation
+    const verificationType = verificationData.verificationType;
+    if (!VerificationTypes.includes(verificationType)) {
+      throw new Error(
+        `Invalid verificationType. Valid values are: ${VerificationTypes.join(', ')}.`,
+      );
+    }
+
+    if (!this.verificationTypes.includes(verificationType)) {
+      throw new Error(
+        `Invalid verificationType. "${verificationType}" was not enabled during SDK initialization.`,
+      );
+    }
+
+    // email format validation
+    const emailRegExp = new RegExp('^[^@]+@[a-z0-9-]+.[a-z]+$');
+    if (!verificationData.email.match(emailRegExp)) {
+      throw new Error('Invalid email address format.');
+    }
+
+    // tax residency validation
+    const taxResidency = verificationData.taxResidency;
+    const country = countries.find(
+      (country) =>
+        country.iso_cca2.toUpperCase() === taxResidency.toUpperCase() ||
+        country.name.toLowerCase() === taxResidency.toLowerCase(),
+    );
+    if (country) {
+      const isNameMatch = country.name.toLowerCase() === taxResidency.toLowerCase();
+      if (isNameMatch) {
+        verificationData.taxResidency = country.iso_cca2;
+      }
+    } else {
+      throw new Error('Invalid taxResidency. Please use the country list provided by the SDK.');
+    }
+
+    return verificationData;
+  }
+
+  // check the current session and user against the initialized chain + address
+  // clear the session/user if they don't match the chain + address
+  private syncUserAndSessionWithWallet(): void {
     if (this.user) {
       const isSameUser = this.user.blockchain_accounts.some(
         (account) =>
@@ -145,6 +228,51 @@ export class KycDao extends ApiBase {
       if (!isSameWallet) {
         this.session = undefined;
       }
+    }
+  }
+
+  private async refreshSession(): Promise<Session | undefined> {
+    const createSession = async (chainAndAddress: ChainAndAddress): Promise<void> => {
+      try {
+        const session = await this.post<Session>('session', chainAndAddress);
+        this.session = session;
+        this.user = session.user;
+      } catch (e) {
+        console.log(`Unexpected error during kycDAO session refresh: ${e}`);
+        throw e;
+      }
+    };
+
+    try {
+      // try refreshing the session (using the stored session cookie for authentication)
+      const session = await this.get<Session>('session');
+      this.session = session;
+      this.user = session.user;
+
+      // check if the refreshed session/user matches the initialized wallet
+      // if not try creating a new session for the wallet
+      this.syncUserAndSessionWithWallet();
+      if (!this.session && this._chainAndAddress) {
+        await createSession(this._chainAndAddress);
+      }
+
+      return this.session;
+    } catch (e) {
+      // there were eithere no session cookie saved or it has expired
+      if (e instanceof HttpError && e.statusCode === 401) {
+        // if there is an initialized chain + address, try creating a new session
+        if (this._chainAndAddress) {
+          await createSession(this._chainAndAddress);
+        }
+
+        // if there is no valid cookie and no chain + address specified, there is no session/user we can speak of
+        this.session = undefined;
+        this.user = undefined;
+        return this.session;
+      }
+
+      console.log(`Unexpected error during kycDAO session refresh: ${e}`);
+      throw e;
     }
   }
 
@@ -186,6 +314,14 @@ export class KycDao extends ApiBase {
   }
 
   constructor(config: SdkConfiguration) {
+    if (!KycDaoEnvironments.includes(config.environment)) {
+      throw new Error(
+        `kycDAO SDK - Invalid environment value found in configuration: ${
+          config.environment
+        }. Valid values are: ${KycDaoEnvironments.join(', ')}.`,
+      );
+    }
+
     config.enbaledBlockchainNetworks = KycDao.validateBlockchainNetworks(
       config.enbaledBlockchainNetworks,
     );
@@ -196,6 +332,7 @@ export class KycDao extends ApiBase {
 
     super(config);
 
+    this.environment = config.environment;
     this.blockchainNetworks = config.enbaledBlockchainNetworks;
     this.verificationTypes = config.enbaledVerificationTypes;
 
@@ -203,6 +340,10 @@ export class KycDao extends ApiBase {
     if (nearNetwork) {
       this.initNear(nearNetwork);
     }
+
+    this.verificationStatus = {
+      personaSessionData: undefined,
+    };
   }
 
   // A test method to check configuration and backend access.
@@ -301,13 +442,7 @@ export class KycDao extends ApiBase {
   // TODO maybe split this up?
   public async registerOrLogin(): Promise<void> {
     if (this._chainAndAddress) {
-      try {
-        this.session = await this.post<Session>('session', this._chainAndAddress);
-      } catch (e) {
-        console.log(`kycDAO session creation error: ${e}`);
-        throw e;
-      }
-      console.log('kycDAO Session created: \n' + JSON.stringify(this.session, null, 2));
+      this.session = await this.post<Session>('session', this._chainAndAddress);
 
       if (!this.session.user) {
         const errorPrefix = 'kycDAO registration error';
@@ -343,19 +478,15 @@ export class KycDao extends ApiBase {
 
         const user = await this.post<UserDetails>('user', payload);
         this.user = user;
-        return console.log(
-          'kycDAO User after registration/login: \n' + JSON.stringify(user, null, 2),
-        );
+        return;
       }
 
       this.user = this.session.user;
 
-      return console.log(
-        'kycDAO User already in session: \n' + JSON.stringify(this.session.user, null, 2),
-      );
+      return;
     }
 
-    return console.log(
+    throw new Error(
       'Cannot register or log in to kycDAO: blockchain and address is not specified (no connected wallet).',
     );
   }
@@ -365,23 +496,91 @@ export class KycDao extends ApiBase {
     return;
   }
 
+  private loadPersona(user: UserDetails, personaOptions?: PersonaOptions): void {
+    const sessionData = this.verificationStatus.personaSessionData;
+    const shouldContinue = sessionData && sessionData.referenceId === user.ext_id;
+    const options = shouldContinue
+      ? {
+          inquiryId: sessionData.inquiryId,
+          sessionToken: sessionData.sessionToken,
+          templateId: undefined,
+        }
+      : { referenceId: user.ext_id };
+
+    const client: PersonaClient = new PersonaClient({
+      ...PERSONA_SANDBOX_OPTIONS, // TODO make this configurable for production release
+      ...options,
+      onReady: () => client.open(),
+      onComplete: (_args: { inquiryId: string; status: string; fields: object }) => {
+        this.verificationStatus.personaSessionData = undefined;
+        typeof personaOptions?.onComplete === 'function' ? personaOptions.onComplete() : null;
+      },
+      onCancel: (args: { inquiryId?: string; sessionToken?: string }) => {
+        if (args.inquiryId) {
+          this.verificationStatus.personaSessionData = {
+            referenceId: user.ext_id,
+            inquiryId: args.inquiryId,
+            sessionToken: args.sessionToken,
+          };
+        } else {
+          this.verificationStatus.personaSessionData = undefined;
+        }
+        typeof personaOptions?.onCancel === 'function' ? personaOptions.onCancel() : null;
+      },
+      onError: (error: { status: number; code: string }) => {
+        this.verificationStatus.personaSessionData = undefined;
+        const errorMessage = `Persona verification error: ${error.code}`;
+        console.error(errorMessage);
+        typeof personaOptions?.onError === 'function' ? personaOptions.onError(errorMessage) : null;
+      },
+    });
+  }
+
   // VERIFICATION DATA
-  // TODO add validation to the beginning
-  // This step should update the User in the backend with the data we require before verification/minting which are:
-  // email, tax residency (we should provide a list), legal entity or not, privacy policy + terms accepted, verification type (KYC or KYB)
-  // Other things:
-  // TODO Email already confirmed -> needs backend support.
+  // This step updates the User in the backend with the data we require before verification/minting which are:
+  // email, tax residency (from provided list), legal entity or not, privacy policy + terms accepted, verification type (KYC or KYB)
+  // TODO backend support for already confirmed emails.
+  // TODO backend support for verification type? Probably not, but we will use it for provider selection/configuration.
   // TODO Add tier level later as optional.
 
   // VERIFICATION PROCESS
   // Start Persona (or other 3rd party verification provider) flow.
-  // The provider could be configurable later.
-  // For Persona: we need to load their script, initialize the client with a Persona template id and we will need the User ext_id.
-  // We have to poll the backend for the Persona callback.
-  // After successful verification we have to call the backend to authorize minting for the wallet.
-  public async startVerification(verificationData: VerificationData): Promise<void> {
-    console.log(JSON.stringify(verificationData, null, 2));
-    return;
+  // The provider will be configurable later.
+  public async startVerification(
+    verificationData: VerificationData,
+    providerOptions?: VerificationProviderOptions,
+  ): Promise<void> {
+    verificationData = this.validateVerificationData(verificationData);
+
+    const user = await this.put<UserDetails>('user', verificationData);
+    this.user = user;
+
+    const allowVerification =
+      this.environment === 'demo' || !this.isVerifiedForType(verificationData.verificationType);
+    if (allowVerification) {
+      if (verificationData.verificationType === 'KYC') {
+        this.loadPersona(user, providerOptions?.personaOptions);
+      }
+    }
+
+    throw new Error('User already verified.');
+  }
+
+  // this method can be used to poll the backend, refreshing the user session and checking for the verification status
+  public async checkVerificationStatus(): Promise<VerificationStasusByType> {
+    const status = this.getVerificationStatusByType();
+    const allVerified = !Object.values(status).some((value) => !value);
+    if (!allVerified) {
+      await this.refreshSession();
+
+      if (!this.session) {
+        throw new Error('Cannot check kycDAO verification status without an initialized wallet.');
+      }
+
+      return this.getVerificationStatusByType();
+    }
+
+    return status;
   }
 
   public async getNftImageOptions(): Promise<NftImage[]> {
@@ -396,6 +595,7 @@ export class KycDao extends ApiBase {
   // First: use the default generated one.
   // Later: URL? File upload? We provide options the 3rd party site can implement a selector for?
   // !!! We also need confirmation that our disclaimer got signed for liability management. !!!
+  // We have to call the backend to authorize minting for the wallet, wait/poll for the result
   // Mint through wallet
   public async startMinting(mintingData: MintingData): Promise<void> {
     return;

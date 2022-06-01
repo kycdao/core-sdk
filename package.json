@@ -1,6 +1,6 @@
 {
   "name": "@kycdao/kycdao-sdk",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "kycDAO SDK for TypeScript and JavaScript",
   "main": "./dist/index.js",
   "repository": "git@github.com:kycdao/kycdao-sdk.git",
@@ -26,15 +26,22 @@
     "eslint": "^8.14.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
+    "near-api-js": "^0.44.2",
+    "persona": "^4.6.0",
     "prettier": "^2.6.2",
+    "react": "^18.1.0",
+    "react-dom": "^18.1.0",
+    "styled-components": "^5.3.5",
     "tinyify": "^3.0.0",
     "typescript": "^4.6.3"
   },
-  "dependencies": {
-    "near-api-js": "^0.44.2"
-  },
   "peerDependencies": {
-    "retypeapp": "^2.3.0"
+    "near-api-js": "^0.44.2",
+    "persona": "^4.6.0",
+    "react": "^18.1.0",
+    "react-dom": "^18.1.0",
+    "retypeapp": "^2.3.0",
+    "styled-components": "^5.3.5"
   },
   "files": [
     "dist"

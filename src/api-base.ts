@@ -1,5 +1,15 @@
 import { SdkConfiguration } from './types';
 
+export class HttpError extends Error {
+  public statusCode: number;
+
+  constructor(statusCode: number, message?: string) {
+    super(message);
+    this.name = 'HttpError';
+    this.statusCode = statusCode;
+  }
+}
+
 export abstract class ApiBase {
   private _apiKey?: string;
   private _baseUrl: string;
@@ -52,9 +62,8 @@ export abstract class ApiBase {
     const data = isJson ? await response.json() : null;
 
     if (!response.ok) {
-      const errorCode = data?.error?.error_code || response.statusText;
-      const error = new Error(errorCode);
-      error.name = 'kycDAO API error';
+      const errorCode: string = data?.error?.error_code || response.statusText;
+      const error = new HttpError(response.status, errorCode);
       console.log(
         `${error.name} - ${response.url} ${options?.method || 'GET'} - ${
           response.status
