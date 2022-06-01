@@ -561,9 +561,9 @@ export class KycDao extends ApiBase {
       if (verificationData.verificationType === 'KYC') {
         this.loadPersona(user, providerOptions?.personaOptions);
       }
+    } else {
+      throw new Error('User already verified.');
     }
-
-    throw new Error('User already verified.');
   }
 
   // this method can be used to poll the backend, refreshing the user session and checking for the verification status
