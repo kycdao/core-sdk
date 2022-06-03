@@ -23,7 +23,7 @@ export abstract class ApiBase {
     this._baseUrl = config.baseUrl.endsWith('/') ? config.baseUrl : config.baseUrl + '/';
   }
 
-  protected async request<T>(path: string, options?: RequestInit): Promise<T> {
+  protected url(path: string): string {
     if (path.startsWith('/')) {
       path = path.slice(1);
     }
@@ -32,7 +32,11 @@ export abstract class ApiBase {
       path = path.slice(0, path.length - 1);
     }
 
-    let url = this._baseUrl + path;
+    return this._baseUrl + path;
+  }
+
+  protected async request<T>(path: string, options?: RequestInit): Promise<T> {
+    let url = this.url(path);
 
     if (
       (!options?.method || options?.method === 'GET') &&

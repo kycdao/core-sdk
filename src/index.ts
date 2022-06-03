@@ -19,7 +19,6 @@ import {
   KycDaoEnvironment,
   MintingData,
   NearSdk,
-  NftImage,
   PersonaOptions,
   SdkConfiguration,
   ServerStatus,
@@ -38,7 +37,6 @@ export {
   Blockchain,
   BlockchainNetwork,
   Country,
-  NftImage,
   MintingData,
   SdkConfiguration,
   ServerStatus,
@@ -97,6 +95,15 @@ export class KycDao extends ApiBase {
       status[verificationType] = this.isVerifiedForType(verificationType);
     }
     return status;
+  }
+
+  private isVerified(): boolean {
+    for (const verificationType of VerificationTypes) {
+      if (this.isVerifiedForType(verificationType)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private verificationStatus: VerificationStatus;
@@ -583,21 +590,55 @@ export class KycDao extends ApiBase {
     return status;
   }
 
-  public async getNftImageOptions(): Promise<NftImage[]> {
-    return [];
+  // get the URL of the identicon that will be saved into the next minted NFT for the current user
+  // the URL is static and always returns the currently generated image for the user
+  public getNftImageUrl(): string {
+    return this.url('token/identicon');
   }
 
-  /*
-   * We may want an NFT image regenerator method later. Or getter can return a new set every time.
-   */
+  // generate a new identicon for the user, the image has to be force-reloaded after the change
+  public async regenerateNftImage(): Promise<void> {
+    await this.request<string>('token/identicon', { method: 'POST' });
+  }
 
-  // We need an NFT image in some way.
-  // First: use the default generated one.
-  // Later: URL? File upload? We provide options the 3rd party site can implement a selector for?
-  // !!! We also need confirmation that our disclaimer got signed for liability management. !!!
+  // TODO later: more NFT image selection options: URL? File upload? We provide options the 3rd party site can implement a selector for?
+
+  // TODO extract account to a class property?
+  private getValidAuthorizationCode(): string | undefined {
+    if (this._chainAndAddress && this.user) {
+      const account = this.user.blockchain_accounts.find(
+        (account) =>
+          this._chainAndAddress &&
+          account.blockchain === this._chainAndAddress.blockchain &&
+          account.address === this._chainAndAddress?.address,
+      );
+
+      return account?.tokens.find((token) => {
+        token.authorization_tx_id && !token.minted_at;
+      })?.authorization_code;
+    }
+
+    return undefined;
+  }
+
   // We have to call the backend to authorize minting for the wallet, wait/poll for the result
   // Mint through wallet
   public async startMinting(mintingData: MintingData): Promise<void> {
+    if (!mintingData.disclaimerAccepted) {
+      throw new Error('Disclaimer must be accepted.');
+    }
+
+    if (!this.isVerified()) {
+      throw new Error('User must be verified to be able to mint an NFT.');
+    }
+
+    // TODO
+    // 1.  Update disclaimer accepted
+    // 2.  check account for an existing valid auth code
+    // 3.a if there is no valid code call authorize minting
+    // 3.b poll NEAR transaction status, wait until done
+    // 4.  Mint (handle callback?)
+
     return;
   }
 

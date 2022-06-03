@@ -84,16 +84,8 @@ export interface VerificationStatus {
   personaSessionData?: PersonaSessionData;
 }
 
-export interface NftImage {
-  id: string; // seed
-  url: string;
-  name?: string;
-  description?: string;
-}
-
 export interface MintingData {
   disclaimerAccepted: boolean;
-  nftImageId?: string;
 }
 
 export interface NearSdk {
