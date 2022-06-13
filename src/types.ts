@@ -32,8 +32,8 @@ export interface SdkConfiguration {
   apiKey?: string;
   environment: KycDaoEnvironment;
   baseUrl: string;
-  enbaledBlockchainNetworks: BlockchainNetwork[];
-  enbaledVerificationTypes: VerificationType[];
+  enabledBlockchainNetworks: BlockchainNetwork[];
+  enabledVerificationTypes: VerificationType[];
 }
 
 export interface ApiStatus {

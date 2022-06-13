@@ -329,19 +329,19 @@ export class KycDao extends ApiBase {
       );
     }
 
-    config.enbaledBlockchainNetworks = KycDao.validateBlockchainNetworks(
-      config.enbaledBlockchainNetworks,
+    config.enabledBlockchainNetworks = KycDao.validateBlockchainNetworks(
+      config.enabledBlockchainNetworks,
     );
 
-    config.enbaledVerificationTypes = KycDao.validateVerificationTypes(
-      config.enbaledVerificationTypes,
+    config.enabledVerificationTypes = KycDao.validateVerificationTypes(
+      config.enabledVerificationTypes,
     );
 
     super(config);
 
     this.environment = config.environment;
-    this.blockchainNetworks = config.enbaledBlockchainNetworks;
-    this.verificationTypes = config.enbaledVerificationTypes;
+    this.blockchainNetworks = config.enabledBlockchainNetworks;
+    this.verificationTypes = config.enabledVerificationTypes;
 
     const nearNetwork = this.blockchainNetworks.find((network) => network.startsWith('Near'));
     if (nearNetwork) {
