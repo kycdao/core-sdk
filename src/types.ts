@@ -153,6 +153,12 @@ export interface UserDetails {
   blockchain_accounts: BlockchainAccountDetails[];
 }
 
+export interface UserUpdateRequest {
+  legal_entity?: boolean;
+  residency?: string;
+  email?: string;
+}
+
 export interface AllowListEntry {
   id: number;
   blockchain: Blockchain;

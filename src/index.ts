@@ -29,6 +29,7 @@ import {
   Session,
   TransactionStatus,
   UserDetails,
+  UserUpdateRequest,
   VerificationData,
   VerificationProviderOptions,
   VerificationStasusByType,
@@ -644,7 +645,12 @@ export class KycDao extends ApiBase {
   ): Promise<void> {
     verificationData = this.validateVerificationData(verificationData);
 
-    const user = await this.put<UserDetails>('user', verificationData);
+    const userUpdateRequest: UserUpdateRequest = {
+      email: verificationData.email,
+      legal_entity: verificationData.isLegalEntity,
+      residency: verificationData.taxResidency,
+    };
+    const user = await this.put<UserDetails>('user', userUpdateRequest);
     this.user = user;
 
     const allowVerification =
