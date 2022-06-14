@@ -23,6 +23,8 @@ export const NEAR_TESTNET_CONFIG: ConnectConfig = {
   headers: {},
 };
 
+export const NEAR_TESTNET_ARCHIVAL = 'https://archival-rpc.testnet.near.org';
+
 export const PERSONA_SANDBOX_OPTIONS: ClientOptions = {
   environment: 'sandbox',
   templateId: 'itmpl_JD2di4nkGV3cZMYPhh98atkC',

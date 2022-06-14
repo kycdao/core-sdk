@@ -26,6 +26,8 @@ export type VerificationStasusByType = { [name: VerificationType]: boolean };
 
 export type WalletProvider = typeof WalletProviders[number];
 
+export type TransactionStatus = 'NotStarted' | 'Started' | 'Success' | 'Failure' | 'Unknown';
+
 /* INTERFACES */
 
 export interface SdkConfiguration {
@@ -93,6 +95,7 @@ export interface NearSdk {
   config: ConnectConfig;
   api: Near;
   wallet: WalletConnection;
+  archival: string;
   contractName: string;
 }
 
@@ -166,4 +169,14 @@ export interface Session {
   usable_networks: BlockchainNetwork[];
   allow_list_entry?: AllowListEntry;
   user?: UserDetails;
+}
+
+export interface MintingAuthorizationRequest {
+  blockchain_account_id: number;
+  network: string;
+}
+
+export interface MintingAuthorizationResponse {
+  code: string;
+  tx_hash: string;
 }

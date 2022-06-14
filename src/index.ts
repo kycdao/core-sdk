@@ -6,6 +6,7 @@ import { ApiBase, HttpError } from './api-base';
 import {
   BlockchainNetworks,
   KycDaoEnvironments,
+  NEAR_TESTNET_ARCHIVAL,
   NEAR_TESTNET_CONFIG,
   PERSONA_SANDBOX_OPTIONS,
   VerificationTypes,
@@ -13,16 +14,20 @@ import {
 import {
   ApiStatus,
   Blockchain,
+  BlockchainAccountDetails,
   BlockchainNetwork,
   ChainAndAddress,
   Country,
   KycDaoEnvironment,
+  MintingAuthorizationRequest,
+  MintingAuthorizationResponse,
   MintingData,
   NearSdk,
   PersonaOptions,
   SdkConfiguration,
   ServerStatus,
   Session,
+  TransactionStatus,
   UserDetails,
   VerificationData,
   VerificationProviderOptions,
@@ -31,6 +36,8 @@ import {
   VerificationType,
 } from './types';
 import { default as COUNTRIES } from './countries.list.json';
+import { JsonRpcProvider } from 'near-api-js/lib/providers';
+import { partition, poll } from './utils';
 
 export { ConnectConfig as NearConnectConfig } from 'near-api-js';
 export {
@@ -48,14 +55,6 @@ export {
 } from './types';
 
 const countries: Country[] = Array.from(COUNTRIES);
-
-function partition<T>(arr: T[], predicate: (_: T) => boolean): [T[], T[]] {
-  const partitioned: [T[], T[]] = [[], []];
-  arr.forEach((val: T) => {
-    partitioned[predicate(val) ? 0 : 1].push(val);
-  });
-  return partitioned;
-}
 
 export class KycDao extends ApiBase {
   private environment: KycDaoEnvironment;
@@ -104,6 +103,90 @@ export class KycDao extends ApiBase {
       }
     }
     return false;
+  }
+
+  private getBlockchainAccount(address: string): BlockchainAccountDetails {
+    const accounts = this.user?.blockchain_accounts;
+
+    if (!accounts?.length) {
+      throw new Error('User has no blockchain accounts.');
+    }
+
+    const accountsFound = accounts.filter((acc) => acc.address === address.toLowerCase());
+
+    if (accountsFound.length > 1) {
+      throw new Error('Multiple blockchain accounts found for the same wallet address.');
+    }
+
+    if (!accountsFound.length) {
+      throw new Error('Wallet address is not registered to the current user.');
+    }
+
+    return accountsFound[0];
+  }
+
+  private getValidAuthorizationCode(): string | undefined {
+    if (this._chainAndAddress && this.user) {
+      try {
+        const account = this.getBlockchainAccount(this._chainAndAddress.address);
+
+        return account.tokens.find((token) => {
+          return token.authorization_tx_id && !token.minted_at;
+        })?.authorization_code;
+      } catch {
+        return undefined;
+      }
+    }
+
+    return undefined;
+  }
+
+  async getTxStatus(txHash: string): Promise<TransactionStatus> {
+    if (!this._chainAndAddress) {
+      throw new Error('Blockchain and address is not specified (no connected wallet).');
+    }
+
+    switch (this._chainAndAddress.blockchain) {
+      case 'Near':
+        if (this.near) {
+          const provider = new JsonRpcProvider(this.near.archival);
+          try {
+            const outcome = await provider.txStatus(txHash, this.near.contractName);
+
+            if (typeof outcome.status !== 'string') {
+              if (outcome.status.SuccessValue !== undefined) {
+                return 'Success';
+              }
+
+              if (outcome.status.Failure !== undefined) {
+                return 'Failure';
+              }
+
+              return 'Unknown';
+            } else {
+              return outcome.status;
+            }
+          } catch {
+            return 'Unknown';
+          }
+        } else {
+          throw new Error('Near SDK not initialized.');
+        }
+      // TODO case 'Ethereum':
+      default:
+        throw new Error(`Unsupported blockchain: ${this._chainAndAddress.blockchain}.`);
+    }
+  }
+
+  private async waitForTransaction(txHash: string): Promise<void> {
+    await poll(
+      () => this.getTxStatus(txHash),
+      (r) => {
+        return r === 'Success';
+      },
+      1000,
+      60,
+    );
   }
 
   private verificationStatus: VerificationStatus;
@@ -293,6 +376,7 @@ export class KycDao extends ApiBase {
     const config: ConnectConfig = NEAR_TESTNET_CONFIG;
     config.keyStore = keyStore;
     const contractName = 'app.kycdao.testnet';
+    const archival = NEAR_TESTNET_ARCHIVAL;
 
     if (network === 'NearMainnet') {
       // TODO overwrite testnet values
@@ -307,6 +391,7 @@ export class KycDao extends ApiBase {
       config,
       api: nearApi,
       wallet,
+      archival,
       contractName,
     };
 
@@ -603,40 +688,92 @@ export class KycDao extends ApiBase {
 
   // TODO later: more NFT image selection options: URL? File upload? We provide options the 3rd party site can implement a selector for?
 
-  // TODO extract account to a class property?
-  private getValidAuthorizationCode(): string | undefined {
-    if (this._chainAndAddress && this.user) {
-      const account = this.user.blockchain_accounts.find(
-        (account) =>
-          this._chainAndAddress &&
-          account.blockchain === this._chainAndAddress.blockchain &&
-          account.address === this._chainAndAddress?.address,
-      );
+  private async authorizeMinting(): Promise<string> {
+    const errorPrefix = 'Cannot authorize minting';
 
-      return account?.tokens.find((token) => {
-        token.authorization_tx_id && !token.minted_at;
-      })?.authorization_code;
+    if (!this._chainAndAddress) {
+      throw new Error(
+        `${errorPrefix} - Blockchain and address is not specified (no connected wallet).`,
+      );
     }
 
-    return undefined;
+    let network: BlockchainNetwork | undefined;
+
+    switch (this._chainAndAddress.blockchain) {
+      case 'Near':
+        network = this.blockchainNetworks.find((network) => network.startsWith('Near'));
+
+        if (!network) {
+          throw new Error(`${errorPrefix} - Configured NEAR network not found.`);
+        }
+
+        break;
+      // TODO case 'Ethereum':
+      default:
+        throw new Error(
+          `${errorPrefix} - Unsupported blockchain: ${this._chainAndAddress.blockchain}.`,
+        );
+    }
+
+    try {
+      const blockchainAccount = this.getBlockchainAccount(this._chainAndAddress.address);
+
+      const data: MintingAuthorizationRequest = {
+        blockchain_account_id: blockchainAccount.id,
+        network,
+      };
+
+      const res = await this.post<MintingAuthorizationResponse>('authorize_minting', data);
+      try {
+        await this.waitForTransaction(res.tx_hash);
+        return res.code;
+      } catch (e) {
+        if (e instanceof Error && e.message === 'TIMEOUT') {
+          throw new Error('Authorization transaction could not be verified in 1 minute.');
+        } else {
+          throw new Error(`Unexpected error: ${e}`);
+        }
+      }
+    } catch (e) {
+      if (e instanceof Error) {
+        throw new Error(`${errorPrefix} - ${e.message}`);
+      } else {
+        throw e;
+      }
+    }
   }
 
   // We have to call the backend to authorize minting for the wallet, wait/poll for the result
   // Mint through wallet
   public async startMinting(mintingData: MintingData): Promise<void> {
+    // validate minting data
     if (!mintingData.disclaimerAccepted) {
       throw new Error('Disclaimer must be accepted.');
     }
 
+    await this.refreshSession();
+
+    // check if user is verified
     if (!this.isVerified()) {
       throw new Error('User must be verified to be able to mint an NFT.');
     }
 
+    // Update disclaimer accepted
+    if (!this.user?.disclaimer_accepted) {
+      await this.post('disclaimer', { accept: true });
+    }
+
+    // check if there is a valid authorization code already that can be used for minting
+    // if there is no valid authorization code yet, authorize minting through backend and wait for the transaction to finish
+    const authCode = this.getValidAuthorizationCode() || (await this.authorizeMinting());
+
+    // start minting
+
     // TODO
-    // 1.  Update disclaimer accepted
-    // 2.  check account for an existing valid auth code
-    // 3.a if there is no valid code call authorize minting
-    // 3.b poll NEAR transaction status, wait until done
+    // 1.  DONE Update disclaimer accepted
+    // 2.  DONE check account for an existing valid auth code
+    // 3.a DONE(Near) if there is no valid code call authorize minting
+    // 3.b DONE poll NEAR transaction status, wait until done
     // 4.  Mint (handle callback?)
 
     return;
