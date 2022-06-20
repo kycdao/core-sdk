@@ -1,4 +1,4 @@
-import { ConnectConfig, keyStores, Near, WalletConnection } from 'near-api-js';
+import { ConnectConfig, Contract, keyStores, Near, WalletConnection } from 'near-api-js';
 import { Signature } from 'near-api-js/lib/utils/key_pair';
 import { base_encode } from 'near-api-js/lib/utils/serialize';
 import { Client as PersonaClient } from 'persona';
@@ -18,6 +18,7 @@ import {
   BlockchainNetwork,
   ChainAndAddress,
   Country,
+  KycDaoContract,
   KycDaoEnvironment,
   MintingAuthorizationRequest,
   MintingAuthorizationResponse,
@@ -27,6 +28,7 @@ import {
   SdkConfiguration,
   ServerStatus,
   Session,
+  Transaction,
   TransactionStatus,
   UserDetails,
   UserUpdateRequest,
@@ -35,9 +37,10 @@ import {
   VerificationStasusByType,
   VerificationStatus,
   VerificationType,
+  WalletRedirectEvent,
 } from './types';
 import { default as COUNTRIES } from './countries.list.json';
-import { JsonRpcProvider } from 'near-api-js/lib/providers';
+import { FinalExecutionOutcome, JsonRpcProvider } from 'near-api-js/lib/providers';
 import { partition, poll } from './utils';
 
 export { ConnectConfig as NearConnectConfig } from 'near-api-js';
@@ -55,6 +58,11 @@ export {
   WalletProvider,
 } from './types';
 
+export interface KycDaoInitializationResult {
+  kycDao: KycDao;
+  walletRedirectEvent?: WalletRedirectEvent;
+}
+
 const countries: Country[] = Array.from(COUNTRIES);
 
 export class KycDao extends ApiBase {
@@ -68,7 +76,7 @@ export class KycDao extends ApiBase {
   }
 
   private _chainAndAddress?: ChainAndAddress;
-  get connectedChainAndAddress(): ChainAndAddress | undefined {
+  get connectedWallet(): ChainAndAddress | undefined {
     return this._chainAndAddress;
   }
   get walletConnected(): boolean {
@@ -80,6 +88,8 @@ export class KycDao extends ApiBase {
   get loggedIn(): boolean {
     return !!this.user;
   }
+
+  private verificationStatus: VerificationStatus;
 
   private isVerifiedForType(verificationType: VerificationType): boolean {
     return (
@@ -142,12 +152,8 @@ export class KycDao extends ApiBase {
     return undefined;
   }
 
-  async getTxStatus(txHash: string): Promise<TransactionStatus> {
-    if (!this._chainAndAddress) {
-      throw new Error('Blockchain and address is not specified (no connected wallet).');
-    }
-
-    switch (this._chainAndAddress.blockchain) {
+  private async getTx(chainAndAddress: ChainAndAddress, txHash: string): Promise<Transaction> {
+    switch (chainAndAddress.blockchain) {
       case 'Near':
         if (this.near) {
           const provider = new JsonRpcProvider(this.near.archival);
@@ -156,41 +162,54 @@ export class KycDao extends ApiBase {
 
             if (typeof outcome.status !== 'string') {
               if (outcome.status.SuccessValue !== undefined) {
-                return 'Success';
+                return {
+                  status: 'Success',
+                  data: outcome,
+                };
               }
 
               if (outcome.status.Failure !== undefined) {
-                return 'Failure';
+                return {
+                  status: 'Failure',
+                  data: outcome,
+                };
               }
 
-              return 'Unknown';
+              return {
+                status: 'Unknown',
+                data: outcome,
+              };
             } else {
-              return outcome.status;
+              return {
+                status: outcome.status,
+                data: outcome,
+              };
             }
-          } catch {
-            return 'Unknown';
+          } catch (e) {
+            throw new Error(`Unexpected error while checking Near transaction: ${e}.`);
           }
         } else {
           throw new Error('Near SDK not initialized.');
         }
       // TODO case 'Ethereum':
       default:
-        throw new Error(`Unsupported blockchain: ${this._chainAndAddress.blockchain}.`);
+        throw new Error(`Unsupported blockchain: ${chainAndAddress.blockchain}.`);
     }
   }
 
-  private async waitForTransaction(txHash: string): Promise<void> {
+  private async waitForTransaction(
+    chainAndAddress: ChainAndAddress,
+    txHash: string,
+  ): Promise<void> {
     await poll(
-      () => this.getTxStatus(txHash),
+      () => this.getTx(chainAndAddress, txHash),
       (r) => {
-        return r === 'Success';
+        return r.status === 'Success';
       },
       1000,
       60,
     );
   }
-
-  private verificationStatus: VerificationStatus;
 
   private static validateBlockchainNetworks(
     blockchainNetworks: BlockchainNetwork[],
@@ -397,16 +416,134 @@ export class KycDao extends ApiBase {
     };
 
     // there can be only one Near network, so if lenght > 1 there is something else, do not load the Near wallet automatically
-    if (this.blockchainNetworks.length === 1 && this.near.wallet.isSignedIn()) {
+    /* if (this.blockchainNetworks.length === 1 && this.near.wallet.isSignedIn()) {
       const address: string = this.near.wallet.getAccountId();
       this._chainAndAddress = {
         blockchain: 'Near',
         address,
       };
+    } */
+  }
+
+  private async handleNearWalletCallback(
+    event: WalletRedirectEvent,
+    queryParams: URLSearchParams,
+    detectedValue: string,
+  ): Promise<void> {
+    if (!this.near) {
+      throw new Error('Near callback detected but the Near SDK is  not initialized.');
+    } else {
+      if (this.near.wallet.isSignedIn()) {
+        const address: string = this.near.wallet.getAccountId();
+        this._chainAndAddress = {
+          blockchain: 'Near',
+          address,
+        };
+
+        await this.refreshSession();
+
+        switch (event) {
+          case 'NearLogin':
+            break;
+          case 'NearMint': {
+            const authCode = queryParams.get('authCode');
+            if (authCode) {
+              const transaction = await this.getTx(this._chainAndAddress, detectedValue);
+
+              if (transaction.status !== 'Success') {
+                throw new Error(
+                  `NearMint callback detected but minting transaction is not successful. Status: ${transaction}.`,
+                );
+              }
+
+              const outcome = transaction.data as FinalExecutionOutcome;
+              if (typeof outcome.status === 'string' || !outcome.status.SuccessValue) {
+                throw new Error(
+                  'NearMint callback detected but transaction outcome does not have a SuccessValue (token ID).',
+                );
+              } else {
+                const successValue = outcome.status.SuccessValue;
+
+                try {
+                  const tokenId: string = JSON.parse(
+                    Buffer.from(successValue, 'base64').toString(),
+                  ).token_id;
+
+                  await this.post('token', {
+                    authorization_code: authCode,
+                    token_id: tokenId,
+                    minting_tx_id: detectedValue,
+                  });
+                } catch {
+                  throw new Error(
+                    'Failed to send Near minting transaction status update to kycDAO server.',
+                  );
+                }
+              }
+            } else {
+              throw new Error('authCode parameter is empty or missing from NearMint callback URL.');
+            }
+            break;
+          }
+          case 'NearUserRejectedError':
+            break;
+          default:
+            throw new Error(`Unhandled Near wallet redirect event: ${event}.`);
+        }
+      }
     }
   }
 
-  constructor(config: SdkConfiguration) {
+  private async handleWalletCallback(): Promise<WalletRedirectEvent | undefined> {
+    const errorPrefix = 'Wallet callback handling error';
+
+    const knownQueryParams: Record<string, WalletRedirectEvent> = {
+      account_id: 'NearLogin',
+      errorCode: 'NearUserRejectedError',
+      transactionHashes: 'NearMint',
+    };
+    const queryParams = new URLSearchParams(window.location.search);
+    const queryParamsArray = [...queryParams];
+    const matches = queryParamsArray.filter(([key, _]) =>
+      Object.keys(knownQueryParams).includes(key),
+    );
+
+    if (matches.length > 1) {
+      console.error(
+        `${errorPrefix} - Multiple URL query parameters identified: ${matches.map(
+          ([key, _]) => key,
+        )}.`,
+      );
+      return;
+    }
+
+    if (matches.length === 1) {
+      const match = matches[0];
+      const key = match[0];
+      const value = match[1];
+      const event = knownQueryParams[key];
+
+      if (event.startsWith('Near')) {
+        try {
+          await this.handleNearWalletCallback(event, queryParams, value);
+        } catch (e) {
+          if (e instanceof Error) {
+            console.error(`${errorPrefix} - ${e.message}`);
+          } else {
+            console.error(`${errorPrefix} - ${e}`);
+          }
+
+          return;
+        }
+      }
+
+      return event;
+    }
+
+    return;
+  }
+
+  private constructor(config: SdkConfiguration) {
     if (!KycDaoEnvironments.includes(config.environment)) {
       throw new Error(
         `kycDAO SDK - Invalid environment value found in configuration: ${
@@ -439,7 +576,13 @@ export class KycDao extends ApiBase {
     };
   }
 
-  // A test method to check configuration and backend access.
+  public static async initialize(config: SdkConfiguration): Promise<KycDaoInitializationResult> {
+    const kycDao = new KycDao(config);
+    const walletRedirectEvent = await kycDao.handleWalletCallback();
+    return { kycDao, walletRedirectEvent };
+  }
+
+  // A test method to check configuration and kycDAO server access.
   public async getServerStatus(): Promise<ServerStatus> {
     let apiStatus: string;
 
@@ -532,7 +675,6 @@ export class KycDao extends ApiBase {
 
   // This creates a session and user for the connected wallet, or log them in.
   // A session cookie will be saved.
-  // TODO maybe split this up?
   public async registerOrLogin(): Promise<void> {
     if (this._chainAndAddress) {
       this.session = await this.post<Session>('session', this._chainAndAddress);
@@ -543,17 +685,18 @@ export class KycDao extends ApiBase {
         let signature: Signature;
 
         switch (this._chainAndAddress.blockchain) {
-          case 'Near':
-            if (this.near) {
-              const key = await this.near.keyStore.getKey(
-                this.near.wallet.account().connection.networkId,
-                this.near.wallet.getAccountId(),
-              );
-              signature = key.sign(Buffer.from(toSign));
-            } else {
+          case 'Near': {
+            if (!this.near) {
               throw new Error(`${errorPrefix} - Near SDK not initialized.`);
             }
+
+            const key = await this.near.keyStore.getKey(
+              this.near.wallet.account().connection.networkId,
+              this.near.wallet.getAccountId(),
+            );
+            signature = key.sign(Buffer.from(toSign));
             break;
+          }
           // TODO case 'Ethereum':
           default:
             throw new Error(
@@ -664,7 +807,7 @@ export class KycDao extends ApiBase {
     }
   }
 
-  // this method can be used to poll the backend, refreshing the user session and checking for the verification status
+  // This method can be used to poll the backend, refreshing the user session and checking for the verification status.
   public async checkVerificationStatus(): Promise<VerificationStasusByType> {
     const status = this.getVerificationStatusByType();
     const allVerified = !Object.values(status).some((value) => !value);
@@ -694,18 +837,12 @@ export class KycDao extends ApiBase {
 
   // TODO later: more NFT image selection options: URL? File upload? We provide options the 3rd party site can implement a selector for?
 
-  private async authorizeMinting(): Promise<string> {
+  private async authorizeMinting(chainAndAddress: ChainAndAddress): Promise<string> {
     const errorPrefix = 'Cannot authorize minting';
-
-    if (!this._chainAndAddress) {
-      throw new Error(
-        `${errorPrefix} - Blockchain and address is not specified (no connected wallet).`,
-      );
-    }
 
     let network: BlockchainNetwork | undefined;
 
-    switch (this._chainAndAddress.blockchain) {
+    switch (chainAndAddress.blockchain) {
       case 'Near':
         network = this.blockchainNetworks.find((network) => network.startsWith('Near'));
 
@@ -716,13 +853,11 @@ export class KycDao extends ApiBase {
         break;
       // TODO case 'Ethereum':
       default:
-        throw new Error(
-          `${errorPrefix} - Unsupported blockchain: ${this._chainAndAddress.blockchain}.`,
-        );
+        throw new Error(`${errorPrefix} - Unsupported blockchain: ${chainAndAddress.blockchain}.`);
     }
 
     try {
-      const blockchainAccount = this.getBlockchainAccount(this._chainAndAddress.address);
+      const blockchainAccount = this.getBlockchainAccount(chainAndAddress.address);
 
       const data: MintingAuthorizationRequest = {
         blockchain_account_id: blockchainAccount.id,
@@ -731,7 +866,7 @@ export class KycDao extends ApiBase {
 
       const res = await this.post<MintingAuthorizationResponse>('authorize_minting', data);
       try {
-        await this.waitForTransaction(res.tx_hash);
+        await this.waitForTransaction(chainAndAddress, res.tx_hash);
         return res.code;
       } catch (e) {
         if (e instanceof Error && e.message === 'TIMEOUT') {
@@ -749,19 +884,72 @@ export class KycDao extends ApiBase {
     }
   }
 
-  // We have to call the backend to authorize minting for the wallet, wait/poll for the result
-  // Mint through wallet
+  private async mint(chainAndAddress: ChainAndAddress, authorizationCode: string): Promise<void> {
+    const errorPrefix = 'Cannot mint';
+
+    switch (chainAndAddress.blockchain) {
+      case 'Near': {
+        if (!this.near) {
+          throw new Error(`${errorPrefix} - Near SDK not initialized.`);
+        }
+
+        const contract: KycDaoContract = new Contract(
+          this.near.wallet.account(),
+          this.near.contractName,
+          {
+            viewMethods: [],
+            changeMethods: ['mint'],
+          },
+        ) as KycDaoContract;
+
+        const connectorSign = window.location.search.startsWith('?') ? '&' : '?';
+        const data = `${connectorSign}authCode=${authorizationCode}`;
+        const callbackUrl = `${window.location.origin}${window.location.pathname}${window.location.search}${data}${window.location.hash}`;
+
+        const mintFn = contract.mint;
+        if (!mintFn) {
+          throw new Error('Mint function not callable.');
+        }
+
+        await mintFn({
+          args: { auth_code: Number(authorizationCode) },
+          gas: '300000000000000',
+          amount: '100000000000000000000000', // in yoctoNEAR
+          callbackUrl,
+        });
+        break;
+      }
+      // TODO case 'Ethereum':
+      default:
+        throw new Error(`${errorPrefix} - Unsupported blockchain: ${chainAndAddress.blockchain}.`);
+    }
+    return;
+  }
+
+  // This step updates the disclamer status of the user and checks for an existing valid authorization code.
+  // Then if none exixsts calls the backend to authorize minting with the current wallet and waits for the transaction to succeed (but max 1 minute).
+  // After an authorization code is acquired it initiates the minting.
   public async startMinting(mintingData: MintingData): Promise<void> {
+    const errorPrefix = 'Cannot start minting';
+
+    if (!this._chainAndAddress) {
+      throw new Error(
+        `${errorPrefix} - Blockchain and address is not specified (no connected wallet).`,
+      );
+    }
+
+    const chainAndAddress = this._chainAndAddress;
+
     // validate minting data
     if (!mintingData.disclaimerAccepted) {
-      throw new Error('Disclaimer must be accepted.');
+      throw new Error(`${errorPrefix} - Disclaimer must be accepted.`);
     }
 
     await this.refreshSession();
 
     // check if user is verified
     if (!this.isVerified()) {
-      throw new Error('User must be verified to be able to mint an NFT.');
+      throw new Error(`${errorPrefix} - User must be verified to be able to mint an NFT.`);
     }
 
     // Update disclaimer accepted
@@ -771,21 +959,13 @@ export class KycDao extends ApiBase {
 
     // check if there is a valid authorization code already that can be used for minting
     // if there is no valid authorization code yet, authorize minting through backend and wait for the transaction to finish
-    const authCode = this.getValidAuthorizationCode() || (await this.authorizeMinting());
+    const authCode =
+      this.getValidAuthorizationCode() || (await this.authorizeMinting(chainAndAddress));
 
     // start minting
+    // in case of Near, this will redirect and our page will get a callback so any further steps are need to be handled in the SDK init phase
+    await this.mint(chainAndAddress, authCode);
 
-    // TODO
-    // 1.  DONE Update disclaimer accepted
-    // 2.  DONE check account for an existing valid auth code
-    // 3.a DONE(Near) if there is no valid code call authorize minting
-    // 3.b DONE poll NEAR transaction status, wait until done
-    // 4.  Mint (handle callback?)
-
-    return;
+    // we will need to handle things here for providers without a redirect
   }
-
-  /*
-   * We need to receive the transaction id from the 3rd party site and return it to the backend? That sounds like a risk.
-   */
 }

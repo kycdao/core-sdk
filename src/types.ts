@@ -1,5 +1,6 @@
-import { ConnectConfig, Near, WalletConnection } from 'near-api-js';
+import { ConnectConfig, Contract, Near, WalletConnection } from 'near-api-js';
 import { BrowserLocalStorageKeyStore } from 'near-api-js/lib/key_stores';
+import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
 import {
   BlockchainNetworks,
   Blockchains,
@@ -18,6 +19,9 @@ export type BlockchainNetwork = typeof BlockchainNetworks[number];
 
 export type KycDaoEnvironment = typeof KycDaoEnvironments[number];
 
+export type TransactionData = FinalExecutionOutcome;
+export type TransactionStatus = 'NotStarted' | 'Started' | 'Success' | 'Failure' | 'Unknown';
+
 export type VerificationProvider = typeof VerificationProviders[number];
 
 export type VerificationStasus = typeof VerificationStasuses[number];
@@ -26,7 +30,16 @@ export type VerificationStasusByType = { [name: VerificationType]: boolean };
 
 export type WalletProvider = typeof WalletProviders[number];
 
-export type TransactionStatus = 'NotStarted' | 'Started' | 'Success' | 'Failure' | 'Unknown';
+export type WalletRedirectEventData =
+  | { name: 'NearLogin' }
+  | { name: 'NearMint'; authCode: string; mintingTx: string }
+  | {
+      name: 'NearUserRejectedError';
+      errorCode: string;
+      errorMessage?: string | null;
+    };
+
+export type WalletRedirectEvent = Pick<WalletRedirectEventData, 'name'>['name'];
 
 /* INTERFACES */
 
@@ -97,6 +110,20 @@ export interface NearSdk {
   wallet: WalletConnection;
   archival: string;
   contractName: string;
+}
+
+export interface KycDaoContract extends Contract {
+  mint: (_: {
+    args: Record<string, unknown>;
+    gas: string;
+    amount: string;
+    callbackUrl?: string;
+  }) => Promise<unknown>;
+}
+
+export interface Transaction {
+  status: TransactionStatus;
+  data: TransactionData;
 }
 
 export interface ProviderProfile {

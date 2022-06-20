@@ -1,7 +1,7 @@
-import { SdkConfiguration, KycDao } from './';
+import { SdkConfiguration, KycDao, KycDaoInitializationResult } from './';
 
 export { default as COUNTRIES } from './countries.list.json';
 
-export function init(config: SdkConfiguration): KycDao {
-  return new KycDao(config);
+export async function init(config: SdkConfiguration): Promise<KycDaoInitializationResult> {
+  return KycDao.initialize(config);
 }
