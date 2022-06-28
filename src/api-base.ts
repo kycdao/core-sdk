@@ -1,5 +1,8 @@
 import { SdkConfiguration } from './types';
 
+/**
+ * @internal
+ */
 export class HttpError extends Error {
   public statusCode: number;
 
@@ -10,10 +13,19 @@ export class HttpError extends Error {
   }
 }
 
+/**
+ * @internal
+ */
 export abstract class ApiBase {
   private _apiKey?: string;
   private _baseUrl: string;
 
+  /**
+   * Returns the base URL of the configured kycDAO server.
+   *
+   * @readonly
+   * @type {string}
+   */
   get baseUrl(): string {
     return this._baseUrl;
   }

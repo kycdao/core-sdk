@@ -29,7 +29,6 @@ import {
   ServerStatus,
   Session,
   Transaction,
-  TransactionStatus,
   UserDetails,
   UserUpdateRequest,
   VerificationData,
@@ -37,54 +36,112 @@ import {
   VerificationStasusByType,
   VerificationStatus,
   VerificationType,
-  WalletRedirectEvent,
+  RedirectEvent,
 } from './types';
 import { default as COUNTRIES } from './countries.list.json';
 import { FinalExecutionOutcome, JsonRpcProvider } from 'near-api-js/lib/providers';
 import { partition, poll } from './utils';
 
+export { ApiBase, HttpError } from './api-base';
+export {
+  Blockchains,
+  BlockchainNetworks,
+  KycDaoEnvironments,
+  VerificationTypes,
+} from './constants';
 export { ConnectConfig as NearConnectConfig } from 'near-api-js';
 export {
   Blockchain,
   BlockchainNetwork,
+  ChainAndAddress,
   Country,
   MintingData,
+  PersonaOptions,
   SdkConfiguration,
   ServerStatus,
   VerificationData,
   VerificationProvider,
+  VerificationProviderOptions,
   VerificationStasusByType,
   VerificationType,
-  WalletProvider,
+  RedirectEvent,
 } from './types';
 
+/**
+ * The result of the SDK initialization process.
+ *
+ * @interface KycDaoInitializationResult
+ * @typedef {KycDaoInitializationResult}
+ */
 export interface KycDaoInitializationResult {
+  /**
+   * The instance of the initialized {@link KycDao} class.
+   *
+   * @type {KycDao}
+   */
   kycDao: KycDao;
-  walletRedirectEvent?: WalletRedirectEvent;
+  /**
+   * The type of {@link RedirectEvent} that was detected and handled during the initialization, if there was one.
+   *
+   * @type {?RedirectEvent}
+   */
+  redirectEvent?: RedirectEvent;
 }
 
-const countries: Country[] = Array.from(COUNTRIES);
+/**
+ * The list of countries recognized by the SDK with their respective ISO codes.
+ *
+ * @type {Country[]}
+ */
+export const Countries: Country[] = Array.from(COUNTRIES);
 
+/**
+ * This class provides the connection to a kycDAO server,
+ * initiates flows with third party providers (for wallet connection, verification, etc.)
+ * and handles responses and redirects from them.
+ *
+ * @class KycDao
+ * @typedef {KycDao}
+ * @extends {ApiBase}
+ */
 export class KycDao extends ApiBase {
   private environment: KycDaoEnvironment;
   private verificationTypes: VerificationType[];
   private blockchainNetworks: BlockchainNetwork[];
 
   private near?: NearSdk;
-  get nearConfig(): ConnectConfig | undefined {
-    return this.near?.config;
-  }
 
   private _chainAndAddress?: ChainAndAddress;
+
+  /**
+   * Returns the connected wallet if there is any.
+   *
+   * @readonly
+   * @type {(ChainAndAddress | undefined)}
+   */
   get connectedWallet(): ChainAndAddress | undefined {
     return this._chainAndAddress;
   }
+
+  /**
+   * Returns if there is a wallet currently connected.
+   *
+   * @readonly
+   * @type {boolean}
+   */
   get walletConnected(): boolean {
     return !!this._chainAndAddress;
   }
 
   private session?: Session;
   private user?: UserDetails;
+
+  /**
+   * Returns if there is a user currently logged in.
+   *
+   * @readonly
+   * @type {boolean}
+   */
   get loggedIn(): boolean {
     return !!this.user;
   }
@@ -101,14 +158,16 @@ export class KycDao extends ApiBase {
 
   private getVerificationStatusByType(): VerificationStasusByType {
     const status: VerificationStasusByType = {};
-    for (const verificationType of VerificationTypes) {
+    const allVerificationTypes = Object.values(VerificationTypes);
+    for (const verificationType of allVerificationTypes) {
       status[verificationType] = this.isVerifiedForType(verificationType);
     }
     return status;
   }
 
   private isVerified(): boolean {
-    for (const verificationType of VerificationTypes) {
+    const allVerificationTypes = Object.values(VerificationTypes);
+    for (const verificationType of allVerificationTypes) {
       if (this.isVerifiedForType(verificationType)) {
         return true;
       }
@@ -215,22 +274,23 @@ export class KycDao extends ApiBase {
     blockchainNetworks: BlockchainNetwork[],
   ): BlockchainNetwork[] {
     const errorPrefix = 'kycDAO SDK';
+    const allBlockchainNetworks = Object.values(BlockchainNetworks);
     const [validBlockchainNetworks, invalidBlockchainNetworks] = partition(
       [...new Set(blockchainNetworks)],
-      (network) => BlockchainNetworks.includes(network),
+      (network) => allBlockchainNetworks.includes(network),
     );
 
     if (invalidBlockchainNetworks.length > 0) {
       throw new Error(
         `${errorPrefix} - Invalid network(s) found in configuration: ${invalidBlockchainNetworks.join(
           ', ',
-        )}. Valid values are: ${BlockchainNetworks.join(', ')}.`,
+        )}. Valid values are: ${allBlockchainNetworks.join(', ')}.`,
       );
     }
 
     if (!validBlockchainNetworks.length) {
       throw new Error(
-        `${errorPrefix} - No valid networks found in configuration. Valid values are: ${BlockchainNetworks.join(
+        `${errorPrefix} - No valid networks found in configuration. Valid values are: ${allBlockchainNetworks.join(
           ', ',
         )}.`,
       );
@@ -249,22 +309,23 @@ export class KycDao extends ApiBase {
     verificationTypes: VerificationType[],
   ): VerificationType[] {
     const errorPrefix = 'kycDAO SDK';
+    const allVerificationTypes = Object.values(VerificationTypes);
     const [validVerificationTypes, invalidVerificationTypes] = partition(
       [...new Set(verificationTypes)],
-      (verificationType) => VerificationTypes.includes(verificationType),
+      (verificationType) => allVerificationTypes.includes(verificationType),
     );
 
     if (invalidVerificationTypes.length > 0) {
       throw new Error(
         `${errorPrefix} - Invalid verification type(s) found in configuration: ${invalidVerificationTypes.join(
           ', ',
-        )}. Valid values are: ${VerificationTypes.join(', ')}.`,
+        )}. Valid values are: ${allVerificationTypes.join(', ')}.`,
       );
     }
 
     if (!validVerificationTypes.length) {
       throw new Error(
-        `${errorPrefix} - No valid verification type found in configuration. Valid values are: ${VerificationTypes.join(
+        `${errorPrefix} - No valid verification type found in configuration. Valid values are: ${allVerificationTypes.join(
           ', ',
         )}.`,
       );
@@ -280,11 +341,13 @@ export class KycDao extends ApiBase {
       );
     }
 
+    const allVerificationTypes = Object.values(VerificationTypes);
+
     // verification type validation
     const verificationType = verificationData.verificationType;
-    if (!VerificationTypes.includes(verificationType)) {
+    if (!allVerificationTypes.includes(verificationType)) {
       throw new Error(
-        `Invalid verificationType. Valid values are: ${VerificationTypes.join(', ')}.`,
+        `Invalid verificationType. Valid values are: ${allVerificationTypes.join(', ')}.`,
       );
     }
 
@@ -302,7 +365,7 @@ export class KycDao extends ApiBase {
 
     // tax residency validation
     const taxResidency = verificationData.taxResidency;
-    const country = countries.find(
+    const country = Countries.find(
       (country) =>
         country.iso_cca2.toUpperCase() === taxResidency.toUpperCase() ||
         country.name.toLowerCase() === taxResidency.toLowerCase(),
@@ -414,19 +477,10 @@ export class KycDao extends ApiBase {
       archival,
       contractName,
     };
-
-    // there can be only one Near network, so if lenght > 1 there is something else, do not load the Near wallet automatically
-    /* if (this.blockchainNetworks.length === 1 && this.near.wallet.isSignedIn()) {
-      const address: string = this.near.wallet.getAccountId();
-      this._chainAndAddress = {
-        blockchain: 'Near',
-        address,
-      };
-    } */
   }
 
   private async handleNearWalletCallback(
-    event: WalletRedirectEvent,
+    event: RedirectEvent,
     queryParams: URLSearchParams,
     detectedValue: string,
   ): Promise<void> {
@@ -494,10 +548,10 @@ export class KycDao extends ApiBase {
     }
   }
 
-  private async handleWalletCallback(): Promise<WalletRedirectEvent | undefined> {
+  private async handleRedirect(): Promise<RedirectEvent | undefined> {
     const errorPrefix = 'Wallet callback handling error';
 
-    const knownQueryParams: Record<string, WalletRedirectEvent> = {
+    const knownQueryParams: Record<string, RedirectEvent> = {
       account_id: 'NearLogin',
       errorCode: 'NearUserRejectedError',
       transactionHashes: 'NearMint',
@@ -544,11 +598,12 @@ export class KycDao extends ApiBase {
   }
 
   private constructor(config: SdkConfiguration) {
-    if (!KycDaoEnvironments.includes(config.environment)) {
+    const kycDaoEnvironments = Object.values(KycDaoEnvironments);
+    if (!kycDaoEnvironments.includes(config.environment)) {
       throw new Error(
         `kycDAO SDK - Invalid environment value found in configuration: ${
           config.environment
-        }. Valid values are: ${KycDaoEnvironments.join(', ')}.`,
+        }. Valid values are: ${kycDaoEnvironments.join(', ')}.`,
       );
     }
 
@@ -576,20 +631,38 @@ export class KycDao extends ApiBase {
     };
   }
 
+  /**
+   * Connect to a kycDAO server and initialize the SDK using the provided configuration.
+   *
+   * @public
+   * @static
+   * @async
+   * @param {SdkConfiguration} config
+   * @returns {Promise<KycDaoInitializationResult>}
+   */
   public static async initialize(config: SdkConfiguration): Promise<KycDaoInitializationResult> {
     const kycDao = new KycDao(config);
-    const walletRedirectEvent = await kycDao.handleWalletCallback();
-    return { kycDao, walletRedirectEvent };
+    const redirectEvent = await kycDao.handleRedirect();
+    return { kycDao, redirectEvent: redirectEvent };
   }
 
-  // A test method to check configuration and kycDAO server access.
+  /**
+   * A test method to check configuration and kycDAO server access.
+   *
+   * @public
+   * @async
+   * @returns {Promise<ServerStatus>}
+   */
   public async getServerStatus(): Promise<ServerStatus> {
     let apiStatus: string;
+    let isOk: boolean;
 
     try {
       const status = await this.get<ApiStatus>('status');
-      apiStatus = `${this.baseUrl} - current server time: ${status.current_time}`;
+      isOk = true;
+      apiStatus = `${status.current_time}`;
     } catch (e) {
+      isOk = false;
       if (e instanceof Error) {
         apiStatus = e.message;
       } else {
@@ -600,12 +673,25 @@ export class KycDao extends ApiBase {
     return {
       serverBaseUrl: this.baseUrl,
       apiStatus,
+      isOk,
     };
   }
 
   // Method for checking NFT directly on chain with RPC.
   // !!! We have to document that it is not a safe check on the frontend and has to be verified on their backend to be sure !!!
-  // Needs chain (selected from supported list) and wallet address - from method params or the current session, either works.
+
+  /**
+   * NOT IMPLEMENTED \
+   * Checks on chain if the provided (or the currently connected) wallet has a kycNFT.
+   *
+   * @remarks \
+   * **IMPORTANT!** \
+   * The result of this request can be manipulated on the client side so make sure to verify this on the server side as well.
+   * @alpha
+   * @public
+   * @async
+   * @returns {Promise<boolean>}
+   */
   public async walletHasKycNft(): Promise<boolean>;
   public async walletHasKycNft(chainAndAddress?: ChainAndAddress): Promise<boolean> {
     if (!chainAndAddress) {
@@ -621,7 +707,15 @@ export class KycDao extends ApiBase {
     return false;
   }
 
-  // this method or init after redirect should create session and user in backend
+  /**
+   * Initiates wallet connection with a third party wallet provider.
+   *
+   * @public
+   * @async
+   * @see {@link Blockchains}
+   * @param {Blockchain} blockchain
+   * @returns {Promise<void>}
+   */
   public async connectWallet(blockchain: Blockchain): Promise<void> {
     const errorPrefix = 'Cannot connect wallet';
     if (blockchain === 'Near') {
@@ -649,6 +743,13 @@ export class KycDao extends ApiBase {
     throw new Error(`${errorPrefix} - Unsupported blockchain: ${blockchain}.`);
   }
 
+  /**
+   * Disconnects the currently connected wallet (from the current domain).
+   *
+   * @public
+   * @async
+   * @returns {Promise<void>}
+   */
   public async disconnectWallet(): Promise<void> {
     const errorPrefix = 'Cannot disconnect wallet';
     if (this._chainAndAddress) {
@@ -673,8 +774,13 @@ export class KycDao extends ApiBase {
     }
   }
 
-  // This creates a session and user for the connected wallet, or log them in.
-  // A session cookie will be saved.
+  /**
+   * This method creates a session and user for the connected wallet, or log them in. A session cookie will be saved in the browser.
+   *
+   * @public
+   * @async
+   * @returns {Promise<void>}
+   */
   public async registerOrLogin(): Promise<void> {
     if (this._chainAndAddress) {
       this.session = await this.post<Session>('session', this._chainAndAddress);
@@ -773,15 +879,20 @@ export class KycDao extends ApiBase {
   }
 
   // VERIFICATION DATA
-  // This step updates the User in the backend with the data we require before verification/minting which are:
-  // email, tax residency (from provided list), legal entity or not, privacy policy + terms accepted, verification type (KYC or KYB)
   // TODO backend support for already confirmed emails.
-  // TODO backend support for verification type? Probably not, but we will use it for provider selection/configuration.
   // TODO Add tier level later as optional.
 
   // VERIFICATION PROCESS
-  // Start Persona (or other 3rd party verification provider) flow.
-  // The provider will be configurable later.
+  // The provider will be configurable/different later (e.g. based on verificationy type).
+  /**
+   * This method updates the user with data provided in {@link VerificationData} and then starts a verification flow with the approrpiate third party provider.
+   *
+   * @public
+   * @async
+   * @param {VerificationData} verificationData
+   * @param {?VerificationProviderOptions} [providerOptions]
+   * @returns {Promise<void>}
+   */
   public async startVerification(
     verificationData: VerificationData,
     providerOptions?: VerificationProviderOptions,
@@ -807,7 +918,14 @@ export class KycDao extends ApiBase {
     }
   }
 
-  // This method can be used to poll the backend, refreshing the user session and checking for the verification status.
+  /**
+   * This method can be used to poll the backend, refreshing the user session and checking for the verification status.
+   *
+   * @public
+   * @async
+   * @see {@link VerificationTypes}
+   * @returns {Promise<VerificationStasusByType>}
+   */
   public async checkVerificationStatus(): Promise<VerificationStasusByType> {
     const status = this.getVerificationStatusByType();
     const allVerified = !Object.values(status).some((value) => !value);
@@ -824,13 +942,25 @@ export class KycDao extends ApiBase {
     return status;
   }
 
-  // get the URL of the identicon that will be saved into the next minted NFT for the current user
-  // the URL is static and always returns the currently generated image for the user
+  /**
+   * Returns the URL of the identicon that will be saved into the next minted NFT for the current user.\
+   * The URL is static and always returns the currently generated image for the user.
+   *
+   * @public
+   * @returns {string}
+   */
   public getNftImageUrl(): string {
     return this.url('token/identicon');
   }
 
-  // generate a new identicon for the user, the image has to be force-reloaded after the change
+  /**
+   * This method generates a new identicon for the user.
+   *
+   * @remark The image URL is static so it has to be force-reloaded after the change.
+   * @public
+   * @async
+   * @returns {Promise<void>}
+   */
   public async regenerateNftImage(): Promise<void> {
     await this.request<string>('token/identicon', { method: 'POST' });
   }
@@ -926,9 +1056,16 @@ export class KycDao extends ApiBase {
     return;
   }
 
-  // This step updates the disclamer status of the user and checks for an existing valid authorization code.
-  // Then if none exixsts calls the backend to authorize minting with the current wallet and waits for the transaction to succeed (but max 1 minute).
-  // After an authorization code is acquired it initiates the minting.
+  /**
+   * This step updates the user based on the {@link MintingData} provided and checks for an existing valid authorization code.\
+   * If none exixsts calls the sarcer to authorize minting for the current wallet and waits for the transaction to succeed (but max 1 minute).\
+   * After an authorization code is acquired it initiates the minting.
+   *
+   * @public
+   * @async
+   * @param {MintingData} mintingData
+   * @returns {Promise<void>}
+   */
   public async startMinting(mintingData: MintingData): Promise<void> {
     const errorPrefix = 'Cannot start minting';
 
