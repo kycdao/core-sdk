@@ -12,7 +12,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+      - uses: actions/checkout@v2      
+
+      - name: Set up Node and Yarn packages with caching
+        uses: ./.github/actions/install-and-cache-node-and-yarn
+
+      - name: Run TypeDoc to generate API reference
+        run: yarn typedoc
 
       - uses: retypeapp/action-build@latest
 
