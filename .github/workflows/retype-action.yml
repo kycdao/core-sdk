@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-      - uses: actions/checkout@v2      
+        uses: actions/checkout@v2
 
       - name: Set up Node and Yarn packages with caching
         uses: ./.github/actions/install-and-cache-node-and-yarn
