@@ -1058,7 +1058,7 @@ export class KycDao extends ApiBase {
 
   /**
    * This step updates the user based on the {@link MintingData} provided and checks for an existing valid authorization code.\
-   * If none exixsts calls the sarcer to authorize minting for the current wallet and waits for the transaction to succeed (but max 1 minute).\
+   * If none exixsts calls the server to authorize minting for the current wallet and waits for the transaction to succeed (but max 1 minute).\
    * After an authorization code is acquired it initiates the minting.
    *
    * @public
