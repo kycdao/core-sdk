@@ -6,27 +6,52 @@ export function partition<T>(arr: T[], predicate: (_: T) => boolean): [T[], T[]]
   return partitioned;
 }
 
+export interface PollingOptions<T> {
+  useExponentialBackoff?: boolean;
+  resolvePredicate?: (result: T) => boolean;
+  retryOnErrorPredicate?: (error: unknown) => boolean;
+}
+
 export async function poll<T>(
   asyncFunction: () => PromiseLike<T>,
-  predicate: (result: T) => boolean,
-  interval: number,
-  maxAttempts: number,
+  initialTimeout: number,
+  maxRetries: number,
+  options?: PollingOptions<T>,
 ): Promise<T> {
-  let attempts = 0;
+  const { useExponentialBackoff, resolvePredicate, retryOnErrorPredicate } = options || {};
 
-  const executePoll = (resolve: (value: T) => void, reject: (error: Error) => void): void => {
-    attempts++;
+  let retries = 0;
+
+  const executePoll = (resolve: (value: T) => void, reject: (error: unknown) => void): void => {
+    let timeout = initialTimeout;
+    if (useExponentialBackoff) {
+      timeout = 2 ** retries * initialTimeout;
+    }
+
+    const timeoutOrRetry = () => {
+      if (retries === maxRetries) {
+        reject(new Error('TIMEOUT'));
+      } else {
+        setTimeout(executePoll, timeout, resolve, reject);
+      }
+    };
+
     Promise.resolve(asyncFunction())
       .then((result) => {
-        if (predicate(result)) {
-          return resolve(result);
-        } else if (attempts === maxAttempts) {
-          return reject(new Error('TIMEOUT'));
+        if (!resolvePredicate || (resolvePredicate && resolvePredicate(result))) {
+          resolve(result);
         } else {
-          setTimeout(executePoll, interval, resolve, reject);
+          timeoutOrRetry();
         }
       })
-      .catch((error) => reject(error));
+      .catch((error) => {
+        if (retryOnErrorPredicate && retryOnErrorPredicate(error)) {
+          timeoutOrRetry();
+        } else {
+          reject(error);
+        }
+      })
+      .finally(() => retries++);
   };
 
   return new Promise(executePoll);

@@ -245,6 +245,7 @@ export class KycDao extends ApiBase {
               };
             }
           } catch (e) {
+            // This should be a NEAR TypedError with a name and a cause but the only fix/working thing I found is the message at the moment so not rethrowing the error.
             throw new Error(`Unexpected error while checking Near transaction: ${e}.`);
           }
         } else {
@@ -260,14 +261,18 @@ export class KycDao extends ApiBase {
     chainAndAddress: ChainAndAddress,
     txHash: string,
   ): Promise<void> {
-    await poll(
-      () => this.getTx(chainAndAddress, txHash),
-      (r) => {
-        return r.status === 'Success';
+    await poll(() => this.getTx(chainAndAddress, txHash), 200, 8, {
+      resolvePredicate: (r) => r.status === 'Success',
+      retryOnErrorPredicate: (e) => {
+        if (e instanceof Error) {
+          const txDoesNotExistPred = e.message.includes(`Transaction ${txHash} doesn't exist`);
+          return txDoesNotExistPred;
+        } else {
+          return false;
+        }
       },
-      1000,
-      60,
-    );
+      useExponentialBackoff: true,
+    });
   }
 
   private static validateBlockchainNetworks(
@@ -556,11 +561,18 @@ export class KycDao extends ApiBase {
       errorCode: 'NearUserRejectedError',
       transactionHashes: 'NearMint',
     };
+    const knownQueryParamNames = Object.keys(knownQueryParams);
+
     const queryParams = new URLSearchParams(window.location.search);
     const queryParamsArray = [...queryParams];
-    const matches = queryParamsArray.filter(([key, _]) =>
-      Object.keys(knownQueryParams).includes(key),
-    );
+    const matches = queryParamsArray.filter(([key, _]) => knownQueryParamNames.includes(key));
+
+    // delete query parameters handled by this method (and other NEAR related ones) from the URL
+    const url = new URL(window.location.href);
+    knownQueryParamNames
+      .concat(['authCode', 'errorMessage'])
+      .forEach((param) => url.searchParams.delete(param));
+    window.history.replaceState({}, document.title, url);
 
     if (matches.length > 1) {
       console.error(
@@ -1000,9 +1012,9 @@ export class KycDao extends ApiBase {
         return res.code;
       } catch (e) {
         if (e instanceof Error && e.message === 'TIMEOUT') {
-          throw new Error('Authorization transaction could not be verified in 1 minute.');
+          throw new Error('Authorization transaction could not be verified in time.');
         } else {
-          throw new Error(`Unexpected error: ${e}`);
+          throw e;
         }
       }
     } catch (e) {
