@@ -789,6 +789,10 @@ export class KycDao extends ApiBase {
   /**
    * This method creates a session and user for the connected wallet, or log them in. A session cookie will be saved in the browser.
    *
+   * @remarks \
+   * Ideally this method shouldn't be called repeatedly in quick succession (before the previous call got resolved) because in case of new wallets/users
+   * the registration logic will be triggered multiple times and every call after the first one will result in an error. For the same reason, error handling is advised.
+   *
    * @public
    * @async
    * @returns {Promise<void>}
