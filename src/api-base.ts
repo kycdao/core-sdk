@@ -1,3 +1,4 @@
+import { KYCDAO_PUBLIC_API_PATH } from './constants';
 import { SdkConfiguration } from './types';
 
 /**
@@ -44,7 +45,7 @@ export abstract class ApiBase {
       path = path.slice(0, path.length - 1);
     }
 
-    return this._baseUrl + path;
+    return this._baseUrl + KYCDAO_PUBLIC_API_PATH + path;
   }
 
   protected async request<T>(path: string, options?: RequestInit): Promise<T> {

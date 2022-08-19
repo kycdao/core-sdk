@@ -1,14 +1,14 @@
 import { ConnectConfig, Contract, keyStores, Near, WalletConnection } from 'near-api-js';
 import { Signature } from 'near-api-js/lib/utils/key_pair';
 import { base_encode } from 'near-api-js/lib/utils/serialize';
-import { Client as PersonaClient } from 'persona';
+import { Client as PersonaClient, ClientOptions } from 'persona';
 import { ApiBase, HttpError } from './api-base';
 import {
   BlockchainNetworks,
-  KycDaoEnvironments,
+  NEAR_MAINNET_ARCHIVAL,
+  NEAR_MAINNET_CONFIG,
   NEAR_TESTNET_ARCHIVAL,
   NEAR_TESTNET_CONFIG,
-  PERSONA_SANDBOX_OPTIONS,
   VerificationTypes,
 } from './constants';
 import {
@@ -19,7 +19,6 @@ import {
   ChainAndAddress,
   Country,
   KycDaoContract,
-  KycDaoEnvironment,
   MintingAuthorizationRequest,
   MintingAuthorizationResponse,
   MintingData,
@@ -105,9 +104,11 @@ export const Countries: Country[] = Array.from(COUNTRIES);
  * @extends {ApiBase}
  */
 export class KycDao extends ApiBase {
-  private environment: KycDaoEnvironment;
+  private demoMode: boolean;
   private verificationTypes: VerificationType[];
-  private blockchainNetworks: BlockchainNetwork[];
+  private blockchainNetworks?: BlockchainNetwork[];
+
+  private apiStatus?: ApiStatus;
 
   private near?: NearSdk;
 
@@ -276,12 +277,13 @@ export class KycDao extends ApiBase {
   }
 
   private static validateBlockchainNetworks(
-    blockchainNetworks: BlockchainNetwork[],
+    availableBlockchainNetworks: BlockchainNetwork[],
+    enabledBlockchainNetworks: BlockchainNetwork[],
   ): BlockchainNetwork[] {
     const errorPrefix = 'kycDAO SDK';
     const allBlockchainNetworks = Object.values(BlockchainNetworks);
     const [validBlockchainNetworks, invalidBlockchainNetworks] = partition(
-      [...new Set(blockchainNetworks)],
+      [...new Set(enabledBlockchainNetworks)],
       (network) => allBlockchainNetworks.includes(network),
     );
 
@@ -307,7 +309,20 @@ export class KycDao extends ApiBase {
       throw new Error(`${errorPrefix} - Only one Near network can be configured at a time.`);
     }
 
-    return validBlockchainNetworks;
+    const [finalBlockchainNetworks, unavailableBlockchainNetworks] = partition(
+      validBlockchainNetworks,
+      (network) => availableBlockchainNetworks.includes(network),
+    );
+
+    if (unavailableBlockchainNetworks.length > 0) {
+      throw new Error(
+        `${errorPrefix} - The following configured networks are unavailable on the connected server: ${unavailableBlockchainNetworks.join(
+          ', ',
+        )}. Avaliable networks are: ${availableBlockchainNetworks.join(', ')}.`,
+      );
+    }
+
+    return finalBlockchainNetworks;
   }
 
   private static validateVerificationTypes(
@@ -460,16 +475,22 @@ export class KycDao extends ApiBase {
       throw new Error(`${errorPrefix} - Not a  Near network: ${network}`);
     }
 
-    const keyStore = new keyStores.BrowserLocalStorageKeyStore();
-    const config: ConnectConfig = NEAR_TESTNET_CONFIG;
-    config.keyStore = keyStore;
-    const contractName = 'app.kycdao.testnet';
-    const archival = NEAR_TESTNET_ARCHIVAL;
+    const contractName = this.apiStatus?.smart_contracts_info[network]?.KYC?.address;
+
+    if (!contractName) {
+      throw new Error(`${errorPrefix} - Smart contract name configuration missing.`);
+    }
+
+    let config: ConnectConfig = NEAR_TESTNET_CONFIG;
+    let archival = NEAR_TESTNET_ARCHIVAL;
 
     if (network === 'NearMainnet') {
-      // TODO overwrite testnet values
-      throw new Error(`${errorPrefix} - Unsupported Near network: ${network}`);
+      config = NEAR_MAINNET_CONFIG;
+      archival = NEAR_MAINNET_ARCHIVAL;
     }
+
+    const keyStore = new keyStores.BrowserLocalStorageKeyStore();
+    config.keyStore = keyStore;
 
     const nearApi = new Near(config);
     const wallet = new WalletConnection(nearApi, 'kycDAO');
@@ -610,18 +631,11 @@ export class KycDao extends ApiBase {
   }
 
   private constructor(config: SdkConfiguration) {
-    const kycDaoEnvironments = Object.values(KycDaoEnvironments);
-    if (!kycDaoEnvironments.includes(config.environment)) {
-      throw new Error(
-        `kycDAO SDK - Invalid environment value found in configuration: ${
-          config.environment
-        }. Valid values are: ${kycDaoEnvironments.join(', ')}.`,
+    if (config.environment) {
+      console.warn(
+        'The environment parameter in the kycDAO SDK configuration is deprecated, please use the demoMode switch instead!',
       );
     }
-
-    config.enabledBlockchainNetworks = KycDao.validateBlockchainNetworks(
-      config.enabledBlockchainNetworks,
-    );
 
     config.enabledVerificationTypes = KycDao.validateVerificationTypes(
       config.enabledVerificationTypes,
@@ -629,14 +643,8 @@ export class KycDao extends ApiBase {
 
     super(config);
 
-    this.environment = config.environment;
-    this.blockchainNetworks = config.enabledBlockchainNetworks;
+    this.demoMode = !!config.demoMode;
     this.verificationTypes = config.enabledVerificationTypes;
-
-    const nearNetwork = this.blockchainNetworks.find((network) => network.startsWith('Near'));
-    if (nearNetwork) {
-      this.initNear(nearNetwork);
-    }
 
     this.verificationStatus = {
       personaSessionData: undefined,
@@ -654,8 +662,20 @@ export class KycDao extends ApiBase {
    */
   public static async initialize(config: SdkConfiguration): Promise<KycDaoInitializationResult> {
     const kycDao = new KycDao(config);
+    kycDao.apiStatus = await kycDao.get<ApiStatus>('status');
+
+    kycDao.blockchainNetworks = KycDao.validateBlockchainNetworks(
+      kycDao.apiStatus.enabled_networks,
+      config.enabledBlockchainNetworks,
+    );
+    const nearNetwork = kycDao.blockchainNetworks.find((network) => network.startsWith('Near'));
+    if (nearNetwork) {
+      kycDao.initNear(nearNetwork);
+    }
+
     const redirectEvent = await kycDao.handleRedirect();
-    return { kycDao, redirectEvent: redirectEvent };
+
+    return { kycDao, redirectEvent };
   }
 
   /**
@@ -855,6 +875,10 @@ export class KycDao extends ApiBase {
   }
 
   private loadPersona(user: UserDetails, personaOptions?: PersonaOptions): void {
+    if (!this.apiStatus?.persona) {
+      throw new Error('Persona configuration not found.');
+    }
+
     const sessionData = this.verificationStatus.personaSessionData;
     const shouldContinue = sessionData && sessionData.referenceId === user.ext_id;
     const options = shouldContinue
@@ -865,8 +889,13 @@ export class KycDao extends ApiBase {
         }
       : { referenceId: user.ext_id };
 
+    const clientOptions: ClientOptions = {
+      environment: this.apiStatus.persona.sandbox ? 'sandbox' : 'production',
+      templateId: this.apiStatus.persona.template_id,
+    };
+
     const client: PersonaClient = new PersonaClient({
-      ...PERSONA_SANDBOX_OPTIONS, // TODO make this configurable for production release
+      ...clientOptions,
       ...options,
       onReady: () => client.open(),
       onComplete: (_args: { inquiryId: string; status: string; fields: object }) => {
@@ -924,7 +953,7 @@ export class KycDao extends ApiBase {
     this.user = user;
 
     const allowVerification =
-      this.environment === 'demo' || !this.isVerifiedForType(verificationData.verificationType);
+      this.demoMode || !this.isVerifiedForType(verificationData.verificationType);
     if (allowVerification) {
       if (verificationData.verificationType === 'KYC') {
         this.loadPersona(user, providerOptions?.personaOptions);
@@ -990,7 +1019,7 @@ export class KycDao extends ApiBase {
 
     switch (chainAndAddress.blockchain) {
       case 'Near':
-        network = this.blockchainNetworks.find((network) => network.startsWith('Near'));
+        network = this.blockchainNetworks?.find((network) => network.startsWith('Near'));
 
         if (!network) {
           throw new Error(`${errorPrefix} - Configured NEAR network not found.`);

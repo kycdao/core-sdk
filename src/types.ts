@@ -28,6 +28,8 @@ export type Blockchain = keyof typeof Blockchains;
 export type BlockchainNetwork = keyof typeof BlockchainNetworks;
 
 /**
+ * @deprecated since version 0.1.3
+ *
  * Union type of string values of {@link KycDaoEnvironments}.
  *
  * @typedef {KycDaoEnvironment}
@@ -99,21 +101,35 @@ export interface SdkConfiguration {
    */
   apiKey?: string;
   /**
+   * @deprecated since version 0.1.3, use {@link demoMode} switch instead.
+   *
    * Environment type used for influencing the behavior of the SDK.
    *
    * @see {@link KycDaoEnvironments} for more details.
    * @type {KycDaoEnvironment}
    */
-  environment: KycDaoEnvironment;
+  environment?: KycDaoEnvironment;
   /**
-   * The base API URL of the kycDAO server to connect to.
+   * Switch for enabling demo mode.\
+   * Demo mode is intended to be more conveninet for demonstrating (and also developing) the integration with kycDAO.\
+   * It removes some verification and minting restrictions so the same wallet/user can be used multiple times to start/finish the flows.
+   *
+   * @type {boolean}
+   * @default false
+   */
+  demoMode?: boolean;
+  /**
+   * The base API URL of the kycDAO server to connect to.\
+   * For integration/testing use `https://staging.kycdao.xyz`\
+   * For production use `https://kycdao.xyz`
    *
    * @type {string}
    */
   baseUrl: string;
   /**
    * List of {@link BlockchainNetworks} to be available to use.\
-   * This can influence what third party providers will get initialized.
+   * This can influence what third party providers will get initialized.\
+   * As a rule of thumb test networks will be available when connecting to a kycDAO test server and main networks when connecting to the kycDAO production server (see {@link baseUrl}).
    *
    * @type {BlockchainNetwork[]}
    */
@@ -295,8 +311,28 @@ export interface MintingData {
 
 /* INTERNAL (not in API reference) */
 
+export interface PersonaStatus {
+  template_id: string;
+  sandbox: boolean;
+}
+
+export interface SmartContractConfig {
+  address: string;
+  payment_discount_percent: number;
+}
+
+export type SmartContractsByVerificationType = Partial<
+  Record<VerificationType, SmartContractConfig>
+>;
+export type SmartContractsByBlockchainNetwork = Partial<
+  Record<BlockchainNetwork, SmartContractsByVerificationType>
+>;
+
 export interface ApiStatus {
   current_time: string;
+  persona: PersonaStatus;
+  enabled_networks: BlockchainNetwork[];
+  smart_contracts_info: SmartContractsByBlockchainNetwork;
 }
 
 export interface PersonaSessionData {

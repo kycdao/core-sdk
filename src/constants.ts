@@ -1,5 +1,4 @@
 import { ConnectConfig } from 'near-api-js';
-import { ClientOptions } from 'persona';
 
 /**
  * Collection of supported blockchains.
@@ -16,15 +15,16 @@ export const Blockchains = {
  * Collection of supported blockchain networks.
  *
  * @enum
- * @type {{ readonly NearTestnet: "NearTestnet"; readonly NearMainnet: "NearMainnet"; readonly PolygonMumbai: "PolygonMumbai"; }}
+ * @type {{ readonly NearTestnet: "NearTestnet"; readonly NearMainnet: "NearMainnet"; }}
  */
 export const BlockchainNetworks = {
   NearTestnet: 'NearTestnet',
   NearMainnet: 'NearMainnet',
-  PolygonMumbai: 'PolygonMumbai',
 } as const;
 
 /**
+ * @deprecated since version 0.1.3
+ *
  * Collection of available environment types for initializing the SDK.
  *
  * @enum
@@ -66,10 +66,10 @@ export const VerificationStasuses = {
  * Collection of supported verification low types.
  *
  * @enum
- * @type {{ readonly Accreditation: "Accreditation"; readonly KYC: "KYC"; }}
+ * @type {{ readonly AccreditedInvestor: "AccreditedInvestor"; readonly KYC: "KYC"; }}
  */
 export const VerificationTypes = {
-  Accreditation: 'Accreditation',
+  AccreditedInvestor: 'AccreditedInvestor',
   KYC: 'KYC',
 } as const;
 
@@ -82,6 +82,8 @@ export const WalletProviders = {
   WalletConnect: 'WalletConnect',
 } as const;
 
+export const KYCDAO_PUBLIC_API_PATH = 'api/public/';
+
 export const NEAR_TESTNET_CONFIG: ConnectConfig = {
   networkId: 'testnet',
   nodeUrl: 'https://rpc.testnet.near.org',
@@ -90,9 +92,14 @@ export const NEAR_TESTNET_CONFIG: ConnectConfig = {
   headers: {},
 };
 
+export const NEAR_MAINNET_CONFIG: ConnectConfig = {
+  networkId: 'mainnet',
+  nodeUrl: 'https://rpc.mainnet.near.org',
+  walletUrl: 'https://wallet.mainnet.near.org',
+  helperUrl: 'https://helper.mainnet.near.org',
+  headers: {},
+};
+
 export const NEAR_TESTNET_ARCHIVAL = 'https://archival-rpc.testnet.near.org';
 
-export const PERSONA_SANDBOX_OPTIONS: ClientOptions = {
-  environment: 'sandbox',
-  templateId: 'itmpl_JD2di4nkGV3cZMYPhh98atkC',
-};
+export const NEAR_MAINNET_ARCHIVAL = 'https://archival-rpc.mainnet.near.org';
