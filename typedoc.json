@@ -2,7 +2,7 @@
   "$schema": "https://typedoc.org/schema.json",
   "entryPoints": ["src"],
   "exclude": ["src/browser-init.ts"],
-  "out": "docs/API reference",
+  "out": "API reference",
   "excludePrivate": true,
   "excludeProtected": true,
   "excludeExternals": true,
