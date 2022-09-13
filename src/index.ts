@@ -5,6 +5,8 @@ import { Client as PersonaClient, ClientOptions } from 'persona';
 import { ApiBase, HttpError } from './api-base';
 import {
   BlockchainNetworks,
+  EvmBlockchainNetworkChainIdMapping,
+  EvmBlockchainNetworks,
   NEAR_MAINNET_ARCHIVAL,
   NEAR_MAINNET_CONFIG,
   NEAR_TESTNET_ARCHIVAL,
@@ -18,12 +20,15 @@ import {
   BlockchainNetwork,
   ChainAndAddress,
   Country,
+  EvmProvider,
   KycDaoContract,
   MintingAuthorizationRequest,
   MintingAuthorizationResponse,
   MintingData,
+  NearBlockchainNetwork,
   NearSdk,
   PersonaOptions,
+  ProviderRpcError,
   SdkConfiguration,
   ServerStatus,
   Session,
@@ -36,10 +41,11 @@ import {
   VerificationStatus,
   VerificationType,
   RedirectEvent,
+  SdkStatus,
 } from './types';
 import { default as COUNTRIES } from './countries.list.json';
 import { FinalExecutionOutcome, JsonRpcProvider } from 'near-api-js/lib/providers';
-import { partition, poll } from './utils';
+import { isLike, partition, poll } from './utils';
 
 export { ApiBase, HttpError } from './api-base';
 export {
@@ -85,6 +91,12 @@ export interface KycDaoInitializationResult {
    * @type {?RedirectEvent}
    */
   redirectEvent?: RedirectEvent;
+  /**
+   * The current status of the SDK.
+   *
+   * @type {SdkStatus}
+   */
+  sdkStatus: SdkStatus;
 }
 
 /**
@@ -107,12 +119,30 @@ export class KycDao extends ApiBase {
   private demoMode: boolean;
   private verificationTypes: VerificationType[];
   private blockchainNetworks?: BlockchainNetwork[];
+  private evmProvider?: EvmProvider;
 
   private apiStatus?: ApiStatus;
 
   private near?: NearSdk;
 
   private _chainAndAddress?: ChainAndAddress;
+
+  /**
+   * Returns the current status of the SDK.
+   *
+   * @readonly
+   * @type {SdkStatus}
+   */
+  get sdkStatus(): SdkStatus {
+    return {
+      baseUrl: this.baseUrl,
+      demoMode: this.demoMode,
+      availableBlockchainNetworks: this.blockchainNetworks || [],
+      availableVerificationTypes: this.verificationTypes || [],
+      evmProviderConfigured: !!this.evmProvider,
+      nearNetworkConnected: this.near?.blockchainNetwork || null,
+    };
+  }
 
   /**
    * Returns the connected wallet if there is any.
@@ -276,53 +306,60 @@ export class KycDao extends ApiBase {
     });
   }
 
+  // TODO make this only fail if no valid, enabled networks remain in the end
+  // do not throw errors for disabled/invalid etc. network names
   private static validateBlockchainNetworks(
     availableBlockchainNetworks: BlockchainNetwork[],
-    enabledBlockchainNetworks: BlockchainNetwork[],
+    enabledBlockchainNetworks?: BlockchainNetwork[],
   ): BlockchainNetwork[] {
     const errorPrefix = 'kycDAO SDK';
     const allBlockchainNetworks = Object.values(BlockchainNetworks);
-    const [validBlockchainNetworks, invalidBlockchainNetworks] = partition(
-      [...new Set(enabledBlockchainNetworks)],
-      (network) => allBlockchainNetworks.includes(network),
-    );
 
-    if (invalidBlockchainNetworks.length > 0) {
-      throw new Error(
-        `${errorPrefix} - Invalid network(s) found in configuration: ${invalidBlockchainNetworks.join(
-          ', ',
-        )}. Valid values are: ${allBlockchainNetworks.join(', ')}.`,
+    if (enabledBlockchainNetworks) {
+      const [validBlockchainNetworks, invalidBlockchainNetworks] = partition(
+        [...new Set(enabledBlockchainNetworks)],
+        (network) => allBlockchainNetworks.includes(network),
       );
-    }
 
-    if (!validBlockchainNetworks.length) {
-      throw new Error(
-        `${errorPrefix} - No valid networks found in configuration. Valid values are: ${allBlockchainNetworks.join(
-          ', ',
-        )}.`,
+      if (invalidBlockchainNetworks.length > 0) {
+        throw new Error(
+          `${errorPrefix} - Invalid network(s) found in configuration: ${invalidBlockchainNetworks.join(
+            ', ',
+          )}. Valid values are: ${allBlockchainNetworks.join(', ')}.`,
+        );
+      }
+
+      if (!validBlockchainNetworks.length) {
+        throw new Error(
+          `${errorPrefix} - No valid networks found in configuration. Valid values are: ${allBlockchainNetworks.join(
+            ', ',
+          )}.`,
+        );
+      }
+
+      const multipleNearNetworks =
+        validBlockchainNetworks.filter((network) => network.startsWith('Near')).length > 1;
+      if (multipleNearNetworks) {
+        throw new Error(`${errorPrefix} - Only one Near network can be configured at a time.`);
+      }
+
+      const [finalBlockchainNetworks, unavailableBlockchainNetworks] = partition(
+        validBlockchainNetworks,
+        (network) => availableBlockchainNetworks.includes(network),
       );
+
+      if (unavailableBlockchainNetworks.length > 0) {
+        throw new Error(
+          `${errorPrefix} - The following configured networks are unavailable on the connected server: ${unavailableBlockchainNetworks.join(
+            ', ',
+          )}. Avaliable networks are: ${availableBlockchainNetworks.join(', ')}.`,
+        );
+      }
+
+      return finalBlockchainNetworks;
     }
 
-    const multipleNearNetworks =
-      validBlockchainNetworks.filter((network) => network.startsWith('Near')).length > 1;
-    if (multipleNearNetworks) {
-      throw new Error(`${errorPrefix} - Only one Near network can be configured at a time.`);
-    }
-
-    const [finalBlockchainNetworks, unavailableBlockchainNetworks] = partition(
-      validBlockchainNetworks,
-      (network) => availableBlockchainNetworks.includes(network),
-    );
-
-    if (unavailableBlockchainNetworks.length > 0) {
-      throw new Error(
-        `${errorPrefix} - The following configured networks are unavailable on the connected server: ${unavailableBlockchainNetworks.join(
-          ', ',
-        )}. Avaliable networks are: ${availableBlockchainNetworks.join(', ')}.`,
-      );
-    }
-
-    return finalBlockchainNetworks;
+    return availableBlockchainNetworks.filter((network) => allBlockchainNetworks.includes(network));
   }
 
   private static validateVerificationTypes(
@@ -352,6 +389,39 @@ export class KycDao extends ApiBase {
     }
 
     return validVerificationTypes;
+  }
+
+  private static validateEvmProvider(
+    blockchainNetworks: BlockchainNetwork[],
+    evmProvider?: unknown,
+  ): EvmProvider | undefined {
+    const errorPrefix = 'kycDAO SDK';
+    const evmBlockchainNetworks = Object.values(EvmBlockchainNetworks);
+    const hasEvmNetworkEnabled = evmBlockchainNetworks.some((network) =>
+      blockchainNetworks.includes(network),
+    );
+
+    if (hasEvmNetworkEnabled) {
+      if (evmProvider === undefined) {
+        throw new Error(
+          `${errorPrefix} - EVM provider is missing from the SDK configuration while at least one EVM network has been enabled.`,
+        );
+      }
+
+      if (
+        isLike<EvmProvider>(evmProvider) &&
+        typeof evmProvider.request === 'function' &&
+        typeof evmProvider.on === 'function'
+      ) {
+        return evmProvider as EvmProvider;
+      }
+
+      throw new Error(
+        `${errorPrefix} - The configured EVM provider is not compliant with the required standards.`,
+      );
+    }
+
+    return;
   }
 
   private validateVerificationData(verificationData: VerificationData): VerificationData {
@@ -469,13 +539,13 @@ export class KycDao extends ApiBase {
     }
   }
 
-  private initNear(network: BlockchainNetwork): void {
+  private initNear(blockchainNetwork: NearBlockchainNetwork): void {
     const errorPrefix = 'Cannot initialize Near SDK';
-    if (!network.startsWith('Near')) {
-      throw new Error(`${errorPrefix} - Not a  Near network: ${network}`);
+    if (!blockchainNetwork.startsWith('Near')) {
+      throw new Error(`${errorPrefix} - Not a  Near network: ${blockchainNetwork}`);
     }
 
-    const contractName = this.apiStatus?.smart_contracts_info[network]?.KYC?.address;
+    const contractName = this.apiStatus?.smart_contracts_info[blockchainNetwork]?.KYC?.address;
 
     if (!contractName) {
       throw new Error(`${errorPrefix} - Smart contract name configuration missing.`);
@@ -484,7 +554,7 @@ export class KycDao extends ApiBase {
     let config: ConnectConfig = NEAR_TESTNET_CONFIG;
     let archival = NEAR_TESTNET_ARCHIVAL;
 
-    if (network === 'NearMainnet') {
+    if (blockchainNetwork === 'NearMainnet') {
       config = NEAR_MAINNET_CONFIG;
       archival = NEAR_MAINNET_ARCHIVAL;
     }
@@ -496,6 +566,7 @@ export class KycDao extends ApiBase {
     const wallet = new WalletConnection(nearApi, 'kycDAO');
 
     this.near = {
+      blockchainNetwork,
       keyStore,
       config,
       api: nearApi,
@@ -517,6 +588,7 @@ export class KycDao extends ApiBase {
         const address: string = this.near.wallet.getAccountId();
         this._chainAndAddress = {
           blockchain: 'Near',
+          blockchainNetwork: this.near.blockchainNetwork,
           address,
         };
 
@@ -668,14 +740,25 @@ export class KycDao extends ApiBase {
       kycDao.apiStatus.enabled_networks,
       config.enabledBlockchainNetworks,
     );
-    const nearNetwork = kycDao.blockchainNetworks.find((network) => network.startsWith('Near'));
+
+    kycDao.evmProvider = KycDao.validateEvmProvider(kycDao.blockchainNetworks, config.evmProvider);
+
+    // add EVM provider event handlers here with the `on` method (accountsChanged, chainChanged) if needed
+
+    const nearNetwork = kycDao.blockchainNetworks.find((network) =>
+      network.startsWith('Near'),
+    ) as NearBlockchainNetwork;
     if (nearNetwork) {
       kycDao.initNear(nearNetwork);
     }
 
     const redirectEvent = await kycDao.handleRedirect();
 
-    return { kycDao, redirectEvent };
+    return {
+      kycDao,
+      redirectEvent,
+      sdkStatus: kycDao.sdkStatus,
+    };
   }
 
   /**
@@ -750,33 +833,88 @@ export class KycDao extends ApiBase {
    */
   public async connectWallet(blockchain: Blockchain): Promise<void> {
     const errorPrefix = 'Cannot connect wallet';
-    if (blockchain === 'Near') {
-      if (!this.near) {
-        throw new Error(`${errorPrefix} - Near SDK not initialized.`);
-      }
 
-      if (!this.near.wallet.isSignedIn()) {
-        try {
-          await this.near.wallet.requestSignIn(this.near.contractName, 'kycDAO');
-        } catch (e) {
-          throw new Error(`${errorPrefix} - ${(e as Error).message}`);
+    switch (blockchain) {
+      case 'Ethereum': {
+        if (!this.evmProvider) {
+          console.error('EVM provider not configured');
+          throw new Error(`${errorPrefix} - EVM provider not configured.`);
         }
-      } else {
-        const address: string = this.near.wallet.getAccountId();
-        this._chainAndAddress = {
-          blockchain: 'Near',
-          address,
-        };
-      }
 
-      return;
+        let addresses = await this.evmProvider.request<string[]>({
+          method: 'eth_accounts',
+        });
+
+        if (!addresses.length) {
+          try {
+            addresses = await this.evmProvider.request<string[]>({
+              method: 'eth_requestAccounts',
+            });
+          } catch (error) {
+            if (isLike<ProviderRpcError>(error) && error.code === 4001) {
+              throw new Error(`${errorPrefix} - User cancelled account connection request.`);
+            }
+          }
+        }
+
+        if (!addresses.length) {
+          console.error('No connected EVM networks detected');
+          throw new Error(`${errorPrefix} - No connected EVM networks detected.`);
+        }
+
+        const chainId = await this.evmProvider.request<string>({
+          method: 'eth_chainId',
+        });
+
+        const blockchainNetwork = EvmBlockchainNetworkChainIdMapping.find(
+          (mapping) => mapping.chainId === chainId,
+        )?.network;
+
+        if (!blockchainNetwork) {
+          throw new Error(`${errorPrefix} - Connected EVM network is not supported.`);
+        }
+
+        if (!this.blockchainNetworks?.includes(blockchainNetwork)) {
+          throw new Error(`${errorPrefix} - Connected EVM network is not enabled.`);
+        }
+
+        this._chainAndAddress = {
+          blockchain: 'Ethereum',
+          blockchainNetwork: blockchainNetwork,
+          address: addresses[0],
+        };
+        break;
+      }
+      case 'Near':
+        if (!this.near) {
+          throw new Error(`${errorPrefix} - Near SDK not initialized.`);
+        }
+
+        if (!this.near.wallet.isSignedIn()) {
+          try {
+            await this.near.wallet.requestSignIn(this.near.contractName, 'kycDAO');
+          } catch (e) {
+            throw new Error(`${errorPrefix} - ${(e as Error).message}`);
+          }
+        } else {
+          const address: string = this.near.wallet.getAccountId();
+          this._chainAndAddress = {
+            blockchain: 'Near',
+            blockchainNetwork: this.near.blockchainNetwork,
+            address,
+          };
+        }
+        break;
+      default:
+        throw new Error(`${errorPrefix} - Unsupported blockchain: ${blockchain}.`);
     }
 
-    throw new Error(`${errorPrefix} - Unsupported blockchain: ${blockchain}.`);
+    await this.refreshSession();
   }
 
   /**
-   * Disconnects the currently connected wallet (from the current domain).
+   * Disconnects the currently connected wallet (from the current domain).\
+   * Only works with NEAR wallets, can be used before {@link KycDao.connectWallet} to allow connecting a new NEAR wallet instead of a previously connected one.
    *
    * @public
    * @async
@@ -822,9 +960,8 @@ export class KycDao extends ApiBase {
       this.session = await this.post<Session>('session', this._chainAndAddress);
 
       if (!this.session.user) {
-        const errorPrefix = 'kycDAO registration error';
-        const toSign = `kycDAO-login-${this.session.nonce}`;
-        let signature: Signature;
+        const errorPrefix = 'kycDAO login error';
+        let signature: Signature | string;
 
         switch (this._chainAndAddress.blockchain) {
           case 'Near': {
@@ -832,14 +969,39 @@ export class KycDao extends ApiBase {
               throw new Error(`${errorPrefix} - Near SDK not initialized.`);
             }
 
+            const toSign = `kycDAO-login-${this.session.nonce}`;
+
             const key = await this.near.keyStore.getKey(
               this.near.wallet.account().connection.networkId,
               this.near.wallet.getAccountId(),
             );
-            signature = key.sign(Buffer.from(toSign));
+            signature = key.sign(Buffer.from(toSign, 'utf-8'));
             break;
           }
-          // TODO case 'Ethereum':
+          case 'Ethereum': {
+            if (!this.evmProvider) {
+              throw new Error(`${errorPrefix} - EVM provider not configured.`);
+            }
+
+            const toSign = this.session.eip_4361_message;
+
+            try {
+              signature = await this.evmProvider.request<string>({
+                method: 'personal_sign',
+                params: [
+                  Buffer.from(toSign, 'utf-8').toString('hex'),
+                  this._chainAndAddress.address,
+                ],
+              });
+            } catch (error) {
+              if (isLike<ProviderRpcError>(error) && error.code === 4001) {
+                throw new Error(`${errorPrefix} - User cancelled signature request.`);
+              } else {
+                throw error;
+              }
+            }
+            break;
+          }
           default:
             throw new Error(
               `${errorPrefix} - Unsupported blockchain: ${this._chainAndAddress.blockchain}.`,

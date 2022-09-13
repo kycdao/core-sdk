@@ -1,4 +1,5 @@
 import { ConnectConfig } from 'near-api-js';
+import { EvmBlockchainNetwork } from './types';
 
 /**
  * Collection of supported blockchains.
@@ -14,13 +15,49 @@ export const Blockchains = {
 /**
  * Collection of supported blockchain networks.
  *
+ * @internal
+ * @enum
+ * @type {{ readonly EthereumMainnet: "EthereumMainnet"; readonly EthereumRinkeby: "EthereumRinkeby"; readonly PolygonMainnet: "PolygonMainnet"; readonly PolygonMumbai: "PolygonMumbai"; }}
+ */
+export const EvmBlockchainNetworks = {
+  EthereumMainnet: 'EthereumMainnet',
+  EthereumRinkeby: 'EthereumRinkeby',
+  PolygonMainnet: 'PolygonMainnet',
+  PolygonMumbai: 'PolygonMumbai',
+} as const;
+
+/**
+ * @internal
+ */
+export const EvmBlockchainNetworkChainIdMapping: {
+  network: EvmBlockchainNetwork;
+  chainId: string;
+}[] = [
+  { network: 'EthereumMainnet', chainId: '0x1' },
+  { network: 'EthereumRinkeby', chainId: '0x4' },
+  { network: 'PolygonMainnet', chainId: '0x89' },
+  { network: 'PolygonMumbai', chainId: '0x13881' },
+];
+
+/**
+ * Collection of supported NEAR blockchain networks.
+ *
+ * @internal
  * @enum
  * @type {{ readonly NearTestnet: "NearTestnet"; readonly NearMainnet: "NearMainnet"; }}
  */
-export const BlockchainNetworks = {
+export const NearBlockchainNetworks = {
   NearTestnet: 'NearTestnet',
   NearMainnet: 'NearMainnet',
 } as const;
+
+/**
+ * Collection of supported blockchain networks.
+ *
+ * @enum
+ * @type {{ readonly NearTestnet: "NearTestnet"; readonly NearMainnet: "NearMainnet"; readonly EthereumMainnet: "EthereumMainnet"; readonly EthereumRinkeby: "EthereumRinkeby"; readonly PolygonMainnet: "PolygonMainnet"; readonly PolygonMumbai: "PolygonMumbai"; }}
+ */
+export const BlockchainNetworks = { ...EvmBlockchainNetworks, ...NearBlockchainNetworks } as const;
 
 /**
  * @deprecated since version 0.1.3
@@ -82,7 +119,7 @@ export const WalletProviders = {
   WalletConnect: 'WalletConnect',
 } as const;
 
-export const KYCDAO_PUBLIC_API_PATH = 'api/public/';
+export const KYCDAO_PUBLIC_API_PATH = 'public/';
 
 export const NEAR_TESTNET_CONFIG: ConnectConfig = {
   networkId: 'testnet',

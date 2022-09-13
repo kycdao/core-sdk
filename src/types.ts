@@ -4,7 +4,9 @@ import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
 import {
   BlockchainNetworks,
   Blockchains,
+  EvmBlockchainNetworks,
   KycDaoEnvironments,
+  NearBlockchainNetworks,
   VerificationProviders,
   VerificationStasuses,
   VerificationTypes,
@@ -19,6 +21,22 @@ import {
  * @typedef {Blockchain}
  */
 export type Blockchain = keyof typeof Blockchains;
+
+/**
+ * Union type of string values of {@link EvmBlockchainNetworks}.
+ *
+ * @internal
+ * @typedef {EvmBlockchainNetwork}
+ */
+export type EvmBlockchainNetwork = keyof typeof EvmBlockchainNetworks;
+
+/**
+ * Union type of string values of {@link NearBlockchainNetworks}.
+ *
+ * @internal
+ * @typedef {NearBlockchainNetwork}
+ */
+export type NearBlockchainNetwork = keyof typeof NearBlockchainNetworks;
 
 /**
  * Union type of string values of {@link BlockchainNetworks}.
@@ -131,9 +149,11 @@ export interface SdkConfiguration {
    * This can influence what third party providers will get initialized.\
    * As a rule of thumb test networks will be available when connecting to a kycDAO test server and main networks when connecting to the kycDAO production server (see {@link baseUrl}).
    *
-   * @type {BlockchainNetwork[]}
+   * If undefined, all networks available on the configured kycDAO server will be enabled.
+   *
+   * @type {?BlockchainNetwork[]}
    */
-  enabledBlockchainNetworks: BlockchainNetwork[];
+  enabledBlockchainNetworks?: BlockchainNetwork[];
   /**
    * List of {@link VerificationTypes} to be available to use.\
    * This can influence what third party providers will get initialized.
@@ -141,6 +161,59 @@ export interface SdkConfiguration {
    * @type {VerificationType[]}
    */
   enabledVerificationTypes: VerificationType[];
+  /**
+   * If there are any EVM networks enabled this object will be used as the EVM provider (i.e.: MetaMask or anything [EIP-1193](https://eips.ethereum.org/EIPS/eip-1193), [EIP-2255](https://eips.ethereum.org/EIPS/eip-2255) compatible).\
+   * Existance of required methods/fields will be verified during SDK initialization.
+   *
+   * @type {?unknown}
+   */
+  evmProvider?: unknown;
+}
+
+/**
+ * The current status of the SDK.
+ *
+ * @interface SdkStatus
+ * @typedef {SdkStatus}
+ */
+export interface SdkStatus {
+  /**
+   * The base API URL of the kycDAO server currently used by the SDK.
+   *
+   * @type {string}
+   */
+  baseUrl: string;
+  /**
+   * A flag indicating if demo mode is turned on or not. See {@link SdkConfiguration.demoMode}
+   *
+   * @type {boolean}
+   */
+  demoMode: boolean;
+  /**
+   * List of {@link BlockchainNetworks} currently available to use. See {@link SdkConfiguration.enabledBlockchainNetworks}
+   *
+   * @type {BlockchainNetwork[]}
+   */
+  availableBlockchainNetworks: BlockchainNetwork[];
+  /**
+   * List of {@link VerificationTypes} currently available to use. See {@link SdkConfiguration.enabledVerificationTypes}
+   *
+   * @type {VerificationType[]}
+   */
+  availableVerificationTypes: VerificationType[];
+  /**
+   * A flag indicating if an EVM provider is configured and ready to use or not. See {@link SdkConfiguration.evmProvider}
+   *
+   * @type {boolean}
+   */
+  evmProviderConfigured: boolean;
+  /**
+   * The blockchain network currently used by the SDK, `null` if there is none.\
+   * This value will depend on the {@link SdkConfiguration} provided and the available networks on the connected kycDAO server.
+   *
+   * @type {(BlockchainNetwork | null)}
+   */
+  nearNetworkConnected: BlockchainNetwork | null;
 }
 
 /**
@@ -184,6 +257,12 @@ export interface ChainAndAddress {
    * @type {Blockchain}
    */
   blockchain: Blockchain;
+  /**
+   * A blockchain from {@link BlockchainNetworks}.
+   *
+   * @type {BlockchainNetwork}
+   */
+  blockchainNetwork: BlockchainNetwork;
   /**
    * The wallet address.
    *
@@ -311,6 +390,22 @@ export interface MintingData {
 
 /* INTERNAL (not in API reference) */
 
+export interface ProviderRpcError extends Error {
+  message: string;
+  code: number;
+  data?: unknown;
+}
+
+export interface EvmRequestArguments {
+  readonly method: string;
+  readonly params?: readonly unknown[] | object;
+}
+
+export interface EvmProvider {
+  request<T>(_: EvmRequestArguments): Promise<T>;
+  on<T>(event: string, callback: (data: T) => void): void;
+}
+
 export interface PersonaStatus {
   template_id: string;
   sandbox: boolean;
@@ -346,6 +441,7 @@ export interface VerificationStatus {
 }
 
 export interface NearSdk {
+  blockchainNetwork: NearBlockchainNetwork;
   keyStore: BrowserLocalStorageKeyStore;
   config: ConnectConfig;
   api: Near;
@@ -440,6 +536,7 @@ export interface Session {
   id: string;
   expires: string;
   nonce: string;
+  eip_4361_message: string;
   chain_and_address: ChainAndAddress;
   usable_networks: BlockchainNetwork[];
   allow_list_entry?: AllowListEntry;
