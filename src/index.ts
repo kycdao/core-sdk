@@ -46,6 +46,8 @@ import {
 import { default as COUNTRIES } from './countries.list.json';
 import { FinalExecutionOutcome, JsonRpcProvider } from 'near-api-js/lib/providers';
 import { isLike, partition, poll } from './utils';
+import { EvmProviderWrapper } from './blockchains/evm';
+import { EvmTransactionReceipt } from './blockchains/evm-utils';
 
 export { ApiBase, HttpError } from './api-base';
 export {
@@ -63,6 +65,7 @@ export {
   MintingData,
   PersonaOptions,
   SdkConfiguration,
+  SdkStatus,
   ServerStatus,
   VerificationData,
   VerificationProvider,
@@ -119,7 +122,7 @@ export class KycDao extends ApiBase {
   private demoMode: boolean;
   private verificationTypes: VerificationType[];
   private blockchainNetworks?: BlockchainNetwork[];
-  private evmProvider?: EvmProvider;
+  private evmProvider?: EvmProviderWrapper;
 
   private apiStatus?: ApiStatus;
 
@@ -196,14 +199,11 @@ export class KycDao extends ApiBase {
     return status;
   }
 
-  private isVerified(): boolean {
-    const allVerificationTypes = Object.values(VerificationTypes);
-    for (const verificationType of allVerificationTypes) {
-      if (this.isVerifiedForType(verificationType)) {
-        return true;
-      }
-    }
-    return false;
+  private getSmartContractAddress(
+    blockchainNetwork: BlockchainNetwork,
+    verificationType: VerificationType,
+  ): string | undefined {
+    return this.apiStatus?.smart_contracts_info[blockchainNetwork]?.[verificationType]?.address;
   }
 
   private getBlockchainAccount(address: string): BlockchainAccountDetails {
@@ -226,6 +226,7 @@ export class KycDao extends ApiBase {
     return accountsFound[0];
   }
 
+  // unused for now, we may need it later
   private getValidAuthorizationCode(): string | undefined {
     if (this._chainAndAddress && this.user) {
       try {
@@ -244,45 +245,71 @@ export class KycDao extends ApiBase {
 
   private async getTx(chainAndAddress: ChainAndAddress, txHash: string): Promise<Transaction> {
     switch (chainAndAddress.blockchain) {
-      case 'Near':
-        if (this.near) {
-          const provider = new JsonRpcProvider(this.near.archival);
-          try {
-            const outcome = await provider.txStatus(txHash, this.near.contractName);
+      case 'Near': {
+        if (!this.near) {
+          throw new Error('Near SDK not initialized.');
+        }
 
-            if (typeof outcome.status !== 'string') {
-              if (outcome.status.SuccessValue !== undefined) {
-                return {
-                  status: 'Success',
-                  data: outcome,
-                };
-              }
+        const provider = new JsonRpcProvider(this.near.archival);
+        try {
+          const outcome = await provider.txStatus(txHash, this.near.contractName);
 
-              if (outcome.status.Failure !== undefined) {
-                return {
-                  status: 'Failure',
-                  data: outcome,
-                };
-              }
-
+          if (typeof outcome.status !== 'string') {
+            if (outcome.status.SuccessValue !== undefined) {
               return {
-                status: 'Unknown',
-                data: outcome,
-              };
-            } else {
-              return {
-                status: outcome.status,
+                status: 'Success',
                 data: outcome,
               };
             }
-          } catch (e) {
-            // This should be a NEAR TypedError with a name and a cause but the only fix/working thing I found is the message at the moment so not rethrowing the error.
-            throw new Error(`Unexpected error while checking Near transaction: ${e}.`);
+
+            if (outcome.status.Failure !== undefined) {
+              return {
+                status: 'Failure',
+                data: outcome,
+              };
+            }
+
+            return {
+              status: 'Unknown',
+              data: outcome,
+            };
+          } else {
+            return {
+              status: outcome.status,
+              data: outcome,
+            };
           }
-        } else {
-          throw new Error('Near SDK not initialized.');
+        } catch (e) {
+          // This should be a NEAR TypedError with a name and a cause but the only fix/working thing I found is the message at the moment so not rethrowing the error.
+          throw new Error(`Unexpected error while checking Near transaction: ${e}.`);
         }
-      // TODO case 'Ethereum':
+      }
+      case 'Ethereum': {
+        if (!this.evmProvider) {
+          throw new Error('EVM provider not configured.');
+        }
+
+        const receipt = await this.evmProvider.getTransactionReceipt(txHash);
+
+        if (!receipt) {
+          return {
+            status: 'Unknown',
+            data: null,
+          };
+        }
+
+        if (receipt.status === 1) {
+          return {
+            status: 'Success',
+            data: receipt,
+          };
+        } else {
+          return {
+            status: 'Failure',
+            data: receipt,
+          };
+        }
+      }
       default:
         throw new Error(`Unsupported blockchain: ${chainAndAddress.blockchain}.`);
     }
@@ -291,19 +318,30 @@ export class KycDao extends ApiBase {
   private async waitForTransaction(
     chainAndAddress: ChainAndAddress,
     txHash: string,
-  ): Promise<void> {
-    await poll(() => this.getTx(chainAndAddress, txHash), 200, 8, {
-      resolvePredicate: (r) => r.status === 'Success',
-      retryOnErrorPredicate: (e) => {
-        if (e instanceof Error) {
-          const txDoesNotExistPred = e.message.includes(`Transaction ${txHash} doesn't exist`);
-          return txDoesNotExistPred;
-        } else {
-          return false;
-        }
-      },
-      useExponentialBackoff: true,
-    });
+  ): Promise<Transaction> {
+    try {
+      // poll with exponential backoff, 10 queries total, last is about 128 seconds after the first
+      return await poll(() => this.getTx(chainAndAddress, txHash), 250, 9, {
+        resolvePredicate: (r) => {
+          return r.status === 'Success' || r.status === 'Failure';
+        },
+        retryOnErrorPredicate: (e) => {
+          if (e instanceof Error) {
+            const txDoesNotExistPred = e.message.includes(`Transaction ${txHash} doesn't exist`);
+            return txDoesNotExistPred;
+          } else {
+            return false;
+          }
+        },
+        useExponentialBackoff: true,
+      });
+    } catch (e) {
+      if (e instanceof Error && e.message === 'TIMEOUT') {
+        throw new Error('Transaction could not be verified in time.');
+      } else {
+        throw e;
+      }
+    }
   }
 
   // TODO make this only fail if no valid, enabled networks remain in the end
@@ -501,7 +539,7 @@ export class KycDao extends ApiBase {
         this.session = session;
         this.user = session.user;
       } catch (e) {
-        console.log(`Unexpected error during kycDAO session refresh: ${e}`);
+        console.error(`Unexpected error during kycDAO session refresh: ${e}`);
         throw e;
       }
     };
@@ -534,7 +572,7 @@ export class KycDao extends ApiBase {
         return this.session;
       }
 
-      console.log(`Unexpected error during kycDAO session refresh: ${e}`);
+      console.error(`Unexpected error during kycDAO session refresh: ${e}`);
       throw e;
     }
   }
@@ -545,7 +583,9 @@ export class KycDao extends ApiBase {
       throw new Error(`${errorPrefix} - Not a  Near network: ${blockchainNetwork}`);
     }
 
-    const contractName = this.apiStatus?.smart_contracts_info[blockchainNetwork]?.KYC?.address;
+    // TODO remove this step and saving contract address to this.near when we want NEAR support for other verification types
+    // this will also require a way for us to detect the verification type after a redirect (probably adding it to the callback URL)
+    const contractName = this.getSmartContractAddress(blockchainNetwork, 'KYC');
 
     if (!contractName) {
       throw new Error(`${errorPrefix} - Smart contract name configuration missing.`);
@@ -741,7 +781,8 @@ export class KycDao extends ApiBase {
       config.enabledBlockchainNetworks,
     );
 
-    kycDao.evmProvider = KycDao.validateEvmProvider(kycDao.blockchainNetworks, config.evmProvider);
+    const evmProvider = KycDao.validateEvmProvider(kycDao.blockchainNetworks, config.evmProvider);
+    kycDao.evmProvider = evmProvider ? new EvmProviderWrapper(evmProvider) : undefined;
 
     // add EVM provider event handlers here with the `on` method (accountsChanged, chainChanged) if needed
 
@@ -931,7 +972,7 @@ export class KycDao extends ApiBase {
             throw new Error(`${errorPrefix} - Near SDK not initialized.`);
           }
           break;
-        // TODO case 'Ethereum':
+        // there is no corresponding logic for 'Ethereum':
         default:
           throw new Error(
             `${errorPrefix} - Unsupported blockchain: ${this._chainAndAddress.blockchain}.`,
@@ -986,13 +1027,10 @@ export class KycDao extends ApiBase {
             const toSign = this.session.eip_4361_message;
 
             try {
-              signature = await this.evmProvider.request<string>({
-                method: 'personal_sign',
-                params: [
-                  Buffer.from(toSign, 'utf-8').toString('hex'),
-                  this._chainAndAddress.address,
-                ],
-              });
+              signature = await this.evmProvider.personalSign(
+                toSign,
+                this._chainAndAddress.address,
+              );
             } catch (error) {
               if (isLike<ProviderRpcError>(error) && error.code === 4001) {
                 throw new Error(`${errorPrefix} - User cancelled signature request.`);
@@ -1177,21 +1215,7 @@ export class KycDao extends ApiBase {
   private async authorizeMinting(chainAndAddress: ChainAndAddress): Promise<string> {
     const errorPrefix = 'Cannot authorize minting';
 
-    let network: BlockchainNetwork | undefined;
-
-    switch (chainAndAddress.blockchain) {
-      case 'Near':
-        network = this.blockchainNetworks?.find((network) => network.startsWith('Near'));
-
-        if (!network) {
-          throw new Error(`${errorPrefix} - Configured NEAR network not found.`);
-        }
-
-        break;
-      // TODO case 'Ethereum':
-      default:
-        throw new Error(`${errorPrefix} - Unsupported blockchain: ${chainAndAddress.blockchain}.`);
-    }
+    const network = chainAndAddress.blockchainNetwork;
 
     try {
       const blockchainAccount = this.getBlockchainAccount(chainAndAddress.address);
@@ -1202,16 +1226,13 @@ export class KycDao extends ApiBase {
       };
 
       const res = await this.post<MintingAuthorizationResponse>('authorize_minting', data);
-      try {
-        await this.waitForTransaction(chainAndAddress, res.tx_hash);
-        return res.code;
-      } catch (e) {
-        if (e instanceof Error && e.message === 'TIMEOUT') {
-          throw new Error('Authorization transaction could not be verified in time.');
-        } else {
-          throw e;
-        }
+
+      const transaction = await this.waitForTransaction(chainAndAddress, res.tx_hash);
+      if (transaction.status === 'Failure') {
+        throw new Error('Transaction failed.');
       }
+
+      return res.code;
     } catch (e) {
       if (e instanceof Error) {
         throw new Error(`${errorPrefix} - ${e.message}`);
@@ -1221,7 +1242,11 @@ export class KycDao extends ApiBase {
     }
   }
 
-  private async mint(chainAndAddress: ChainAndAddress, authorizationCode: string): Promise<void> {
+  private async mint(
+    chainAndAddress: ChainAndAddress,
+    authorizationCode: string,
+    verificationType: VerificationType,
+  ): Promise<void> {
     const errorPrefix = 'Cannot mint';
 
     switch (chainAndAddress.blockchain) {
@@ -1256,7 +1281,48 @@ export class KycDao extends ApiBase {
         });
         break;
       }
-      // TODO case 'Ethereum':
+      case 'Ethereum': {
+        if (!this.evmProvider) {
+          throw new Error(`${errorPrefix} - EVM provider not configured.`);
+        }
+
+        const contractAddress = this.getSmartContractAddress(
+          chainAndAddress.blockchainNetwork,
+          verificationType,
+        );
+
+        if (!contractAddress) {
+          throw new Error(`${errorPrefix} - Smart contract address not found.`);
+        }
+
+        const txHash = await this.evmProvider.mint(
+          contractAddress,
+          chainAndAddress.address,
+          authorizationCode,
+        );
+
+        if (txHash) {
+          const transaction = await this.waitForTransaction(chainAndAddress, txHash);
+
+          if (transaction.status === 'Failure') {
+            throw new Error(`${errorPrefix} - Transaction failed.`);
+          }
+
+          const receipt = transaction.data as EvmTransactionReceipt;
+          const tokenId = await this.evmProvider.getTokenIdFromReceipt(receipt);
+
+          if (tokenId) {
+            await this.post('token', {
+              authorization_code: authorizationCode,
+              token_id: tokenId,
+              minting_tx_id: txHash,
+            });
+          }
+        } else {
+          // TODO throw error that transaction cannot be verified? Can we do anything else?
+        }
+        break;
+      }
       default:
         throw new Error(`${errorPrefix} - Unsupported blockchain: ${chainAndAddress.blockchain}.`);
     }
@@ -1264,8 +1330,8 @@ export class KycDao extends ApiBase {
   }
 
   /**
-   * This step updates the user based on the {@link MintingData} provided and checks for an existing valid authorization code.\
-   * If none exixsts calls the server to authorize minting for the current wallet and waits for the transaction to succeed (but max 1 minute).\
+   * This step updates the user based on the {@link MintingData} provided and checks if the user is eligible to mint a token.
+   * Then calls the server to authorize minting for the current wallet and waits for the transaction to succeed (but max about 2 minutes).
    * After an authorization code is acquired it initiates the minting.
    *
    * @public
@@ -1275,6 +1341,7 @@ export class KycDao extends ApiBase {
    */
   public async startMinting(mintingData: MintingData): Promise<void> {
     const errorPrefix = 'Cannot start minting';
+    let verificationType = mintingData.verificationType;
 
     if (!this._chainAndAddress) {
       throw new Error(
@@ -1291,8 +1358,12 @@ export class KycDao extends ApiBase {
 
     await this.refreshSession();
 
+    if (!verificationType) {
+      verificationType = 'KYC';
+    }
+
     // check if user is verified
-    if (!this.isVerified()) {
+    if (!this.isVerifiedForType(verificationType)) {
       throw new Error(`${errorPrefix} - User must be verified to be able to mint an NFT.`);
     }
 
@@ -1303,13 +1374,14 @@ export class KycDao extends ApiBase {
 
     // check if there is a valid authorization code already that can be used for minting
     // if there is no valid authorization code yet, authorize minting through backend and wait for the transaction to finish
-    const authCode =
-      this.getValidAuthorizationCode() || (await this.authorizeMinting(chainAndAddress));
+    // const authCode = this.getValidAuthorizationCode() || (await this.authorizeMinting(chainAndAddress));
+
+    // always get new authorization code for now, trying to save money/time by using an existing one can cause issues
+    const authCode = await this.authorizeMinting(chainAndAddress);
 
     // start minting
     // in case of Near, this will redirect and our page will get a callback so any further steps are need to be handled in the SDK init phase
-    await this.mint(chainAndAddress, authCode);
-
-    // we will need to handle things here for providers without a redirect
+    // in case of EVM, this will wait for the transaction to succeed before returning
+    await this.mint(chainAndAddress, authCode, verificationType);
   }
 }

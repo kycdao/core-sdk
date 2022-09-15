@@ -1,6 +1,7 @@
 import { ConnectConfig, Contract, Near, WalletConnection } from 'near-api-js';
 import { BrowserLocalStorageKeyStore } from 'near-api-js/lib/key_stores';
 import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
+import { EvmTransactionReceipt } from './blockchains/evm-utils';
 import {
   BlockchainNetworks,
   Blockchains,
@@ -57,7 +58,7 @@ export type KycDaoEnvironment = keyof typeof KycDaoEnvironments;
 /**
  * @internal
  */
-export type TransactionData = FinalExecutionOutcome;
+export type TransactionData = FinalExecutionOutcome | EvmTransactionReceipt | null;
 
 /**
  * @internal
@@ -386,6 +387,16 @@ export interface MintingData {
    * @type {boolean}
    */
   disclaimerAccepted: boolean;
+  /**
+   * The user has to be verified for this verification type to be able to have a token minted.
+   * The {@link KycDao.checkVerificationStatus} method can be used to query/poll the kycDao server and check for the verification status.
+   * The verification type determines which smart contract will be used for the minting.
+   * It defaults to `"KYC"` when left undefined for backward compatibility reasons.
+   *
+   * @type {?VerificationType}
+   * @default `"KYC"`
+   */
+  verificationType?: VerificationType;
 }
 
 /* INTERNAL (not in API reference) */

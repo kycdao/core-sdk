@@ -33,7 +33,7 @@ export async function poll<T>(
     }
 
     const timeoutOrRetry = () => {
-      if (retries === maxRetries) {
+      if (retries >= maxRetries) {
         reject(new Error('TIMEOUT'));
       } else {
         setTimeout(executePoll, timeout, resolve, reject);
