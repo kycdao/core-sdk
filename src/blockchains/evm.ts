@@ -35,6 +35,24 @@ export class EvmProviderWrapper {
     this.provider.on(event, callback);
   }
 
+  public async getAccounts(): Promise<string[]> {
+    return await this.provider.request<string[]>({
+      method: 'eth_accounts',
+    });
+  }
+
+  public async requestAccounts(): Promise<string[]> {
+    return await this.provider.request<string[]>({
+      method: 'eth_requestAccounts',
+    });
+  }
+
+  public async getChainId(): Promise<string> {
+    return await this.provider.request<string>({
+      method: 'eth_chainId',
+    });
+  }
+
   public async personalSign(message: string, address: string): Promise<string> {
     return this.provider.request<string>({
       method: 'personal_sign',

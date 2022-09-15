@@ -882,15 +882,11 @@ export class KycDao extends ApiBase {
           throw new Error(`${errorPrefix} - EVM provider not configured.`);
         }
 
-        let addresses = await this.evmProvider.request<string[]>({
-          method: 'eth_accounts',
-        });
+        let addresses = await this.evmProvider.getAccounts();
 
         if (!addresses.length) {
           try {
-            addresses = await this.evmProvider.request<string[]>({
-              method: 'eth_requestAccounts',
-            });
+            addresses = await this.evmProvider.requestAccounts();
           } catch (error) {
             if (isLike<ProviderRpcError>(error) && error.code === 4001) {
               throw new Error(`${errorPrefix} - User cancelled account connection request.`);
@@ -903,9 +899,7 @@ export class KycDao extends ApiBase {
           throw new Error(`${errorPrefix} - No connected EVM networks detected.`);
         }
 
-        const chainId = await this.evmProvider.request<string>({
-          method: 'eth_chainId',
-        });
+        const chainId = await this.evmProvider.getChainId();
 
         const blockchainNetwork = EvmBlockchainNetworkChainIdMapping.find(
           (mapping) => mapping.chainId === chainId,
