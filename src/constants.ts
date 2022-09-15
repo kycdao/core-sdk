@@ -119,7 +119,7 @@ export const WalletProviders = {
   WalletConnect: 'WalletConnect',
 } as const;
 
-export const KYCDAO_PUBLIC_API_PATH = 'public/';
+export const KYCDAO_PUBLIC_API_PATH = 'api/public/';
 
 export const NEAR_TESTNET_CONFIG: ConnectConfig = {
   networkId: 'testnet',
