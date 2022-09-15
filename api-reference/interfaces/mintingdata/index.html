@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="turbo-root" content="/kycdao-js-sdk">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="2.4.0.715193591395">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="2.4.0.716598081602">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 2.4.0">
@@ -12,7 +12,7 @@
     <!-- Primary Meta Tags -->
     <title>MintingData</title>
     <meta name="title" content="MintingData">
-    <meta name="description" content="@kycdao/kycdao-sdk - v0.1.3/ MintingData" />
+    <meta name="description" content="@kycdao/kycdao-sdk - v0.2.0/ MintingData" />
 
     <!-- Canonical -->
     <link rel="canonical" href="https://kycdao.github.io/kycdao-js-sdk/api-reference/interfaces/mintingdata/" />
@@ -21,21 +21,21 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://kycdao.github.io/kycdao-js-sdk/api-reference/interfaces/mintingdata/">
     <meta property="og:title" content="MintingData">
-    <meta property="og:description" content="@kycdao/kycdao-sdk - v0.1.3/ MintingData">
+    <meta property="og:description" content="@kycdao/kycdao-sdk - v0.2.0/ MintingData">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://kycdao.github.io/kycdao-js-sdk/api-reference/interfaces/mintingdata/">
     <meta property="twitter:title" content="MintingData">
-    <meta property="twitter:description" content="@kycdao/kycdao-sdk - v0.1.3/ MintingData">
+    <meta property="twitter:description" content="@kycdao/kycdao-sdk - v0.2.0/ MintingData">
 
     <script>(function () { var el = document.documentElement, m = localStorage.getItem("/kycdao-js-sdk/doc_theme"), wm = window.matchMedia; if (m === "dark" || (!m && wm && wm("(prefers-color-scheme: dark)").matches)) { el.classList.add("dark") } else { el.classList.remove("dark") } })();</script>
 
-    <link href="../../../resources/css/retype.css?v=2.4.0.715193591395" rel="stylesheet" />
+    <link href="../../../resources/css/retype.css?v=2.4.0.716598081602" rel="stylesheet" />
 
-    <script type="text/javascript" src="../../../resources/js/config.js?v=2.4.0.715193591395" data-turbo-eval="false" defer></script>
+    <script type="text/javascript" src="../../../resources/js/config.js?v=2.4.0.716598081602" data-turbo-eval="false" defer></script>
     <script type="text/javascript" src="../../../resources/js/retype.js?v=2.4.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" type="text/javascript" src="../../../resources/js/lunr.js?v=2.4.0.715193591395" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" type="text/javascript" src="../../../resources/js/lunr.js?v=2.4.0.716598081602" data-turbo-eval="false" defer></script>
 
     <style>
       header#docs-site-header {
@@ -168,7 +168,7 @@
         <span>MintingData</span>
     </h1>
 </doc-anchor-target>
-<p><a href="../../">@kycdao/kycdao-sdk - v0.1.3</a> / MintingData</p>
+<p><a href="../../">@kycdao/kycdao-sdk - v0.2.0</a> / MintingData</p>
 <p>Data required by kycDAO to initiate NFT minting.</p>
 <p><strong><code v-pre>interface</code></strong> MintingData</p>
 <doc-anchor-target id="table-of-contents">
@@ -185,6 +185,7 @@
 </doc-anchor-target>
 <ul>
 <li><doc-anchor-trigger to="#disclaimeraccepted">disclaimerAccepted</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#verificationtype">verificationType</doc-anchor-trigger></li>
 </ul>
 <doc-anchor-target id="properties-1">
     <h2>
@@ -206,7 +207,27 @@
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/8c3b6a9/src/types.ts#L309">types.ts:309</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/048aa24/src/types.ts#L389">types.ts:389</a></p>
+<hr />
+<doc-anchor-target id="verificationtype">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#verificationtype">#</doc-anchor-trigger>
+        <span>verificationType</span>
+    </h3>
+</doc-anchor-target>
+<p>• <code v-pre>Optional</code> <strong>verificationType</strong>: <code v-pre>&quot;AccreditedInvestor&quot;</code> | <code v-pre>&quot;KYC&quot;</code></p>
+<p>The user has to be verified for this verification type to be able to have a token minted.
+The <a href="../../classes/kycdao/#checkverificationstatus">KycDao.checkVerificationStatus</a> method can be used to query/poll the kycDao server and check for the verification status.
+The verification type determines which smart contract will be used for the minting.
+It defaults to <code v-pre>&quot;KYC&quot;</code> when left undefined for backward compatibility reasons.</p>
+<p><strong><code v-pre>default</code></strong> <code v-pre>&quot;KYC&quot;</code></p>
+<doc-anchor-target id="defined-in-1">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-1">#</doc-anchor-trigger>
+        <span>Defined in</span>
+    </h4>
+</doc-anchor-target>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/048aa24/src/types.ts#L399">types.ts:399</a></p>
 
                                 
                                 <!-- Required only on API pages -->

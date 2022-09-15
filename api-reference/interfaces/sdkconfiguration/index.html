@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="turbo-root" content="/kycdao-js-sdk">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="2.4.0.715193591395">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="2.4.0.716598081602">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 2.4.0">
@@ -12,7 +12,7 @@
     <!-- Primary Meta Tags -->
     <title>SdkConfiguration</title>
     <meta name="title" content="SdkConfiguration">
-    <meta name="description" content="@kycdao/kycdao-sdk - v0.1.3/ SdkConfiguration" />
+    <meta name="description" content="@kycdao/kycdao-sdk - v0.2.0/ SdkConfiguration" />
 
     <!-- Canonical -->
     <link rel="canonical" href="https://kycdao.github.io/kycdao-js-sdk/api-reference/interfaces/sdkconfiguration/" />
@@ -21,21 +21,21 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://kycdao.github.io/kycdao-js-sdk/api-reference/interfaces/sdkconfiguration/">
     <meta property="og:title" content="SdkConfiguration">
-    <meta property="og:description" content="@kycdao/kycdao-sdk - v0.1.3/ SdkConfiguration">
+    <meta property="og:description" content="@kycdao/kycdao-sdk - v0.2.0/ SdkConfiguration">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://kycdao.github.io/kycdao-js-sdk/api-reference/interfaces/sdkconfiguration/">
     <meta property="twitter:title" content="SdkConfiguration">
-    <meta property="twitter:description" content="@kycdao/kycdao-sdk - v0.1.3/ SdkConfiguration">
+    <meta property="twitter:description" content="@kycdao/kycdao-sdk - v0.2.0/ SdkConfiguration">
 
     <script>(function () { var el = document.documentElement, m = localStorage.getItem("/kycdao-js-sdk/doc_theme"), wm = window.matchMedia; if (m === "dark" || (!m && wm && wm("(prefers-color-scheme: dark)").matches)) { el.classList.add("dark") } else { el.classList.remove("dark") } })();</script>
 
-    <link href="../../../resources/css/retype.css?v=2.4.0.715193591395" rel="stylesheet" />
+    <link href="../../../resources/css/retype.css?v=2.4.0.716598081602" rel="stylesheet" />
 
-    <script type="text/javascript" src="../../../resources/js/config.js?v=2.4.0.715193591395" data-turbo-eval="false" defer></script>
+    <script type="text/javascript" src="../../../resources/js/config.js?v=2.4.0.716598081602" data-turbo-eval="false" defer></script>
     <script type="text/javascript" src="../../../resources/js/retype.js?v=2.4.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" type="text/javascript" src="../../../resources/js/lunr.js?v=2.4.0.715193591395" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" type="text/javascript" src="../../../resources/js/lunr.js?v=2.4.0.716598081602" data-turbo-eval="false" defer></script>
 
     <style>
       header#docs-site-header {
@@ -168,7 +168,7 @@
         <span>SdkConfiguration</span>
     </h1>
 </doc-anchor-target>
-<p><a href="../../">@kycdao/kycdao-sdk - v0.1.3</a> / SdkConfiguration</p>
+<p><a href="../../">@kycdao/kycdao-sdk - v0.2.0</a> / SdkConfiguration</p>
 <p>Configuration parameters required for instantiating the SDK object.</p>
 <p><strong><code v-pre>interface</code></strong> SdkConfiguration</p>
 <doc-anchor-target id="table-of-contents">
@@ -190,6 +190,7 @@
 <li><doc-anchor-trigger to="#enabledblockchainnetworks">enabledBlockchainNetworks</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#enabledverificationtypes">enabledVerificationTypes</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#environment">environment</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#evmprovider">evmProvider</doc-anchor-trigger></li>
 </ul>
 <doc-anchor-target id="properties-1">
     <h2>
@@ -212,7 +213,7 @@ Optional API key used to identify the client initializing the SDK.</p>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/8c3b6a9/src/types.ts#L102">types.ts:102</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/048aa24/src/types.ts#L121">types.ts:121</a></p>
 <hr />
 <doc-anchor-target id="baseurl">
     <h3>
@@ -230,7 +231,7 @@ For production use <code v-pre>https://kycdao.xyz</code></p>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/8c3b6a9/src/types.ts#L128">types.ts:128</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/048aa24/src/types.ts#L147">types.ts:147</a></p>
 <hr />
 <doc-anchor-target id="demomode">
     <h3>
@@ -249,7 +250,7 @@ It removes some verification and minting restrictions so the same wallet/user ca
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/8c3b6a9/src/types.ts#L120">types.ts:120</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/048aa24/src/types.ts#L139">types.ts:139</a></p>
 <hr />
 <doc-anchor-target id="enabledblockchainnetworks">
     <h3>
@@ -257,17 +258,18 @@ It removes some verification and minting restrictions so the same wallet/user ca
         <span>enabledBlockchainNetworks</span>
     </h3>
 </doc-anchor-target>
-<p>• <strong>enabledBlockchainNetworks</strong>: (<code v-pre>&quot;NearTestnet&quot;</code> | <code v-pre>&quot;NearMainnet&quot;</code>)[]</p>
+<p>• <code v-pre>Optional</code> <strong>enabledBlockchainNetworks</strong>: (<code v-pre>&quot;EthereumMainnet&quot;</code> | <code v-pre>&quot;EthereumRinkeby&quot;</code> | <code v-pre>&quot;PolygonMainnet&quot;</code> | <code v-pre>&quot;PolygonMumbai&quot;</code> | <code v-pre>&quot;NearTestnet&quot;</code> | <code v-pre>&quot;NearMainnet&quot;</code>)[]</p>
 <p>List of <a href="../../enums/blockchainnetworks/">BlockchainNetworks</a> to be available to use.<br />
 This can influence what third party providers will get initialized.<br />
 As a rule of thumb test networks will be available when connecting to a kycDAO test server and main networks when connecting to the kycDAO production server (see <doc-anchor-trigger to="#baseurl">baseUrl</doc-anchor-trigger>).</p>
+<p>If undefined, all networks available on the configured kycDAO server will be enabled.</p>
 <doc-anchor-target id="defined-in-3">
     <h4>
         <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-3">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/8c3b6a9/src/types.ts#L136">types.ts:136</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/048aa24/src/types.ts#L157">types.ts:157</a></p>
 <hr />
 <doc-anchor-target id="enabledverificationtypes">
     <h3>
@@ -284,7 +286,7 @@ This can influence what third party providers will get initialized.</p>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/8c3b6a9/src/types.ts#L143">types.ts:143</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/048aa24/src/types.ts#L164">types.ts:164</a></p>
 <hr />
 <doc-anchor-target id="environment">
     <h3>
@@ -302,7 +304,24 @@ This can influence what third party providers will get initialized.</p>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/8c3b6a9/src/types.ts#L111">types.ts:111</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/048aa24/src/types.ts#L130">types.ts:130</a></p>
+<hr />
+<doc-anchor-target id="evmprovider">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#evmprovider">#</doc-anchor-trigger>
+        <span>evmProvider</span>
+    </h3>
+</doc-anchor-target>
+<p>• <code v-pre>Optional</code> <strong>evmProvider</strong>: <code v-pre>unknown</code></p>
+<p>If there are any EVM networks enabled this object will be used as the EVM provider (i.e.: MetaMask or anything <a href="https://eips.ethereum.org/EIPS/eip-1193">EIP-1193</a>, <a href="https://eips.ethereum.org/EIPS/eip-2255">EIP-2255</a> compatible).<br />
+Existance of required methods/fields will be verified during SDK initialization.</p>
+<doc-anchor-target id="defined-in-6">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-6">#</doc-anchor-trigger>
+        <span>Defined in</span>
+    </h4>
+</doc-anchor-target>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/048aa24/src/types.ts#L171">types.ts:171</a></p>
 
                                 
                                 <!-- Required only on API pages -->
@@ -322,10 +341,10 @@ This can influence what third party providers will get initialized.</p>
                                     </div>
                             
                                     <div class="w-1/2">
-                                        <a class="px-5 py-4 -mx-px h-full flex items-center justify-end break-normal font-medium text-blue-500 dark:text-blue-400 border border-gray-300 hover:border-gray-400 dark:border-dark-650 dark:hover:border-dark-450 rounded-r-lg transition-colors duration-150 relative hover:z-5" href="../../../api-reference/interfaces/serverstatus/">
+                                        <a class="px-5 py-4 -mx-px h-full flex items-center justify-end break-normal font-medium text-blue-500 dark:text-blue-400 border border-gray-300 hover:border-gray-400 dark:border-dark-650 dark:hover:border-dark-450 rounded-r-lg transition-colors duration-150 relative hover:z-5" href="../../../api-reference/interfaces/sdkstatus/">
                                             <span>
                                                 <span class="block text-xs font-normal text-right text-gray-400 dark:text-dark-400">Next</span>
-                                                <span class="block mt-1">Server​Status</span>
+                                                <span class="block mt-1">Sdk​Status</span>
                                             </span>
                                             <svg xmlns="http://www.w3.org/2000/svg" class="ml-3" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" overflow="visible"><path d="M19.92 12.38a1 1 0 00-.22-1.09l-7-7a.996.996 0 10-1.41 1.41l5.3 5.3H5c-.55 0-1 .45-1 1s.45 1 1 1h11.59l-5.29 5.29a.996.996 0 000 1.41c.19.2.44.3.7.3s.51-.1.71-.29l7-7c.09-.09.16-.21.21-.33z" /><path fill="none" d="M0 0h24v24H0z" /></svg>
                                         </a>
