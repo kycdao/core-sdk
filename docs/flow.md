@@ -1,6 +1,28 @@
+---
+icon: workflow
+label: Flows
+order: -1
+---
+
 ##
 ## https://swimlanes.io/u/FsaMtz3wf
 ##
+
+```mermaid
+%%{init: { 'theme': 'dark' } }%%
+sequenceDiagram
+  participant Host as Host page
+  participant SDK
+  participant User
+  participant Contract as Smart contract
+  participant Backend as kycDAO backend
+
+  Host -->> SDK: Set up service
+
+  User ->> Host: Login attempt
+
+  User ->> Host: Connect Wallet
+```
 
 
 Title:  SDK for KYC DAO
