@@ -344,8 +344,6 @@ export class KycDao extends ApiBase {
     }
   }
 
-  // TODO make this only fail if no valid, enabled networks remain in the end
-  // do not throw errors for disabled/invalid etc. network names
   private static validateBlockchainNetworks(
     availableBlockchainNetworks: BlockchainNetwork[],
     enabledBlockchainNetworks?: BlockchainNetwork[],
@@ -360,8 +358,8 @@ export class KycDao extends ApiBase {
       );
 
       if (invalidBlockchainNetworks.length > 0) {
-        throw new Error(
-          `${errorPrefix} - Invalid network(s) found in configuration: ${invalidBlockchainNetworks.join(
+        console.warn(
+          `${errorPrefix} - Invalid network name(s) were found in configuration and will be ignored: ${invalidBlockchainNetworks.join(
             ', ',
           )}. Valid values are: ${allBlockchainNetworks.join(', ')}.`,
         );
@@ -369,16 +367,10 @@ export class KycDao extends ApiBase {
 
       if (!validBlockchainNetworks.length) {
         throw new Error(
-          `${errorPrefix} - No valid networks found in configuration. Valid values are: ${allBlockchainNetworks.join(
+          `${errorPrefix} - No valid network names were found in configuration. Valid values are: ${allBlockchainNetworks.join(
             ', ',
           )}.`,
         );
-      }
-
-      const multipleNearNetworks =
-        validBlockchainNetworks.filter((network) => network.startsWith('Near')).length > 1;
-      if (multipleNearNetworks) {
-        throw new Error(`${errorPrefix} - Only one Near network can be configured at a time.`);
       }
 
       const [finalBlockchainNetworks, unavailableBlockchainNetworks] = partition(
@@ -387,11 +379,26 @@ export class KycDao extends ApiBase {
       );
 
       if (unavailableBlockchainNetworks.length > 0) {
-        throw new Error(
+        console.warn(
           `${errorPrefix} - The following configured networks are unavailable on the connected server: ${unavailableBlockchainNetworks.join(
             ', ',
           )}. Avaliable networks are: ${availableBlockchainNetworks.join(', ')}.`,
         );
+      }
+
+      if (!finalBlockchainNetworks.length) {
+        throw new Error(
+          `${errorPrefix} - No available networks were found in configuration. Available networks are: ${allBlockchainNetworks.join(
+            ', ',
+          )}.`,
+        );
+      }
+
+      const multipleNearNetworks =
+        finalBlockchainNetworks.filter((network) => network.startsWith('Near')).length > 1;
+      // This will probably never happen since the server will only have one enabled
+      if (multipleNearNetworks) {
+        throw new Error(`${errorPrefix} - Only one Near network can be configured at a time.`);
       }
 
       return finalBlockchainNetworks;
@@ -411,8 +418,8 @@ export class KycDao extends ApiBase {
     );
 
     if (invalidVerificationTypes.length > 0) {
-      throw new Error(
-        `${errorPrefix} - Invalid verification type(s) found in configuration: ${invalidVerificationTypes.join(
+      console.warn(
+        `${errorPrefix} - Invalid verification type(s) were found in configuration and will be ignored: ${invalidVerificationTypes.join(
           ', ',
         )}. Valid values are: ${allVerificationTypes.join(', ')}.`,
       );
@@ -420,7 +427,7 @@ export class KycDao extends ApiBase {
 
     if (!validVerificationTypes.length) {
       throw new Error(
-        `${errorPrefix} - No valid verification type found in configuration. Valid values are: ${allVerificationTypes.join(
+        `${errorPrefix} - No valid verification types were found in configuration. Valid values are: ${allVerificationTypes.join(
           ', ',
         )}.`,
       );
