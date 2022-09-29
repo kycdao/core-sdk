@@ -14,8 +14,9 @@
     "lint:nofix": "eslint ./src/**/*.ts --fix",
     "format": "prettier ./src/**/*.ts --write",
     "format:check": "prettier ./src/**/*.ts --check",
-    "browserify": "browserify -s kycDaoSdk ./dist/browser-init.js -o ./dist/kycdao-sdk.js",
-    "tinyify": "browserify -s kycDaoSdk -p tinyify ./dist/browser-init.js -o ./dist/kycdao-sdk.min.js"
+    "browserify": "browserify -s kycDaoSdk -e ./dist/browser-init.js -o ./dist/kycdao-sdk.js",
+    "tinyify": "browserify -s kycDaoSdk -e ./dist/browser-init.js -g unassertify -g uglifyify -p common-shakeify | uglifyjs -cm > ./dist/kycdao-sdk.min.js",
+    "tinyify:FIXME": "browserify -s kycDaoSdk -e ./dist/browser-init.js -p tinyify -o ./dist/fixme.min.js"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.182",
@@ -23,6 +24,7 @@
     "@typescript-eslint/eslint-plugin": "^5.21.0",
     "@typescript-eslint/parser": "^5.21.0",
     "browserify": "^17.0.0",
+    "common-shakeify": "^1.1.1",
     "eslint": "^8.14.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
@@ -35,7 +37,10 @@
     "tinyify": "^3.0.0",
     "typedoc": "^0.22.17",
     "typedoc-plugin-markdown": "^3.12.1",
-    "typescript": "^4.6.3"
+    "typescript": "^4.6.3",
+    "uglify-js": "^3.17.2",
+    "uglifyify": "^5.0.2",
+    "unassertify": "^3.0.1"
   },
   "peerDependencies": {
     "near-api-js": "^0.44.2",
