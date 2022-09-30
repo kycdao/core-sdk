@@ -8,5 +8,7 @@
   "excludeExternals": true,
   "excludeInternal": true,
   "includeVersion": true,
-  "readme": "none"
+  "readme": "none",
+  "cleanOutputDir": false,
+  "hidePageTitle": true
 }

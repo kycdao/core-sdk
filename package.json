@@ -47,7 +47,6 @@
     "persona": "^4.6.0",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
-    "retypeapp": "^2.3.0",
     "styled-components": "^5.3.5"
   },
   "files": [
