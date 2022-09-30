@@ -163,7 +163,9 @@ export interface SdkConfiguration {
    */
   enabledVerificationTypes: VerificationType[];
   /**
-   * If there are any EVM networks enabled this object will be used as the EVM provider (i.e.: MetaMask or anything [EIP-1193](https://eips.ethereum.org/EIPS/eip-1193), [EIP-2255](https://eips.ethereum.org/EIPS/eip-2255) compatible).\
+   * If there are any EVM networks enabled this object will be used as the EVM provider (i.e.: MetaMask or anything [EIP-1193](https://eips.ethereum.org/EIPS/eip-1193), [EIP-2255](https://eips.ethereum.org/EIPS/eip-2255) compatible).
+   * Historically, EVM providers have been made available as the `window.ethereum` object in web browsers, but this convention is not part of the mentioned specifications.\
+   * \
    * Existance of required methods/fields will be verified during SDK initialization.
    *
    * @type {?unknown}
