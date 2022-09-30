@@ -1,7 +1,11 @@
-input: .
+input: "./docs"
 output: .retype
 url: https://kycdao.github.io/kycdao-js-sdk
-
+branding:
+  logo: static/kycdao_logo.png
+  label: JS SDK
+footer:
+  copyright: © Copyright {{ year }} – [kycDAO](https://kydao.xyz/) – All rights reserved
 #links:
 #  - text: Getting Started
 #    link: https://retype.com/guides/getting-started/

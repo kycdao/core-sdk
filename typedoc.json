@@ -2,12 +2,13 @@
   "$schema": "https://typedoc.org/schema.json",
   "entryPoints": ["src"],
   "exclude": ["src/browser-init.ts"],
-  "out": "API reference",
+  "out": "./docs/api",
   "excludePrivate": true,
   "excludeProtected": true,
   "excludeExternals": true,
   "excludeInternal": true,
   "includeVersion": true,
   "readme": "none",
+  "cleanOutputDir": false,
   "hidePageTitle": true
 }

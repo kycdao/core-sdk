@@ -1,126 +1,124 @@
-##
-## https://swimlanes.io/u/FsaMtz3wf
-##
+---
+icon: workflow
+label: Flows
+order: -1
+---
 
+<style>
+  .mermaid-wrapper .mermaid svg {
+      height: auto;
+  }
+</style>
 
-Title:  SDK for KYC DAO
+### EVM flow
 
-_: **1. Issue Verification**
+The main focus of this sequence diagram is to provide a better understanding on the required interaction between the SDK and the integrating host page. Communication between our services and certain third party providers are intentionally not detailed.
 
-Host page --> SDK: Set up service
+:::mermaid-wrapper
 
-User -> Host page: Login attempt
+```mermaid
+%%{init: { 'theme': 'neutral' } }%%
+sequenceDiagram
+  participant Host as Host page
+  participant SDK
+  participant User
+  participant Wallet as Wallet provider
+  participant Backend as kycDAO backend
+  participant Contract as Smart contract
 
-User -> Host page: Connect Wallet
+  Host ->>+ SDK: initialize()
+  SDK -->>- Host: KycDaoInitializationResult
 
-Host page -> SDK: kycNFT exist? 
+  User ->>+ Host: Start kycDAO flow
 
-SDK -> NTNFT Contract: kycNFT exist on this wallet address?
+  Note over Host, Contract: Wallet connection and authentication
 
-NTNFT Contract --> SDK: No
+  Host ->>+ SDK: connectWallet()
+  SDK ->>+ Wallet: Get connected wallet
+  alt has connected wallet
+    Wallet -->> SDK: Wallet
+  else connection required
+    Wallet ->>+ User: Ask for connection
+    User -->>- Wallet: Connect wallet
+    Wallet -->>- SDK: Wallet
+  end
+  SDK -->>- Host: Wallet connected
 
-SDK --> Host page: No
+  Host ->>+ SDK: registerOrLogin()
+  SDK ->>+ Backend: Validate Session
+  alt Session valid for connected wallet
+    Backend -->> SDK: Session
+  else Session missing or invalid
+    SDK ->>+ Wallet: Sign login message
+    Wallet ->>+ User: Ask for signature
+    User -->>- Wallet: Sign
+    Wallet -->>- SDK: Signed message
+    SDK ->>+ Backend: Create or log in User
+    Backend -->>- SDK: User
+  end
+  SDK -->>- Host: User logged in
 
-Host page -> User: Do you want to get verified?
+  Note over Host, Contract: Verification
 
-User --> Host page: Yes.
+  Host ->>+ SDK: startVerification()
+  SDK ->>+ Backend: Update User
+  Backend -->>- SDK: User
+  Note over SDK: Start verification by 3rd party provider
+  SDK -->>- Host: Verification started
 
-Host page --> SDK: Start verification
+  loop check verification status until verified
+    Host ->>+ SDK: checkVerificationStatus()
+    SDK ->>+ Backend: Fetch User
+    Backend -->>- SDK: User
+    alt not verified
+      SDK -->> Host: Not verified
+    else verified
+      SDK -->>- Host: Verified
+    end
+  end
 
-NOTE Hostpage should share keys to SDK 
+  Note over Host, Contract: NFT minting
 
-SDK -> kycDAO backend: send signature + address + network
+  Host ->>+ SDK: startMinting()
+  SDK ->> SDK: Check if verified
+  alt not verified
+    SDK -->> Host: Not verified
+  else
+    SDK ->>+ Backend: Authorize minting
+    Backend ->>+ Contract: Authorize minting
+    Contract -->>- Backend: Transaction hash
+    Backend -->>- SDK: Transaction hash
 
-kycDAO backend -> kycDAO backend: internal database check (blocklist etc.)
+    loop check transaction until finished
+      SDK ->>+ Wallet: Check transaction
+      alt not finished
+        Wallet -->> SDK: Not finished
+      else finished
+        Wallet -->>- SDK: Finished
+      end
+    end
 
-kycDAO backend --> SDK: User clear to proceed
+    SDK ->>+ Wallet: Send minting transaction
+    Wallet ->>+ User: Ask for signature
+    User -->>- Wallet: Sign
+    Wallet ->>+ Contract: Mint
+    Contract -->>- Wallet: Transaction hash
+    Wallet -->>- SDK: Transaction hash
 
-SDK --> Host page: User clear to proceed
+    loop check transaction until finished
+      SDK ->>+ Wallet: Check transaction
+      alt not finished
+        Wallet -->> SDK: Not finished
+      else finished
+        Wallet -->>- SDK: Finished
+      end
+    end
+  end
+  SDK ->>+ Backend: Update Token
+  Backend -->>- SDK: Token
+  SDK -->>- Host: NFT minted
 
-Host page -> User: Gather required data  
-
-User -> Host page: Shares data
-
-NOTE Information required to initiate verification => verified email, tax residency, entity type, verification type, tier type, ToS+PP
-
+  deactivate Host
 ```
-NEAR use case: 
 
-Verified email - sufficient if already verified 
-previously. We can also verify the email via SDK.
-
-Tax residency - select from the list preferred. 
-
-Entity type - Currently, only individual verification
-
-Verification type - KYC 
-
-ToS + PP - can be part of the NEAR Foundation's ToS + PP, but it has to be signed. 
-```
-
-Host page -> SDK: Initiate identity verification 
-
-SDK -> SDK: Load IDV provider
-
-SDK -> User: Identity Verification 
-
-User -> SDK: finalize identity verification
-
-SDK -> kycDAO backend: wait for callback from IDV provider 
-
-kycDAO backend --> SDK: IDV process success
-
-SDK -> kycDAO backend: Authorize minting
-
-kycDAO backend -> NTNFT Contract: Authorize wallet address 
-
-NTNFT Contract --> kycDAO backend: Authorized.
-
-kycDAO backend --> SDK: Authorized to mint
-
-SDK --> Host page: Authorized to mint
-
-Host page -> User: Ready to mint?
-
-User --> Host page: Let's roll. 
-
-NOTE Information required before minting => NFT image selection signed disclaimer
-
-```
-NFT image - provided by NEAR? Provided by the User? Any preference? 
-
-Signed disclaimer - Important for liability management.
-```
-
-Host page -> NTNFT Contract: Mint through NEAR wallet
-
-...: {fas-spinner} Wait for minting
-
-User <-- NTNFT Contract: Receive kycNFT + validity + tier
-
-User --> Host page: Mint successful (return tx ID)
-
-Host page -> SDK: return tx ID
-
-SDK -> kycDAO backend: return tx ID
-
-Host page -> SDK: get kycNFT details
-
-SDK --> Host page: share detiails (JS object) 
-
-Host page -> Host page: Show kycNFT
-
-_: **2. Gating**
-
-User -> Host page: Login attempt
-
-User -> Host page: Connect Wallet
-
-Host page -> SDK: kycNFT exist? 
-
-SDK -> NTNFT Contract: kycNFT exist on this wallet address?
-
-NTNFT Contract --> SDK: Yes/No
-
-SDK --> Host page: Yes/No
-
+:::

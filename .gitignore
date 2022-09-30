@@ -50,3 +50,5 @@ Thumbs.db
 
 # TypeDoc output
 docs/API reference
+docs/api/*
+!docs/api/index.yml
