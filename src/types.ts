@@ -428,6 +428,30 @@ export interface PersonaOptions {
    * @type {?(error: string) => void}
    */
   onError?: (error: string) => void;
+  /**
+   * Allows specifying additional origins for CSP purposes. Values should
+   * include both protocol and host (e.g. https://withpersona.com).
+   *
+   * This is REQUIRED when the page that embeds the Persona widget is itself
+   * embedded in another page as an iframe. The value should be an array of
+   * origins for ALL iframes that are ancestors of the Persona iframe.
+   *
+   * `window.target.origin` is provided by default.
+   *
+   * @type {?string[]}
+   */
+  frameAncestors?: string[];
+  /**
+   * Allows specifying a custom target for `window.postMessage` from the
+   * Persona app, which defaults to the iframe origin.
+   *
+   * This is REQUIRED when the page that embeds the Persona widget is itself
+   * embedded in another page as an iframe. The value should be the origin where
+   * the Persona SDK is mounted.
+   *
+   * @type {?string}
+   */
+  messageTargetOrigin?: string;
 }
 
 /**
