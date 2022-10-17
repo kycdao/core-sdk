@@ -1,4 +1,4 @@
-const EthereumUnits = {
+export const EthereumUnits = {
   wei: 0,
   kwei: 3,
   mwei: 6,
@@ -7,40 +7,36 @@ const EthereumUnits = {
   finney: 15,
   ether: 18,
 } as const;
-type EthereumUnit = keyof typeof EthereumUnits;
-
-export function parseUnits(value: number, unit: EthereumUnit): number {
-  return value * 10 ** EthereumUnits[unit];
-}
+export type EthereumUnit = keyof typeof EthereumUnits;
 
 export type HexEncodeOptions = {
   addPrefix?: boolean;
   padToBytes?: number;
 };
 
-function applyHexEncodeOptions(hex: string, options?: HexEncodeOptions): string {
-  const padToChars = options?.padToBytes ? Math.max(options.padToBytes, 0) * 2 : 0;
-  return (options?.addPrefix ? '0x' : '') + hex.padStart(padToChars, '0');
+export interface ProviderRpcError extends Error {
+  message: string;
+  code: number;
+  data?: unknown;
 }
 
-export function hexEncodeString(input: string, options?: HexEncodeOptions): string {
-  return applyHexEncodeOptions(Buffer.from(input, 'ascii').toString('hex'), options);
+export interface EvmRequestArguments {
+  readonly method: string;
+  readonly params?: readonly unknown[] | object;
 }
 
-export function hexEncodeUint(uint: number, options?: HexEncodeOptions): string {
-  return applyHexEncodeOptions(uint.toString(16), options);
+export interface EvmProvider {
+  request<T>(_: EvmRequestArguments): Promise<T>;
+  on<T>(event: string, callback: (data: T) => void): void;
 }
 
-export function hexDecodeToString(input: string, hasPrefix = true): string {
-  if (hasPrefix) {
-    input = input.substring(2);
-  }
-
-  let str = '';
-  for (let i = 0; i < input.length; i += 2) {
-    str += String.fromCharCode(parseInt(input.substring(i, 2), 16));
-  }
-  return str;
+export interface EvmTransaction {
+  to: string;
+  from?: string;
+  gas?: number;
+  gasPrice?: number;
+  value?: number;
+  data?: string;
 }
 
 export interface EvmLogResponse {
@@ -97,27 +93,4 @@ export interface EvmTransactionReceipt {
   logsBloom: string;
   root: string;
   status: number;
-}
-
-export class EvmResponseDecoder {
-  public log(input: EvmLogResponse): EvmLog {
-    return {
-      ...input,
-      logIndex: parseInt(input.logIndex),
-      transactionIndex: parseInt(input.transactionIndex),
-      blockNumber: parseInt(input.blockNumber),
-    };
-  }
-
-  public transactionReceipt(input: EvmTransactionReceiptResponse): EvmTransactionReceipt {
-    return {
-      ...input,
-      transactionIndex: parseInt(input.transactionIndex),
-      blockNumber: parseInt(input.blockNumber),
-      cumulativeGasUsed: parseInt(input.cumulativeGasUsed),
-      gasUsed: parseInt(input.gasUsed),
-      status: parseInt(input.status),
-      logs: input.logs.map((log) => this.log(log)),
-    };
-  }
 }

@@ -4,8 +4,8 @@ import { base_encode } from 'near-api-js/lib/utils/serialize';
 import { Client as PersonaClient, ClientOptions } from 'persona';
 import { ApiBase, HttpError } from './api-base';
 import {
+  BlockchainNetworkDetails,
   BlockchainNetworks,
-  EvmBlockchainNetworkChainIdMapping,
   EvmBlockchainNetworks,
   NEAR_MAINNET_ARCHIVAL,
   NEAR_MAINNET_CONFIG,
@@ -20,16 +20,17 @@ import {
   BlockchainNetwork,
   ChainAndAddress,
   Country,
-  EvmProvider,
   KycDaoContract,
   MintingAuthorizationRequest,
   MintingAuthorizationResponse,
   MintingData,
   NearBlockchainNetwork,
   NearSdk,
+  NftCheckOptions,
   PersonaOptions,
-  ProviderRpcError,
+  RedirectEvent,
   SdkConfiguration,
+  SdkStatus,
   ServerStatus,
   Session,
   Transaction,
@@ -40,14 +41,13 @@ import {
   VerificationStasusByType,
   VerificationStatus,
   VerificationType,
-  RedirectEvent,
-  SdkStatus,
 } from './types';
 import { default as COUNTRIES } from './countries.list.json';
 import { FinalExecutionOutcome, JsonRpcProvider } from 'near-api-js/lib/providers';
 import { isLike, partition, poll } from './utils';
-import { EvmProviderWrapper } from './blockchains/evm';
-import { EvmTransactionReceipt } from './blockchains/evm-utils';
+import { EvmProviderWrapper } from './blockchains/evm/evm-provider-wrapper';
+import { EvmProvider, EvmTransactionReceipt, ProviderRpcError } from './blockchains/evm/types';
+import { KycDaoJsonRpcProvider } from './blockchains/kycdao-json-rpc-provider';
 
 export { ApiBase, HttpError } from './api-base';
 export {
@@ -63,6 +63,8 @@ export {
   ChainAndAddress,
   Country,
   MintingData,
+  NetworkAndAddress,
+  NftCheckOptions,
   PersonaOptions,
   SdkConfiguration,
   SdkStatus,
@@ -840,12 +842,8 @@ export class KycDao extends ApiBase {
     };
   }
 
-  // Method for checking NFT directly on chain with RPC.
-  // !!! We have to document that it is not a safe check on the frontend and has to be verified on their backend to be sure !!!
-
   /**
-   * NOT IMPLEMENTED \
-   * Checks on chain if the provided (or the currently connected) wallet has a kycNFT.
+   * Checks on chain if the provided (or the currently connected) wallet has a valid kycNFT.
    *
    * @remarks \
    * **IMPORTANT!** \
@@ -855,19 +853,38 @@ export class KycDao extends ApiBase {
    * @async
    * @returns {Promise<boolean>}
    */
-  public async walletHasKycNft(): Promise<boolean>;
-  public async walletHasKycNft(chainAndAddress?: ChainAndAddress): Promise<boolean> {
-    if (!chainAndAddress) {
-      if (!this._chainAndAddress) {
-        throw new Error(
-          'Blockchain and address not set yet. Either connect a wallet with kycDAO first or specify them in the parameters.',
-        );
-      }
+  public async hasValidNft(
+    verificationType: VerificationType,
+    options?: NftCheckOptions,
+  ): Promise<boolean> {
+    const networkAndAddress = options?.networkAndAddress;
+    const chainAndAddress = networkAndAddress
+      ? {
+          ...networkAndAddress,
+          blockchain: BlockchainNetworkDetails[networkAndAddress.blockchainNetwork].blockchain,
+        }
+      : this._chainAndAddress;
 
-      chainAndAddress = this._chainAndAddress;
+    if (!chainAndAddress) {
+      throw new Error(
+        'BlockchainNetwork and address not set yet. Either connect a wallet with kycDAO first or specify them in the parameters.',
+      );
     }
 
-    return false;
+    const { address, blockchain, blockchainNetwork } = chainAndAddress;
+    const rpcUrl =
+      options?.rpcUrl || BlockchainNetworkDetails[chainAndAddress.blockchainNetwork].rpcUrl;
+
+    const contractAddress =
+      this.apiStatus?.smart_contracts_info?.[blockchainNetwork]?.[verificationType]?.address;
+
+    if (!contractAddress) {
+      throw new Error('Smart contract address not found');
+    }
+
+    const rpcProvider = new KycDaoJsonRpcProvider(blockchain, rpcUrl);
+
+    return await rpcProvider.hasValidToken(contractAddress, address);
   }
 
   /**
@@ -908,9 +925,9 @@ export class KycDao extends ApiBase {
 
         const chainId = await this.evmProvider.getChainId();
 
-        const blockchainNetwork = EvmBlockchainNetworkChainIdMapping.find(
-          (mapping) => mapping.chainId === chainId,
-        )?.network;
+        const blockchainNetwork = (
+          Object.keys(BlockchainNetworkDetails) as Array<BlockchainNetwork>
+        ).find((network) => BlockchainNetworkDetails[network].chainId === chainId);
 
         if (!blockchainNetwork) {
           throw new Error(`${errorPrefix} - Connected EVM network is not supported.`);
