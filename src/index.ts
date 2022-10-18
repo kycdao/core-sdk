@@ -2,6 +2,7 @@ import { ConnectConfig, Contract, keyStores, Near, WalletConnection } from 'near
 import { Signature } from 'near-api-js/lib/utils/key_pair';
 import { base_encode } from 'near-api-js/lib/utils/serialize';
 import { Client as PersonaClient, ClientOptions } from 'persona';
+import { InquiryOptions } from 'persona/dist/lib/interfaces';
 import { ApiBase, HttpError } from './api-base';
 import {
   BlockchainNetworkDetails,
@@ -1102,9 +1103,14 @@ export class KycDao extends ApiBase {
       throw new Error('Persona configuration not found.');
     }
 
+    const clientOptions: ClientOptions = {
+      environment: this.apiStatus.persona.sandbox ? 'sandbox' : 'production',
+      templateId: this.apiStatus.persona.template_id,
+    };
+
     const sessionData = this.verificationStatus.personaSessionData;
     const shouldContinue = sessionData && sessionData.referenceId === user.ext_id;
-    const options = shouldContinue
+    const sessionOptions = shouldContinue
       ? {
           inquiryId: sessionData.inquiryId,
           sessionToken: sessionData.sessionToken,
@@ -1112,18 +1118,18 @@ export class KycDao extends ApiBase {
         }
       : { referenceId: user.ext_id };
 
-    const clientOptions: ClientOptions = {
-      environment: this.apiStatus.persona.sandbox ? 'sandbox' : 'production',
-      templateId: this.apiStatus.persona.template_id,
-    };
+    const { frameAncestors, messageTargetOrigin, onCancel, onComplete, onError } =
+      personaOptions || {};
+    const iframeOptions = { frameAncestors, messageTargetOrigin };
 
-    const client: PersonaClient = new PersonaClient({
+    const inquiryOptions: InquiryOptions = {
       ...clientOptions,
-      ...options,
+      ...sessionOptions,
+      ...iframeOptions,
       onReady: () => client.open(),
       onComplete: (_args: { inquiryId: string; status: string; fields: object }) => {
         this.verificationStatus.personaSessionData = undefined;
-        typeof personaOptions?.onComplete === 'function' ? personaOptions.onComplete() : null;
+        typeof onComplete === 'function' ? onComplete() : null;
       },
       onCancel: (args: { inquiryId?: string; sessionToken?: string }) => {
         if (args.inquiryId) {
@@ -1135,15 +1141,17 @@ export class KycDao extends ApiBase {
         } else {
           this.verificationStatus.personaSessionData = undefined;
         }
-        typeof personaOptions?.onCancel === 'function' ? personaOptions.onCancel() : null;
+        typeof onCancel === 'function' ? onCancel() : null;
       },
       onError: (error: { status: number; code: string }) => {
         this.verificationStatus.personaSessionData = undefined;
         const errorMessage = `Persona verification error: ${error.code}`;
         console.error(errorMessage);
-        typeof personaOptions?.onError === 'function' ? personaOptions.onError(errorMessage) : null;
+        typeof onError === 'function' ? onError(errorMessage) : null;
       },
-    });
+    };
+
+    const client = new PersonaClient(inquiryOptions);
   }
 
   // VERIFICATION DATA
