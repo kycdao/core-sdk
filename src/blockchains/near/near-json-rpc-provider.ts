@@ -15,19 +15,20 @@ export class NearJsonRpcProvider implements IKycDaoJsonRpcProvider {
     const args = { address: targetAddress };
     const argsBase64 = Buffer.from(JSON.stringify(args)).toString('base64');
 
-    const rawResult = await this.provider.query<CodeResult>({
-      request_type: 'call_function',
-      account_id: contractAddress,
-      method_name: 'has_valid_token',
-      args_base64: argsBase64,
-      finality: 'final',
-    });
+    try {
+      const rawResult = await this.provider.query<CodeResult>({
+        request_type: 'call_function',
+        account_id: contractAddress,
+        method_name: 'has_valid_token',
+        args_base64: argsBase64,
+        finality: 'final',
+      });
 
-    // TODO error handling
+      const result: boolean = JSON.parse(Buffer.from(rawResult.result).toString());
 
-    const result: boolean = JSON.parse(Buffer.from(rawResult.result).toString());
-    console.log('NEAR RPC check result: ', result);
-
-    return result;
+      return result;
+    } catch (e) {
+      throw new Error('NEAR NFT check error');
+    }
   }
 }

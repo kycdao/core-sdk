@@ -872,6 +872,11 @@ export class KycDao extends ApiBase {
     }
 
     const { address, blockchain, blockchainNetwork } = chainAndAddress;
+
+    if (!address) {
+      throw new Error('Wallet address cannot be empty.');
+    }
+
     const rpcUrl =
       options?.rpcUrl || BlockchainNetworkDetails[chainAndAddress.blockchainNetwork].rpcUrl;
 
@@ -879,7 +884,7 @@ export class KycDao extends ApiBase {
       this.apiStatus?.smart_contracts_info?.[blockchainNetwork]?.[verificationType]?.address;
 
     if (!contractAddress) {
-      throw new Error('Smart contract address not found');
+      throw new Error('Smart contract address not found.');
     }
 
     const rpcProvider = new KycDaoJsonRpcProvider(blockchain, rpcUrl);
