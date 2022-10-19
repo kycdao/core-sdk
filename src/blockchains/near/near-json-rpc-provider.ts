@@ -28,7 +28,8 @@ export class NearJsonRpcProvider implements IKycDaoJsonRpcProvider {
 
       return result;
     } catch (e) {
-      throw new Error('NEAR NFT check error');
+      console.error(e);
+      throw new Error('NEAR RPC query error');
     }
   }
 }

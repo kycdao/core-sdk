@@ -25,13 +25,26 @@ export class EvmJsonRpcProvider implements IKycDaoJsonRpcProvider {
       body: JSON.stringify(payload),
     };
 
-    const response = await fetch(this.url, request);
-    const isJson = response.headers.get('content-type')?.includes('application/json');
-    const data = isJson ? await response.json() : null;
+    try {
+      const response = await fetch(this.url, request);
+      const isJson = response.headers.get('content-type')?.includes('application/json');
 
-    // TODO error handling
+      if (!isJson) {
+        console.error(response);
+        throw new Error();
+      }
 
-    return data?.result;
+      const data = await response.json();
+
+      if (data.error) {
+        console.error(data.error);
+        throw new Error();
+      }
+
+      return data.result;
+    } catch (_) {
+      throw new Error('EVM RPC fetch error');
+    }
   }
 
   public async hasValidToken(contractAddress: string, targetAddress: string): Promise<boolean> {
@@ -50,8 +63,6 @@ export class EvmJsonRpcProvider implements IKycDaoJsonRpcProvider {
       method: 'eth_call',
       params: [{ to: contractAddress, data }, 'latest'],
     });
-
-    // TODO error handling
 
     return !!parseInt(result, 16);
   }
