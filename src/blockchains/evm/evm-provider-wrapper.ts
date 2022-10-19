@@ -1,12 +1,11 @@
-import { EvmProvider, EvmRequestArguments } from 'src/types';
+import { EvmResponseDecoder } from './evm-response-decoder';
 import {
-  EvmResponseDecoder,
+  EvmProvider,
+  EvmRequestArguments,
   EvmTransactionReceipt,
   EvmTransactionReceiptResponse,
-  hexEncodeString,
-  hexEncodeUint,
-  parseUnits,
-} from './evm-utils';
+} from './types';
+import { hexEncodeString, hexEncodeUint, parseUnits } from './utils';
 
 export class EvmProviderWrapper {
   private provider: EvmProvider;

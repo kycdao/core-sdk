@@ -1,7 +1,7 @@
 import { ConnectConfig, Contract, Near, WalletConnection } from 'near-api-js';
 import { BrowserLocalStorageKeyStore } from 'near-api-js/lib/key_stores';
 import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
-import { EvmTransactionReceipt } from './blockchains/evm-utils';
+import { EvmTransactionReceipt } from './blockchains/evm/types';
 import {
   BlockchainNetworks,
   Blockchains,
@@ -250,6 +250,27 @@ export interface ServerStatus {
 /**
  * Representation of a blockchain wallet.
  *
+ * @interface NetworkAndAddress
+ * @typedef {NetworkAndAddress}
+ */
+export interface NetworkAndAddress {
+  /**
+   * A blockchain from {@link BlockchainNetworks}.
+   *
+   * @type {BlockchainNetwork}
+   */
+  blockchainNetwork: BlockchainNetwork;
+  /**
+   * The wallet address.
+   *
+   * @type {string}
+   */
+  address: string;
+}
+
+/**
+ * Representation of a blockchain wallet with the implemented blockchain protocol included.
+ *
  * @interface ChainAndAddress
  * @typedef {ChainAndAddress}
  */
@@ -274,6 +295,33 @@ export interface ChainAndAddress {
   address: string;
 }
 
+/**
+ * Information associated with a {@link BlockchainNetwork}.
+ *
+ * @interface BlockchainNetworkInfo
+ * @typedef {BlockchainNetworkInfo}
+ */
+export interface BlockchainNetworkInfo {
+  /**
+   * The {@link Blockchain} protocol/platform that the {@link BlockchainNetwork} implements.
+   *
+   * @type {Blockchain}
+   */
+  blockchain: Blockchain;
+  /**
+   * The chain id of the EVM network. A hexadecimal number.
+   *
+   * @type {?string}
+   */
+  chainId?: string;
+  /**
+   * The RPC endpoint used for the on-chain NFT check.
+   *
+   * @type {string}
+   */
+  rpcUrl: string;
+}
+
 export interface Country {
   /**
    * English name of the country.
@@ -287,6 +335,27 @@ export interface Country {
    * @type {string}
    */
   iso_cca2: string;
+}
+
+/**
+ * Options for the {@link KycDao.hasValidNft} method.
+ *
+ * @interface NftCheckOptions
+ * @typedef {NftCheckOptions}
+ */
+export interface NftCheckOptions {
+  /**
+   * The wallet to check for a valid kycDAO NFT. If undefined the current connected wallet will be used.
+   *
+   * @type {?NetworkAndAddress}
+   */
+  networkAndAddress?: NetworkAndAddress;
+  /**
+   * A custom RPC endpoint URL to use for the check instead of the default one.
+   *
+   * @type {string}
+   */
+  rpcUrl?: string;
 }
 
 /**
@@ -426,22 +495,6 @@ export interface MintingData {
 }
 
 /* INTERNAL (not in API reference) */
-
-export interface ProviderRpcError extends Error {
-  message: string;
-  code: number;
-  data?: unknown;
-}
-
-export interface EvmRequestArguments {
-  readonly method: string;
-  readonly params?: readonly unknown[] | object;
-}
-
-export interface EvmProvider {
-  request<T>(_: EvmRequestArguments): Promise<T>;
-  on<T>(event: string, callback: (data: T) => void): void;
-}
 
 export interface PersonaStatus {
   template_id: string;

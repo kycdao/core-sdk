@@ -1,5 +1,5 @@
 import { ConnectConfig } from 'near-api-js';
-import { EvmBlockchainNetwork } from './types';
+import { BlockchainNetwork, BlockchainNetworkInfo } from './types';
 
 /**
  * Collection of supported blockchains.
@@ -17,27 +17,14 @@ export const Blockchains = {
  *
  * @internal
  * @enum
- * @type {{ readonly EthereumMainnet: "EthereumMainnet"; readonly EthereumRinkeby: "EthereumRinkeby"; readonly PolygonMainnet: "PolygonMainnet"; readonly PolygonMumbai: "PolygonMumbai"; }}
+ * @type {{ readonly EthereumGoerli: "EthereumGoerli"; readonly EthereumMainnet: "EthereumMainnet"; readonly PolygonMainnet: "PolygonMainnet"; readonly PolygonMumbai: "PolygonMumbai"; }}
  */
 export const EvmBlockchainNetworks = {
+  EthereumGoerli: 'EthereumGoerli',
   EthereumMainnet: 'EthereumMainnet',
-  EthereumRinkeby: 'EthereumRinkeby',
   PolygonMainnet: 'PolygonMainnet',
   PolygonMumbai: 'PolygonMumbai',
 } as const;
-
-/**
- * @internal
- */
-export const EvmBlockchainNetworkChainIdMapping: {
-  network: EvmBlockchainNetwork;
-  chainId: string;
-}[] = [
-  { network: 'EthereumMainnet', chainId: '0x1' },
-  { network: 'EthereumRinkeby', chainId: '0x4' },
-  { network: 'PolygonMainnet', chainId: '0x89' },
-  { network: 'PolygonMumbai', chainId: '0x13881' },
-];
 
 /**
  * Collection of supported NEAR blockchain networks.
@@ -55,9 +42,43 @@ export const NearBlockchainNetworks = {
  * Collection of supported blockchain networks.
  *
  * @enum
- * @type {{ readonly NearTestnet: "NearTestnet"; readonly NearMainnet: "NearMainnet"; readonly EthereumMainnet: "EthereumMainnet"; readonly EthereumRinkeby: "EthereumRinkeby"; readonly PolygonMainnet: "PolygonMainnet"; readonly PolygonMumbai: "PolygonMumbai"; }}
+ * @type {{ readonly NearTestnet: "NearTestnet"; readonly NearMainnet: "NearMainnet"; readonly EthereumGoerli: "EthereumGoerli"; readonly EthereumMainnet: "EthereumMainnet"; readonly PolygonMainnet: "PolygonMainnet"; readonly PolygonMumbai: "PolygonMumbai"; }}
  */
 export const BlockchainNetworks = { ...EvmBlockchainNetworks, ...NearBlockchainNetworks } as const;
+
+/**
+ * @internal
+ */
+export const BlockchainNetworkDetails: Record<BlockchainNetwork, BlockchainNetworkInfo> = {
+  EthereumGoerli: {
+    blockchain: Blockchains.Ethereum,
+    rpcUrl: 'https://rpc.ankr.com/eth_goerli',
+    chainId: '0x5',
+  },
+  EthereumMainnet: {
+    blockchain: Blockchains.Ethereum,
+    rpcUrl: 'https://rpc.ankr.com/eth',
+    chainId: '0x1',
+  },
+  NearMainnet: {
+    blockchain: Blockchains.Near,
+    rpcUrl: 'https://rpc.mainnet.near.org',
+  },
+  NearTestnet: {
+    blockchain: Blockchains.Near,
+    rpcUrl: 'https://rpc.testnet.near.org',
+  },
+  PolygonMainnet: {
+    blockchain: Blockchains.Ethereum,
+    rpcUrl: 'https://polygon-rpc.com',
+    chainId: '0x89',
+  },
+  PolygonMumbai: {
+    blockchain: Blockchains.Ethereum,
+    rpcUrl: 'https://matic-mumbai.chainstacklabs.com',
+    chainId: '0x13881',
+  },
+};
 
 /**
  * @deprecated since version 0.1.3
