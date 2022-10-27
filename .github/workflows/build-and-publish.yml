@@ -51,6 +51,8 @@ jobs:
     name: Build, bundle and cache package
     needs: setup
     runs-on: ubuntu-latest
+    outputs:
+      PUBLISH: ${{ env.PUBLISH }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -62,7 +64,7 @@ jobs:
         run: yarn build && yarn bundle
 
       - name: Cache package
-        if: ${{ env.PUBLISH }}
+        if: env.PUBLISH
         uses: actions/upload-artifact@v3
         with:
           name: dist
@@ -73,7 +75,7 @@ jobs:
 
   publish:
     name: Publish package
-    if: ${{ env.PUBLISH }}
+    if: steps.build.outputs.PUBLISH
     needs: build
     runs-on: ubuntu-latest
     permissions:
