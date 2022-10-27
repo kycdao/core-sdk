@@ -451,9 +451,11 @@ export class KycDao extends ApiBase {
 
     if (hasEvmNetworkEnabled) {
       if (evmProvider === undefined) {
-        throw new Error(
-          `${errorPrefix} - EVM provider is missing from the SDK configuration while at least one EVM network has been enabled.`,
+        console.warn(
+          'EVM provider is missing from the SDK configuration while at least one EVM network has been enabled',
         );
+
+        return;
       }
 
       if (
@@ -793,6 +795,12 @@ export class KycDao extends ApiBase {
 
     const evmProvider = KycDao.validateEvmProvider(kycDao.blockchainNetworks, config.evmProvider);
     kycDao.evmProvider = evmProvider ? new EvmProviderWrapper(evmProvider) : undefined;
+
+    if (!evmProvider) {
+      kycDao.blockchainNetworks = kycDao.blockchainNetworks.filter(
+        (network) => !Object.keys(EvmBlockchainNetworks).includes(network),
+      );
+    }
 
     // add EVM provider event handlers here with the `on` method (accountsChanged, chainChanged) if needed
 
