@@ -3,10 +3,10 @@
 
 name: Build and publish SDK package
 
-on:
-  push:
-    branches:
-      - main
+on: [push, pull_request]
+
+env:
+  PUBLISH: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
 jobs:
   setup:
@@ -51,6 +51,8 @@ jobs:
     name: Build, bundle and cache package
     needs: setup
     runs-on: ubuntu-latest
+    outputs:
+      PUBLISH: ${{ env.PUBLISH }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -62,6 +64,7 @@ jobs:
         run: yarn build && yarn bundle
 
       - name: Cache package
+        if: env.PUBLISH == 'true'
         uses: actions/upload-artifact@v3
         with:
           name: dist
@@ -73,6 +76,7 @@ jobs:
   publish:
     name: Publish package
     needs: build
+    if: needs.build.outputs.PUBLISH == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
