@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="turbo-root" content="/kycdao-js-sdk">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="2.4.0.719498659554">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="2.4.0.720229570244">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 2.4.0">
@@ -12,7 +12,7 @@
     <!-- Primary Meta Tags -->
     <title>SdkStatus</title>
     <meta name="title" content="SdkStatus">
-    <meta name="description" content="@kycdao/kycdao-sdk - v0.2.5/ SdkStatus" />
+    <meta name="description" content="@kycdao/kycdao-sdk - v0.3.1/ SdkStatus" />
 
     <!-- Canonical -->
     <link rel="canonical" href="https://kycdao.github.io/kycdao-js-sdk/api/interfaces/sdkstatus/" />
@@ -21,21 +21,21 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://kycdao.github.io/kycdao-js-sdk/api/interfaces/sdkstatus/">
     <meta property="og:title" content="SdkStatus">
-    <meta property="og:description" content="@kycdao/kycdao-sdk - v0.2.5/ SdkStatus">
+    <meta property="og:description" content="@kycdao/kycdao-sdk - v0.3.1/ SdkStatus">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://kycdao.github.io/kycdao-js-sdk/api/interfaces/sdkstatus/">
     <meta property="twitter:title" content="SdkStatus">
-    <meta property="twitter:description" content="@kycdao/kycdao-sdk - v0.2.5/ SdkStatus">
+    <meta property="twitter:description" content="@kycdao/kycdao-sdk - v0.3.1/ SdkStatus">
 
     <script>(function () { var el = document.documentElement, m = localStorage.getItem("/kycdao-js-sdk/doc_theme"), wm = window.matchMedia; if (m === "dark" || (!m && wm && wm("(prefers-color-scheme: dark)").matches)) { el.classList.add("dark") } else { el.classList.remove("dark") } })();</script>
 
-    <link href="../../../resources/css/retype.css?v=2.4.0.719498659554" rel="stylesheet" />
+    <link href="../../../resources/css/retype.css?v=2.4.0.720229570244" rel="stylesheet" />
 
-    <script type="text/javascript" src="../../../resources/js/config.js?v=2.4.0.719498659554" data-turbo-eval="false" defer></script>
+    <script type="text/javascript" src="../../../resources/js/config.js?v=2.4.0.720229570244" data-turbo-eval="false" defer></script>
     <script type="text/javascript" src="../../../resources/js/retype.js?v=2.4.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" type="text/javascript" src="../../../resources/js/lunr.js?v=2.4.0.719498659554" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" type="text/javascript" src="../../../resources/js/lunr.js?v=2.4.0.720229570244" data-turbo-eval="false" defer></script>
 </head>
 <body>
     <div id="docs-app" class="relative text-base antialiased text-gray-700 bg-white font-body dark:bg-dark-850 dark:text-dark-300">
@@ -162,9 +162,10 @@
         <span>SdkStatus</span>
     </h1>
 </doc-anchor-target>
-<p><a href="../../">@kycdao/kycdao-sdk - v0.2.5</a> / SdkStatus</p>
+<p><a href="../../">@kycdao/kycdao-sdk - v0.3.1</a> / SdkStatus</p>
 <p>The current status of the SDK.</p>
-<p><strong><code v-pre>interface</code></strong> SdkStatus</p>
+<p><strong><code v-pre>Interface</code></strong></p>
+<p>SdkStatus</p>
 <doc-anchor-target id="table-of-contents">
     <h2>
         <doc-anchor-trigger class="header-anchor-trigger" to="#table-of-contents">#</doc-anchor-trigger>
@@ -184,6 +185,7 @@
 <li><doc-anchor-trigger to="#demomode">demoMode</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#evmproviderconfigured">evmProviderConfigured</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#nearnetworkconnected">nearNetworkConnected</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#solananetworkconnected">solanaNetworkConnected</doc-anchor-trigger></li>
 </ul>
 <doc-anchor-target id="properties-1">
     <h2>
@@ -197,15 +199,15 @@
         <span>availableBlockchainNetworks</span>
     </h3>
 </doc-anchor-target>
-<p>• <strong>availableBlockchainNetworks</strong>: (<code v-pre>&quot;EthereumGoerli&quot;</code> | <code v-pre>&quot;EthereumMainnet&quot;</code> | <code v-pre>&quot;PolygonMainnet&quot;</code> | <code v-pre>&quot;PolygonMumbai&quot;</code> | <code v-pre>&quot;NearTestnet&quot;</code> | <code v-pre>&quot;NearMainnet&quot;</code>)[]</p>
-<p>List of <a href="../../enums/blockchainnetworks/">BlockchainNetworks</a> currently available to use. See <a href="../sdkconfiguration/#enabledblockchainnetworks">SdkConfiguration.enabledBlockchainNetworks</a></p>
+<p>• <strong>availableBlockchainNetworks</strong>: (<code v-pre>&quot;EthereumGoerli&quot;</code> | <code v-pre>&quot;EthereumMainnet&quot;</code> | <code v-pre>&quot;PolygonMainnet&quot;</code> | <code v-pre>&quot;PolygonMumbai&quot;</code> | <code v-pre>&quot;NearMainnet&quot;</code> | <code v-pre>&quot;NearTestnet&quot;</code> | <code v-pre>&quot;SolanaDevnet&quot;</code> | <code v-pre>&quot;SolanaMainnet&quot;</code> | <code v-pre>&quot;SolanaTestnet&quot;</code>)[]</p>
+<p>List of <a href="../../enums/blockchainnetworks/">BlockchainNetworks</a> currently available to use. See <a href="../sdkconfiguration/#enabledblockchainnetworks">enabledBlockchainNetworks</a></p>
 <doc-anchor-target id="defined-in">
     <h4>
         <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/ae60fbb/src/types.ts#L200">types.ts:200</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/bfb6dfe/src/types.ts#L209">types.ts:209</a></p>
 <hr />
 <doc-anchor-target id="availableverificationtypes">
     <h3>
@@ -214,14 +216,14 @@
     </h3>
 </doc-anchor-target>
 <p>• <strong>availableVerificationTypes</strong>: (<code v-pre>&quot;AccreditedInvestor&quot;</code> | <code v-pre>&quot;KYC&quot;</code>)[]</p>
-<p>List of <a href="../../enums/verificationtypes/">VerificationTypes</a> currently available to use. See <a href="../sdkconfiguration/#enabledverificationtypes">SdkConfiguration.enabledVerificationTypes</a></p>
+<p>List of <a href="../../enums/verificationtypes/">VerificationTypes</a> currently available to use. See <a href="../sdkconfiguration/#enabledverificationtypes">enabledVerificationTypes</a></p>
 <doc-anchor-target id="defined-in-1">
     <h4>
         <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-1">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/ae60fbb/src/types.ts#L206">types.ts:206</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/bfb6dfe/src/types.ts#L215">types.ts:215</a></p>
 <hr />
 <doc-anchor-target id="baseurl">
     <h3>
@@ -237,7 +239,7 @@
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/ae60fbb/src/types.ts#L188">types.ts:188</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/bfb6dfe/src/types.ts#L197">types.ts:197</a></p>
 <hr />
 <doc-anchor-target id="demomode">
     <h3>
@@ -246,14 +248,14 @@
     </h3>
 </doc-anchor-target>
 <p>• <strong>demoMode</strong>: <code v-pre>boolean</code></p>
-<p>A flag indicating if demo mode is turned on or not. See <a href="../sdkconfiguration/#demomode">SdkConfiguration.demoMode</a></p>
+<p>A flag indicating if demo mode is turned on or not. See <a href="../sdkconfiguration/#demomode">demoMode</a></p>
 <doc-anchor-target id="defined-in-3">
     <h4>
         <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-3">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/ae60fbb/src/types.ts#L194">types.ts:194</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/bfb6dfe/src/types.ts#L203">types.ts:203</a></p>
 <hr />
 <doc-anchor-target id="evmproviderconfigured">
     <h3>
@@ -262,14 +264,14 @@
     </h3>
 </doc-anchor-target>
 <p>• <strong>evmProviderConfigured</strong>: <code v-pre>boolean</code></p>
-<p>A flag indicating if an EVM provider is configured and ready to use or not. See <a href="../sdkconfiguration/#evmprovider">SdkConfiguration.evmProvider</a></p>
+<p>A flag indicating if an EVM provider is configured and ready to use or not. See <a href="../sdkconfiguration/#evmprovider">evmProvider</a></p>
 <doc-anchor-target id="defined-in-4">
     <h4>
         <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-4">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/ae60fbb/src/types.ts#L212">types.ts:212</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/bfb6dfe/src/types.ts#L221">types.ts:221</a></p>
 <hr />
 <doc-anchor-target id="nearnetworkconnected">
     <h3>
@@ -277,8 +279,8 @@
         <span>nearNetworkConnected</span>
     </h3>
 </doc-anchor-target>
-<p>• <strong>nearNetworkConnected</strong>: <code v-pre>null</code> | <code v-pre>&quot;EthereumGoerli&quot;</code> | <code v-pre>&quot;EthereumMainnet&quot;</code> | <code v-pre>&quot;PolygonMainnet&quot;</code> | <code v-pre>&quot;PolygonMumbai&quot;</code> | <code v-pre>&quot;NearTestnet&quot;</code> | <code v-pre>&quot;NearMainnet&quot;</code></p>
-<p>The blockchain network currently used by the SDK, <code v-pre>null</code> if there is none.<br />
+<p>• <strong>nearNetworkConnected</strong>: <code v-pre>null</code> | <code v-pre>&quot;EthereumGoerli&quot;</code> | <code v-pre>&quot;EthereumMainnet&quot;</code> | <code v-pre>&quot;PolygonMainnet&quot;</code> | <code v-pre>&quot;PolygonMumbai&quot;</code> | <code v-pre>&quot;NearMainnet&quot;</code> | <code v-pre>&quot;NearTestnet&quot;</code> | <code v-pre>&quot;SolanaDevnet&quot;</code> | <code v-pre>&quot;SolanaMainnet&quot;</code> | <code v-pre>&quot;SolanaTestnet&quot;</code></p>
+<p>The NEAR blockchain network currently used by the SDK, <code v-pre>null</code> if there is none.<br />
 This value will depend on the <a href="../sdkconfiguration/">SdkConfiguration</a> provided and the available networks on the connected kycDAO server.</p>
 <doc-anchor-target id="defined-in-5">
     <h4>
@@ -286,7 +288,24 @@ This value will depend on the <a href="../sdkconfiguration/">SdkConfiguration</a
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/ae60fbb/src/types.ts#L219">types.ts:219</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/bfb6dfe/src/types.ts#L228">types.ts:228</a></p>
+<hr />
+<doc-anchor-target id="solananetworkconnected">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#solananetworkconnected">#</doc-anchor-trigger>
+        <span>solanaNetworkConnected</span>
+    </h3>
+</doc-anchor-target>
+<p>• <strong>solanaNetworkConnected</strong>: <code v-pre>null</code> | <code v-pre>&quot;EthereumGoerli&quot;</code> | <code v-pre>&quot;EthereumMainnet&quot;</code> | <code v-pre>&quot;PolygonMainnet&quot;</code> | <code v-pre>&quot;PolygonMumbai&quot;</code> | <code v-pre>&quot;NearMainnet&quot;</code> | <code v-pre>&quot;NearTestnet&quot;</code> | <code v-pre>&quot;SolanaDevnet&quot;</code> | <code v-pre>&quot;SolanaMainnet&quot;</code> | <code v-pre>&quot;SolanaTestnet&quot;</code></p>
+<p>The Solana blockchain network currently used by the SDK, <code v-pre>null</code> if there is none.<br />
+This value will depend on the <a href="../sdkconfiguration/">SdkConfiguration</a> provided and the available networks on the connected kycDAO server.</p>
+<doc-anchor-target id="defined-in-6">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-6">#</doc-anchor-trigger>
+        <span>Defined in</span>
+    </h4>
+</doc-anchor-target>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/bfb6dfe/src/types.ts#L235">types.ts:235</a></p>
 
                                 
                                 <!-- Required only on API pages -->
