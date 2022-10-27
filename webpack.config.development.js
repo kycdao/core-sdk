@@ -17,6 +17,7 @@ module.exports = {
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
+    modules: [path.resolve(__dirname, '.'), 'node_modules'],
     fallback: {
       buffer: require.resolve('buffer/'),
       crypto: require.resolve('crypto-browserify'),

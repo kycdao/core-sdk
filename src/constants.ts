@@ -5,11 +5,11 @@ import { BlockchainNetwork, BlockchainNetworkInfo } from './types';
  * Collection of supported blockchains.
  *
  * @enum
- * @type {{ readonly Ethereum: "Ethereum"; readonly Near: "Near"; }}
  */
 export const Blockchains = {
   Ethereum: 'Ethereum',
   Near: 'Near',
+  Solana: 'Solana',
 } as const;
 
 /**
@@ -17,7 +17,6 @@ export const Blockchains = {
  *
  * @internal
  * @enum
- * @type {{ readonly EthereumGoerli: "EthereumGoerli"; readonly EthereumMainnet: "EthereumMainnet"; readonly PolygonMainnet: "PolygonMainnet"; readonly PolygonMumbai: "PolygonMumbai"; }}
  */
 export const EvmBlockchainNetworks = {
   EthereumGoerli: 'EthereumGoerli',
@@ -31,20 +30,34 @@ export const EvmBlockchainNetworks = {
  *
  * @internal
  * @enum
- * @type {{ readonly NearTestnet: "NearTestnet"; readonly NearMainnet: "NearMainnet"; }}
  */
 export const NearBlockchainNetworks = {
-  NearTestnet: 'NearTestnet',
   NearMainnet: 'NearMainnet',
+  NearTestnet: 'NearTestnet',
+} as const;
+
+/**
+ * Collection of supported Solana blockchain networks.
+ *
+ * @internal
+ * @enum
+ */
+export const SolanaBlockchainNetworks = {
+  SolanaDevnet: 'SolanaDevnet',
+  SolanaMainnet: 'SolanaMainnet',
+  SolanaTestnet: 'SolanaTestnet',
 } as const;
 
 /**
  * Collection of supported blockchain networks.
  *
  * @enum
- * @type {{ readonly NearTestnet: "NearTestnet"; readonly NearMainnet: "NearMainnet"; readonly EthereumGoerli: "EthereumGoerli"; readonly EthereumMainnet: "EthereumMainnet"; readonly PolygonMainnet: "PolygonMainnet"; readonly PolygonMumbai: "PolygonMumbai"; }}
  */
-export const BlockchainNetworks = { ...EvmBlockchainNetworks, ...NearBlockchainNetworks } as const;
+export const BlockchainNetworks = {
+  ...EvmBlockchainNetworks,
+  ...NearBlockchainNetworks,
+  ...SolanaBlockchainNetworks,
+} as const;
 
 /**
  * @internal
@@ -78,6 +91,18 @@ export const BlockchainNetworkDetails: Record<BlockchainNetwork, BlockchainNetwo
     rpcUrl: 'https://matic-mumbai.chainstacklabs.com',
     chainId: '0x13881',
   },
+  SolanaDevnet: {
+    blockchain: Blockchains.Solana,
+    rpcUrl: 'https://api.devnet.solana.com',
+  },
+  SolanaMainnet: {
+    blockchain: Blockchains.Solana,
+    rpcUrl: 'https://api.mainnet-beta.solana.com',
+  },
+  SolanaTestnet: {
+    blockchain: Blockchains.Solana,
+    rpcUrl: 'https://api.testnet.solana.com',
+  },
 };
 
 /**
@@ -86,7 +111,6 @@ export const BlockchainNetworkDetails: Record<BlockchainNetwork, BlockchainNetwo
  * Collection of available environment types for initializing the SDK.
  *
  * @enum
- * @type {{ readonly demo: "demo"; readonly test: "test"; }}
  */
 export const KycDaoEnvironments = {
   /**
@@ -124,7 +148,6 @@ export const VerificationStasuses = {
  * Collection of supported verification low types.
  *
  * @enum
- * @type {{ readonly AccreditedInvestor: "AccreditedInvestor"; readonly KYC: "KYC"; }}
  */
 export const VerificationTypes = {
   AccreditedInvestor: 'AccreditedInvestor',
