@@ -13,13 +13,6 @@ jobs:
     name: Set up Node and Yarn packages
     runs-on: ubuntu-latest
     steps:
-      - name: Log variable stuff
-        run: |
-          echo 'github.event_name: ' ${{ github.event_name }}
-          echo 'github.ref_name: ' ${{ github.ref_name }}
-          echo 'condition: ' ${{ github.event_name == 'push' && github.ref_name == 'main' }}
-          echo 'env.PUBLISH: ' ${{ env.PUBLISH }}
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -61,10 +54,6 @@ jobs:
     outputs:
       PUBLISH: ${{ env.PUBLISH }}
     steps:
-      - name: Log variable stuff
-        run: |
-          echo 'env.PUBLISH: ' ${{ env.PUBLISH }}
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -75,7 +64,7 @@ jobs:
         run: yarn build && yarn bundle
 
       - name: Cache package
-        if: env.PUBLISH
+        if: env.PUBLISH == 'true'
         uses: actions/upload-artifact@v3
         with:
           name: dist
@@ -87,16 +76,12 @@ jobs:
   publish:
     name: Publish package
     needs: build
-    if: needs.build.outputs.PUBLISH
+    if: needs.build.outputs.PUBLISH == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     steps:
-      - name: Log variable stuff
-        run: |
-          echo 'needs.build.outputs.PUBLISH: ' ${{ needs.build.outputs.PUBLISH }}
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
