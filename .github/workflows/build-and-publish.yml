@@ -62,7 +62,7 @@ jobs:
         run: yarn build && yarn bundle
 
       - name: Cache package
-        if: env.PUBLISH
+        if: ${{ env.PUBLISH }}
         uses: actions/upload-artifact@v3
         with:
           name: dist
@@ -73,7 +73,7 @@ jobs:
 
   publish:
     name: Publish package
-    if: env.PUBLISH
+    if: ${{ env.PUBLISH }}
     needs: build
     runs-on: ubuntu-latest
     permissions:
