@@ -34,6 +34,7 @@ import {
   SdkStatus,
   ServerStatus,
   Session,
+  SolanaBlockchainNetwork,
   Transaction,
   UserDetails,
   UserUpdateRequest,
@@ -49,6 +50,8 @@ import { isLike, partition, poll } from './utils';
 import { EvmProviderWrapper } from './blockchains/evm/evm-provider-wrapper';
 import { EvmProvider, EvmTransactionReceipt, ProviderRpcError } from './blockchains/evm/types';
 import { KycDaoJsonRpcProvider } from './blockchains/kycdao-json-rpc-provider';
+import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets';
+import { SolanaProviderWrapper } from './blockchains/solana/solana-provider-wrapper';
 
 export { ApiBase, HttpError } from './api-base';
 export {
@@ -131,6 +134,8 @@ export class KycDao extends ApiBase {
 
   private near?: NearSdk;
 
+  private solana?: SolanaProviderWrapper;
+
   private _chainAndAddress?: ChainAndAddress;
 
   /**
@@ -147,6 +152,7 @@ export class KycDao extends ApiBase {
       availableVerificationTypes: this.verificationTypes || [],
       evmProviderConfigured: !!this.evmProvider,
       nearNetworkConnected: this.near?.blockchainNetwork || null,
+      solanaNetworkConnected: this.solana?.blockchainNetwork || null,
     };
   }
 
@@ -402,6 +408,13 @@ export class KycDao extends ApiBase {
       // This will probably never happen since the server will only have one enabled
       if (multipleNearNetworks) {
         throw new Error(`${errorPrefix} - Only one Near network can be configured at a time.`);
+      }
+
+      const multipleSolanaNetworks =
+        finalBlockchainNetworks.filter((network) => network.startsWith('Solana')).length > 1;
+      // This will probably never happen since the server will only have one enabled
+      if (multipleSolanaNetworks) {
+        throw new Error(`${errorPrefix} - Only one Solana network can be configured at a time.`);
       }
 
       return finalBlockchainNetworks;
@@ -803,6 +816,13 @@ export class KycDao extends ApiBase {
       kycDao.initNear(nearNetwork);
     }
 
+    const solanaNetwork = kycDao.blockchainNetworks.find((network) =>
+      network.startsWith('Solana'),
+    ) as SolanaBlockchainNetwork;
+    if (solanaNetwork) {
+      kycDao.solana = new SolanaProviderWrapper(solanaNetwork);
+    }
+
     const redirectEvent = await kycDao.handleRedirect();
 
     return {
@@ -970,6 +990,42 @@ export class KycDao extends ApiBase {
           };
         }
         break;
+      case 'Solana': {
+        if (!this.solana) {
+          throw new Error(`${errorPrefix} - Solana support is not enabled.`);
+        }
+
+        this.solana.adapter = new PhantomWalletAdapter();
+
+        try {
+          await this.solana.connect();
+        } catch (e) {
+          let message = '';
+          if (typeof e === 'string') {
+            message = e;
+          } else if (e instanceof Error) {
+            message = e.message || e.name;
+          }
+          message = message || 'Unknown error';
+
+          throw new Error(`${errorPrefix} - ${message}`);
+        }
+
+        const address = this.solana.address;
+
+        if (!address) {
+          throw new Error(`${errorPrefix} - Wallet address not found.`);
+        }
+
+        const blockchainNetwork = this.solana.blockchainNetwork;
+
+        this._chainAndAddress = {
+          blockchain: 'Solana',
+          blockchainNetwork,
+          address,
+        };
+        break;
+      }
       default:
         throw new Error(`${errorPrefix} - Unsupported blockchain: ${blockchain}.`);
     }
@@ -996,6 +1052,14 @@ export class KycDao extends ApiBase {
             throw new Error(`${errorPrefix} - Near SDK not initialized.`);
           }
           break;
+        case 'Solana': {
+          if (this.solana) {
+            await this.solana.disconnect();
+          } else {
+            throw new Error(`${errorPrefix} - Solana support is not enabled.`);
+          }
+          break;
+        }
         // there is no corresponding logic for 'Ethereum':
         default:
           throw new Error(
@@ -1061,6 +1125,21 @@ export class KycDao extends ApiBase {
               } else {
                 throw error;
               }
+            }
+            break;
+          }
+          case 'Solana': {
+            if (!this.solana) {
+              throw new Error(`${errorPrefix} - Solana support is not enabled.`);
+            }
+
+            const toSign = `kycDAO-login-${this.session.nonce}`;
+
+            try {
+              signature = await this.solana.signMessage(toSign);
+            } catch (e) {
+              console.error(e);
+              throw new Error(`${errorPrefix} - ${e}`);
             }
             break;
           }

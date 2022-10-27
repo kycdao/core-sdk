@@ -8,6 +8,7 @@ import {
   EvmBlockchainNetworks,
   KycDaoEnvironments,
   NearBlockchainNetworks,
+  SolanaBlockchainNetworks,
   VerificationProviders,
   VerificationStasuses,
   VerificationTypes,
@@ -38,6 +39,14 @@ export type EvmBlockchainNetwork = keyof typeof EvmBlockchainNetworks;
  * @typedef {NearBlockchainNetwork}
  */
 export type NearBlockchainNetwork = keyof typeof NearBlockchainNetworks;
+
+/**
+ * Union type of string values of {@link SolanaBlockchainNetworks}.
+ *
+ * @internal
+ * @typedef {SolanaBlockchainNetwork}
+ */
+export type SolanaBlockchainNetwork = keyof typeof SolanaBlockchainNetworks;
 
 /**
  * Union type of string values of {@link BlockchainNetworks}.
@@ -211,12 +220,19 @@ export interface SdkStatus {
    */
   evmProviderConfigured: boolean;
   /**
-   * The blockchain network currently used by the SDK, `null` if there is none.\
+   * The NEAR blockchain network currently used by the SDK, `null` if there is none.\
    * This value will depend on the {@link SdkConfiguration} provided and the available networks on the connected kycDAO server.
    *
    * @type {(BlockchainNetwork | null)}
    */
   nearNetworkConnected: BlockchainNetwork | null;
+  /**
+   * The Solana blockchain network currently used by the SDK, `null` if there is none.\
+   * This value will depend on the {@link SdkConfiguration} provided and the available networks on the connected kycDAO server.
+   *
+   * @type {(BlockchainNetwork | null)}
+   */
+  solanaNetworkConnected: BlockchainNetwork | null;
 }
 
 /**
