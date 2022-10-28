@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="turbo-root" content="/kycdao-js-sdk">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="2.4.0.720229570244">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="2.4.0.720241979795">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 2.4.0">
@@ -12,7 +12,7 @@
     <!-- Primary Meta Tags -->
     <title>API reference</title>
     <meta name="title" content="API reference">
-    <meta name="description" content="@kycdao/kycdao-sdk - v0.3.1" />
+    <meta name="description" content="@kycdao/kycdao-sdk - v0.3.2" />
 
     <!-- Canonical -->
     <link rel="canonical" href="https://kycdao.github.io/kycdao-js-sdk/api/" />
@@ -21,21 +21,21 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://kycdao.github.io/kycdao-js-sdk/api/">
     <meta property="og:title" content="API reference">
-    <meta property="og:description" content="@kycdao/kycdao-sdk - v0.3.1">
+    <meta property="og:description" content="@kycdao/kycdao-sdk - v0.3.2">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://kycdao.github.io/kycdao-js-sdk/api/">
     <meta property="twitter:title" content="API reference">
-    <meta property="twitter:description" content="@kycdao/kycdao-sdk - v0.3.1">
+    <meta property="twitter:description" content="@kycdao/kycdao-sdk - v0.3.2">
 
     <script>(function () { var el = document.documentElement, m = localStorage.getItem("/kycdao-js-sdk/doc_theme"), wm = window.matchMedia; if (m === "dark" || (!m && wm && wm("(prefers-color-scheme: dark)").matches)) { el.classList.add("dark") } else { el.classList.remove("dark") } })();</script>
 
-    <link href="../resources/css/retype.css?v=2.4.0.720229570244" rel="stylesheet" />
+    <link href="../resources/css/retype.css?v=2.4.0.720241979795" rel="stylesheet" />
 
-    <script type="text/javascript" src="../resources/js/config.js?v=2.4.0.720229570244" data-turbo-eval="false" defer></script>
+    <script type="text/javascript" src="../resources/js/config.js?v=2.4.0.720241979795" data-turbo-eval="false" defer></script>
     <script type="text/javascript" src="../resources/js/retype.js?v=2.4.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" type="text/javascript" src="../resources/js/lunr.js?v=2.4.0.720229570244" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" type="text/javascript" src="../resources/js/lunr.js?v=2.4.0.720241979795" data-turbo-eval="false" defer></script>
 </head>
 <body>
     <div id="docs-app" class="relative text-base antialiased text-gray-700 bg-white font-body dark:bg-dark-850 dark:text-dark-300">
@@ -162,7 +162,7 @@
         <span>API reference</span>
     </h1>
 </doc-anchor-target>
-<p>@kycdao/kycdao-sdk - v0.3.1</p>
+<p>@kycdao/kycdao-sdk - v0.3.2</p>
 <doc-anchor-target id="table-of-contents">
     <h2>
         <doc-anchor-trigger class="header-anchor-trigger" to="#table-of-contents">#</doc-anchor-trigger>
@@ -178,7 +178,10 @@
 <ul>
 <li><a href="enums/blockchainnetworks/">BlockchainNetworks</a></li>
 <li><a href="enums/blockchains/">Blockchains</a></li>
+<li><a href="enums/evmblockchainnetworks/">EvmBlockchainNetworks</a></li>
 <li><a href="enums/kycdaoenvironments/">KycDaoEnvironments</a></li>
+<li><a href="enums/nearblockchainnetworks/">NearBlockchainNetworks</a></li>
+<li><a href="enums/solanablockchainnetworks/">SolanaBlockchainNetworks</a></li>
 <li><a href="enums/verificationtypes/">VerificationTypes</a></li>
 </ul>
 <doc-anchor-target id="classes">
@@ -219,7 +222,10 @@
 <ul>
 <li><doc-anchor-trigger to="#blockchain">Blockchain</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#blockchainnetwork">BlockchainNetwork</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#evmblockchainnetwork">EvmBlockchainNetwork</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#nearblockchainnetwork">NearBlockchainNetwork</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#redirectevent">RedirectEvent</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#solanablockchainnetwork">SolanaBlockchainNetwork</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#verificationstasusbytype">VerificationStasusByType</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#verificationtype">VerificationType</doc-anchor-trigger></li>
 </ul>
@@ -252,7 +258,7 @@
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/bfb6dfe/src/types.ts#L25">types.ts:25</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/0a0b4f2/src/types.ts#L25">types.ts:25</a></p>
 <hr />
 <doc-anchor-target id="blockchainnetwork">
     <h3>
@@ -268,7 +274,39 @@
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/bfb6dfe/src/types.ts#L56">types.ts:56</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/0a0b4f2/src/types.ts#L53">types.ts:53</a></p>
+<hr />
+<doc-anchor-target id="evmblockchainnetwork">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#evmblockchainnetwork">#</doc-anchor-trigger>
+        <span>EvmBlockchainNetwork</span>
+    </h3>
+</doc-anchor-target>
+<p>Ƭ <strong>EvmBlockchainNetwork</strong>: keyof typeof <a href="enums/evmblockchainnetworks/"><code v-pre>EvmBlockchainNetworks</code></a></p>
+<p>Union type of string values of <a href="enums/evmblockchainnetworks/">EvmBlockchainNetworks</a>.</p>
+<doc-anchor-target id="defined-in-2">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-2">#</doc-anchor-trigger>
+        <span>Defined in</span>
+    </h4>
+</doc-anchor-target>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/0a0b4f2/src/types.ts#L32">types.ts:32</a></p>
+<hr />
+<doc-anchor-target id="nearblockchainnetwork">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#nearblockchainnetwork">#</doc-anchor-trigger>
+        <span>NearBlockchainNetwork</span>
+    </h3>
+</doc-anchor-target>
+<p>Ƭ <strong>NearBlockchainNetwork</strong>: keyof typeof <a href="enums/nearblockchainnetworks/"><code v-pre>NearBlockchainNetworks</code></a></p>
+<p>Union type of string values of <a href="enums/nearblockchainnetworks/">NearBlockchainNetworks</a>.</p>
+<doc-anchor-target id="defined-in-3">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-3">#</doc-anchor-trigger>
+        <span>Defined in</span>
+    </h4>
+</doc-anchor-target>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/0a0b4f2/src/types.ts#L39">types.ts:39</a></p>
 <hr />
 <doc-anchor-target id="redirectevent">
     <h3>
@@ -278,13 +316,29 @@
 </doc-anchor-target>
 <p>Ƭ <strong>RedirectEvent</strong>: <code v-pre>&quot;NearLogin&quot;</code> | <code v-pre>&quot;NearMint&quot;</code> | <code v-pre>&quot;NearUserRejectedError&quot;</code></p>
 <p>Possible events handled by the SDK during initialization after a redirect.</p>
-<doc-anchor-target id="defined-in-2">
+<doc-anchor-target id="defined-in-4">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-2">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-4">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/bfb6dfe/src/types.ts#L111">types.ts:111</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/0a0b4f2/src/types.ts#L108">types.ts:108</a></p>
+<hr />
+<doc-anchor-target id="solanablockchainnetwork">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#solanablockchainnetwork">#</doc-anchor-trigger>
+        <span>SolanaBlockchainNetwork</span>
+    </h3>
+</doc-anchor-target>
+<p>Ƭ <strong>SolanaBlockchainNetwork</strong>: keyof typeof <a href="enums/solanablockchainnetworks/"><code v-pre>SolanaBlockchainNetworks</code></a></p>
+<p>Union type of string values of <a href="enums/solanablockchainnetworks/">SolanaBlockchainNetworks</a>.</p>
+<doc-anchor-target id="defined-in-5">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-5">#</doc-anchor-trigger>
+        <span>Defined in</span>
+    </h4>
+</doc-anchor-target>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/0a0b4f2/src/types.ts#L46">types.ts:46</a></p>
 <hr />
 <doc-anchor-target id="verificationstasusbytype">
     <h3>
@@ -294,13 +348,13 @@
 </doc-anchor-target>
 <p>Ƭ <strong>VerificationStasusByType</strong>: <code v-pre>Partial</code>&lt;<code v-pre>Record</code>&lt;<doc-anchor-trigger to="#verificationtype"><code v-pre>VerificationType</code></doc-anchor-trigger>, <code v-pre>boolean</code>&gt;&gt;</p>
 <p>Type for representing verified status for possible verification types with a boolean flag.</p>
-<doc-anchor-target id="defined-in-3">
+<doc-anchor-target id="defined-in-6">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-3">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-6">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/bfb6dfe/src/types.ts#L99">types.ts:99</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/0a0b4f2/src/types.ts#L96">types.ts:96</a></p>
 <hr />
 <doc-anchor-target id="verificationtype">
     <h3>
@@ -310,13 +364,13 @@
 </doc-anchor-target>
 <p>Ƭ <strong>VerificationType</strong>: keyof typeof <a href="enums/verificationtypes/"><code v-pre>VerificationTypes</code></a></p>
 <p>Union type of string values of <a href="enums/verificationtypes/">VerificationTypes</a>.</p>
-<doc-anchor-target id="defined-in-4">
+<doc-anchor-target id="defined-in-7">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-4">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-7">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/bfb6dfe/src/types.ts#L92">types.ts:92</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/0a0b4f2/src/types.ts#L89">types.ts:89</a></p>
 <doc-anchor-target id="variables-1">
     <h2>
         <doc-anchor-trigger class="header-anchor-trigger" to="#variables-1">#</doc-anchor-trigger>
@@ -331,13 +385,13 @@
 </doc-anchor-target>
 <p>• <code v-pre>Const</code> <strong>Countries</strong>: <a href="interfaces/country/"><code v-pre>Country</code></a>[]</p>
 <p>The list of countries recognized by the SDK with their respective ISO codes.</p>
-<doc-anchor-target id="defined-in-5">
+<doc-anchor-target id="defined-in-8">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-5">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-8">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/bfb6dfe/src/index.ts#L116">index.ts:116</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/0a0b4f2/src/index.ts#L122">index.ts:122</a></p>
 
                                 
                                 <!-- Required only on API pages -->
