@@ -158,7 +158,7 @@ export class EvmProviderWrapper {
     }
   }
 
-  public async getTokenIdFromReceipt(receipt: EvmTransactionReceipt): Promise<string | null> {
+  public async getTokenIdFromReceipt(receipt: EvmTransactionReceipt): Promise<string | undefined> {
     const tokenTransferEventHash = await this.getTokenTransferEventHash();
     const tokenTransferLog = receipt.logs.find((log) => log.topics[0] === tokenTransferEventHash);
 
@@ -167,6 +167,6 @@ export class EvmProviderWrapper {
       return parseInt(tokenIdRaw).toString();
     }
 
-    return null;
+    return;
   }
 }

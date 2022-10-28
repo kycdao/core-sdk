@@ -27,7 +27,6 @@ export type Blockchain = keyof typeof Blockchains;
 /**
  * Union type of string values of {@link EvmBlockchainNetworks}.
  *
- * @internal
  * @typedef {EvmBlockchainNetwork}
  */
 export type EvmBlockchainNetwork = keyof typeof EvmBlockchainNetworks;
@@ -35,7 +34,6 @@ export type EvmBlockchainNetwork = keyof typeof EvmBlockchainNetworks;
 /**
  * Union type of string values of {@link NearBlockchainNetworks}.
  *
- * @internal
  * @typedef {NearBlockchainNetwork}
  */
 export type NearBlockchainNetwork = keyof typeof NearBlockchainNetworks;
@@ -43,7 +41,6 @@ export type NearBlockchainNetwork = keyof typeof NearBlockchainNetworks;
 /**
  * Union type of string values of {@link SolanaBlockchainNetworks}.
  *
- * @internal
  * @typedef {SolanaBlockchainNetwork}
  */
 export type SolanaBlockchainNetwork = keyof typeof SolanaBlockchainNetworks;
@@ -67,7 +64,7 @@ export type KycDaoEnvironment = keyof typeof KycDaoEnvironments;
 /**
  * @internal
  */
-export type TransactionData = FinalExecutionOutcome | EvmTransactionReceipt | null;
+export type TransactionData = FinalExecutionOutcome | EvmTransactionReceipt | string;
 
 /**
  * @internal
@@ -225,14 +222,14 @@ export interface SdkStatus {
    *
    * @type {(BlockchainNetwork | null)}
    */
-  nearNetworkConnected: BlockchainNetwork | null;
+  nearNetworkConnected: NearBlockchainNetwork | null;
   /**
    * The Solana blockchain network currently used by the SDK, `null` if there is none.\
    * This value will depend on the {@link SdkConfiguration} provided and the available networks on the connected kycDAO server.
    *
    * @type {(BlockchainNetwork | null)}
    */
-  solanaNetworkConnected: BlockchainNetwork | null;
+  solanaNetworkConnected: SolanaBlockchainNetwork | null;
 }
 
 /**
@@ -567,7 +564,7 @@ export interface KycDaoContract extends Contract {
 
 export interface Transaction {
   status: TransactionStatus;
-  data: TransactionData;
+  data?: TransactionData;
 }
 
 export interface ProviderProfile {
