@@ -13,9 +13,8 @@ export const Blockchains = {
 } as const;
 
 /**
- * Collection of supported blockchain networks.
+ * Collection of supported EVM blockchain networks.
  *
- * @internal
  * @enum
  */
 export const EvmBlockchainNetworks = {
@@ -28,7 +27,6 @@ export const EvmBlockchainNetworks = {
 /**
  * Collection of supported NEAR blockchain networks.
  *
- * @internal
  * @enum
  */
 export const NearBlockchainNetworks = {
@@ -39,7 +37,6 @@ export const NearBlockchainNetworks = {
 /**
  * Collection of supported Solana blockchain networks.
  *
- * @internal
  * @enum
  */
 export const SolanaBlockchainNetworks = {

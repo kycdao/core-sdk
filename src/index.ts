@@ -57,7 +57,10 @@ export { ApiBase, HttpError } from './api-base';
 export {
   Blockchains,
   BlockchainNetworks,
+  EvmBlockchainNetworks,
+  NearBlockchainNetworks,
   KycDaoEnvironments,
+  SolanaBlockchainNetworks,
   VerificationTypes,
 } from './constants';
 export { ConnectConfig as NearConnectConfig } from 'near-api-js';
@@ -66,13 +69,16 @@ export {
   BlockchainNetwork,
   ChainAndAddress,
   Country,
+  EvmBlockchainNetwork,
   MintingData,
+  NearBlockchainNetwork,
   NetworkAndAddress,
   NftCheckOptions,
   PersonaOptions,
   SdkConfiguration,
   SdkStatus,
   ServerStatus,
+  SolanaBlockchainNetwork,
   VerificationData,
   VerificationProvider,
   VerificationProviderOptions,
@@ -215,14 +221,19 @@ export class KycDao extends ApiBase {
     return this.apiStatus?.smart_contracts_info[blockchainNetwork]?.[verificationType]?.address;
   }
 
-  private getBlockchainAccount(address: string): BlockchainAccountDetails {
+  private getBlockchainAccount(chainAndAddress: ChainAndAddress): BlockchainAccountDetails {
     const accounts = this.user?.blockchain_accounts;
 
     if (!accounts?.length) {
       throw new Error('User has no blockchain accounts.');
     }
 
-    const accountsFound = accounts.filter((acc) => acc.address === address.toLowerCase());
+    const address =
+      chainAndAddress.blockchain === 'Ethereum'
+        ? chainAndAddress.address.toLowerCase()
+        : chainAndAddress.address;
+
+    const accountsFound = accounts.filter((acc) => acc.address === address);
 
     if (accountsFound.length > 1) {
       throw new Error('Multiple blockchain accounts found for the same wallet address.');
@@ -239,7 +250,7 @@ export class KycDao extends ApiBase {
   private getValidAuthorizationCode(): string | undefined {
     if (this._chainAndAddress && this.user) {
       try {
-        const account = this.getBlockchainAccount(this._chainAndAddress.address);
+        const account = this.getBlockchainAccount(this._chainAndAddress);
 
         return account.tokens.find((token) => {
           return token.authorization_tx_id && !token.minted_at;
@@ -303,7 +314,6 @@ export class KycDao extends ApiBase {
         if (!receipt) {
           return {
             status: 'Unknown',
-            data: null,
           };
         }
 
@@ -319,6 +329,12 @@ export class KycDao extends ApiBase {
           };
         }
       }
+      case 'Solana':
+        if (!this.solana) {
+          throw new Error('Solana support is not enabled.');
+        }
+
+        return await this.solana.getTransaction(txHash);
       default:
         throw new Error(`Unsupported blockchain: ${chainAndAddress.blockchain}.`);
     }
@@ -1336,7 +1352,7 @@ export class KycDao extends ApiBase {
     const network = chainAndAddress.blockchainNetwork;
 
     try {
-      const blockchainAccount = this.getBlockchainAccount(chainAndAddress.address);
+      const blockchainAccount = this.getBlockchainAccount(chainAndAddress);
 
       const data: MintingAuthorizationRequest = {
         blockchain_account_id: blockchainAccount.id,
@@ -1366,6 +1382,14 @@ export class KycDao extends ApiBase {
     verificationType: VerificationType,
   ): Promise<void> {
     const errorPrefix = 'Cannot mint';
+
+    const contractAddress = this.getSmartContractAddress(
+      chainAndAddress.blockchainNetwork,
+      verificationType,
+    );
+
+    let txHash: string | undefined;
+    let tokenId: string | undefined;
 
     switch (chainAndAddress.blockchain) {
       case 'Near': {
@@ -1397,6 +1421,7 @@ export class KycDao extends ApiBase {
           amount: '100000000000000000000000', // in yoctoNEAR
           callbackUrl,
         });
+
         break;
       }
       case 'Ethereum': {
@@ -1404,16 +1429,11 @@ export class KycDao extends ApiBase {
           throw new Error(`${errorPrefix} - EVM provider not configured.`);
         }
 
-        const contractAddress = this.getSmartContractAddress(
-          chainAndAddress.blockchainNetwork,
-          verificationType,
-        );
-
         if (!contractAddress) {
           throw new Error(`${errorPrefix} - Smart contract address not found.`);
         }
 
-        const txHash = await this.evmProvider.mint(
+        txHash = await this.evmProvider.mint(
           contractAddress,
           chainAndAddress.address,
           authorizationCode,
@@ -1427,24 +1447,53 @@ export class KycDao extends ApiBase {
           }
 
           const receipt = transaction.data as EvmTransactionReceipt;
-          const tokenId = await this.evmProvider.getTokenIdFromReceipt(receipt);
-
-          if (tokenId) {
-            await this.post('token', {
-              authorization_code: authorizationCode,
-              token_id: tokenId,
-              minting_tx_id: txHash,
-            });
-          }
+          tokenId = await this.evmProvider.getTokenIdFromReceipt(receipt);
         } else {
           // TODO throw error that transaction cannot be verified? Can we do anything else?
         }
+
+        break;
+      }
+      case 'Solana': {
+        if (!this.solana) {
+          throw new Error(`${errorPrefix} - Solana support is not enabled.`);
+        }
+
+        if (!contractAddress) {
+          throw new Error(`${errorPrefix} - Smart contract address not found.`);
+        }
+
+        txHash = await this.solana.mint(
+          contractAddress,
+          chainAndAddress.address,
+          authorizationCode,
+        );
+
+        if (txHash) {
+          const transaction = await this.waitForTransaction(chainAndAddress, txHash);
+
+          if (transaction.status === 'Failure') {
+            throw new Error(`${errorPrefix} - Transaction failed.`);
+          }
+
+          tokenId = transaction.data as string;
+        } else {
+          // TODO throw error that transaction cannot be verified? Can we do anything else?
+        }
+
         break;
       }
       default:
         throw new Error(`${errorPrefix} - Unsupported blockchain: ${chainAndAddress.blockchain}.`);
     }
-    return;
+
+    if (txHash && tokenId) {
+      await this.post('token', {
+        authorization_code: authorizationCode,
+        token_id: tokenId,
+        minting_tx_id: txHash,
+      });
+    }
   }
 
   /**
