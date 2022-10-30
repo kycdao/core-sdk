@@ -28,8 +28,8 @@ import {
   SolanaBlockchainNetwork,
   Transaction as SdkTransaction,
   TransactionStatus as SdkTransactionStatus,
-} from 'src/types';
-import { isLike } from 'src/utils';
+} from '../../types';
+import { isLike } from '../../utils';
 import { mintAndFreezeNft } from './contract';
 
 const WalletAdapterNetworkMapping: Record<SolanaBlockchainNetwork, WalletAdapterNetwork> = {
@@ -146,7 +146,7 @@ export class SolanaProviderWrapper {
       {
         creatorKey: mintKey.publicKey,
         uri: 'https://cdn.madskullz.io/madskullz/metadata/2795.json',
-        title: 'Frozen NFT 2',
+        title: 'kycNFT',
       },
       {
         mintAuthority: walletPubKey,

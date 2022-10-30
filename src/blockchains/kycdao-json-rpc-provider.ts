@@ -1,4 +1,4 @@
-import { Blockchain } from 'src/types';
+import { Blockchain } from '../types';
 import { EvmJsonRpcProvider } from './evm/evm-json-rpc-provider';
 import { NearJsonRpcProvider } from './near/near-json-rpc-provider';
 
