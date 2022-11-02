@@ -575,7 +575,7 @@ export interface ProviderProfile {
   provider_profile_id: string;
 }
 
-export interface Token {
+export interface TokenDetails {
   id: number;
   blockchain_account_id: number;
   network: BlockchainNetwork;
@@ -584,6 +584,8 @@ export interface Token {
   minted_at?: string;
   minting_tx_id?: string;
   token_id?: string;
+  verification_type: VerificationType;
+  image_url: string;
 }
 
 export interface VerificationRequest {
@@ -603,7 +605,7 @@ export interface BlockchainAccountDetails {
   blockchain: Blockchain;
   address: string;
   user_id: number;
-  tokens: Token[];
+  tokens: TokenDetails[];
 }
 
 export interface UserDetails {
@@ -652,6 +654,6 @@ export interface MintingAuthorizationRequest {
 }
 
 export interface MintingAuthorizationResponse {
-  code: string;
-  tx_hash: string;
+  token: TokenDetails;
+  metadata_url?: string;
 }
