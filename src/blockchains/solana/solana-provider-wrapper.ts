@@ -108,7 +108,7 @@ export class SolanaProviderWrapper {
   public async mint(
     toAddress: string,
     fromAddress: string,
-    _authCode: string,
+    metadataUrl: string,
   ): Promise<string | undefined> {
     if (!this._adapter) {
       throw new Error('Solana wallet adapter not initialized');
@@ -145,7 +145,7 @@ export class SolanaProviderWrapper {
       programID,
       {
         creatorKey: mintKey.publicKey,
-        uri: 'https://cdn.madskullz.io/madskullz/metadata/2795.json',
+        uri: metadataUrl,
         title: 'kycNFT',
       },
       {

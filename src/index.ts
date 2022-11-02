@@ -1346,7 +1346,9 @@ export class KycDao extends ApiBase {
 
   // TODO later: more NFT image selection options: URL? File upload? We provide options the 3rd party site can implement a selector for?
 
-  private async authorizeMinting(chainAndAddress: ChainAndAddress): Promise<string> {
+  private async authorizeMinting(
+    chainAndAddress: ChainAndAddress,
+  ): Promise<MintingAuthorizationResponse> {
     const errorPrefix = 'Cannot authorize minting';
 
     const network = chainAndAddress.blockchainNetwork;
@@ -1360,13 +1362,18 @@ export class KycDao extends ApiBase {
       };
 
       const res = await this.post<MintingAuthorizationResponse>('authorize_minting', data);
+      const txHash = res.token.authorization_tx_id;
 
-      const transaction = await this.waitForTransaction(chainAndAddress, res.tx_hash);
-      if (transaction.status === 'Failure') {
-        throw new Error('Transaction failed.');
+      if (!txHash) {
+        throw new Error(`${errorPrefix} - Transaction ID not found`);
       }
 
-      return res.code;
+      const transaction = await this.waitForTransaction(chainAndAddress, txHash);
+      if (transaction.status === 'Failure') {
+        throw new Error('Transaction failed');
+      }
+
+      return res;
     } catch (e) {
       if (e instanceof Error) {
         throw new Error(`${errorPrefix} - ${e.message}`);
@@ -1378,7 +1385,7 @@ export class KycDao extends ApiBase {
 
   private async mint(
     chainAndAddress: ChainAndAddress,
-    authorizationCode: string,
+    mintAuthResponse: MintingAuthorizationResponse,
     verificationType: VerificationType,
   ): Promise<void> {
     const errorPrefix = 'Cannot mint';
@@ -1388,13 +1395,16 @@ export class KycDao extends ApiBase {
       verificationType,
     );
 
+    const authorizationCode = mintAuthResponse.token.authorization_code;
+    const tokenMetadataUrl = mintAuthResponse.metadata_url;
+
     let txHash: string | undefined;
     let tokenId: string | undefined;
 
     switch (chainAndAddress.blockchain) {
       case 'Near': {
         if (!this.near) {
-          throw new Error(`${errorPrefix} - Near SDK not initialized.`);
+          throw new Error(`${errorPrefix} - Near SDK not initialized`);
         }
 
         const contract: KycDaoContract = new Contract(
@@ -1412,7 +1422,7 @@ export class KycDao extends ApiBase {
 
         const mintFn = contract.mint;
         if (!mintFn) {
-          throw new Error('Mint function not callable.');
+          throw new Error('Mint function not callable');
         }
 
         await mintFn({
@@ -1426,11 +1436,11 @@ export class KycDao extends ApiBase {
       }
       case 'Ethereum': {
         if (!this.evmProvider) {
-          throw new Error(`${errorPrefix} - EVM provider not configured.`);
+          throw new Error(`${errorPrefix} - EVM provider not configured`);
         }
 
         if (!contractAddress) {
-          throw new Error(`${errorPrefix} - Smart contract address not found.`);
+          throw new Error(`${errorPrefix} - Smart contract address not found`);
         }
 
         txHash = await this.evmProvider.mint(
@@ -1443,7 +1453,7 @@ export class KycDao extends ApiBase {
           const transaction = await this.waitForTransaction(chainAndAddress, txHash);
 
           if (transaction.status === 'Failure') {
-            throw new Error(`${errorPrefix} - Transaction failed.`);
+            throw new Error(`${errorPrefix} - Transaction failed`);
           }
 
           const receipt = transaction.data as EvmTransactionReceipt;
@@ -1456,24 +1466,24 @@ export class KycDao extends ApiBase {
       }
       case 'Solana': {
         if (!this.solana) {
-          throw new Error(`${errorPrefix} - Solana support is not enabled.`);
+          throw new Error(`${errorPrefix} - Solana support is not enabled`);
         }
 
         if (!contractAddress) {
-          throw new Error(`${errorPrefix} - Smart contract address not found.`);
+          throw new Error(`${errorPrefix} - Smart contract address not found`);
         }
 
-        txHash = await this.solana.mint(
-          contractAddress,
-          chainAndAddress.address,
-          authorizationCode,
-        );
+        if (!tokenMetadataUrl) {
+          throw new Error(`${errorPrefix} - Token metadata not found`);
+        }
+
+        txHash = await this.solana.mint(contractAddress, chainAndAddress.address, tokenMetadataUrl);
 
         if (txHash) {
           const transaction = await this.waitForTransaction(chainAndAddress, txHash);
 
           if (transaction.status === 'Failure') {
-            throw new Error(`${errorPrefix} - Transaction failed.`);
+            throw new Error(`${errorPrefix} - Transaction failed`);
           }
 
           tokenId = transaction.data as string;
@@ -1484,7 +1494,7 @@ export class KycDao extends ApiBase {
         break;
       }
       default:
-        throw new Error(`${errorPrefix} - Unsupported blockchain: ${chainAndAddress.blockchain}.`);
+        throw new Error(`${errorPrefix} - Unsupported blockchain: ${chainAndAddress.blockchain}`);
     }
 
     if (txHash && tokenId) {
