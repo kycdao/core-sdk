@@ -109,6 +109,7 @@ export class SolanaProviderWrapper {
     toAddress: string,
     fromAddress: string,
     metadataUrl: string,
+    tokenTitle: string,
   ): Promise<string | undefined> {
     if (!this._adapter) {
       throw new Error('Solana wallet adapter not initialized');
@@ -146,7 +147,7 @@ export class SolanaProviderWrapper {
       {
         creatorKey: mintKey.publicKey,
         uri: metadataUrl,
-        title: 'kycNFT',
+        title: tokenTitle,
       },
       {
         mintAuthority: walletPubKey,

@@ -657,3 +657,9 @@ export interface MintingAuthorizationResponse {
   token: TokenDetails;
   metadata_url?: string;
 }
+
+export interface TokenMetadata {
+  name: string;
+  description: string;
+  image: string;
+}

@@ -35,6 +35,7 @@ import {
   ServerStatus,
   Session,
   SolanaBlockchainNetwork,
+  TokenMetadata,
   Transaction,
   UserDetails,
   UserUpdateRequest,
@@ -1477,7 +1478,28 @@ export class KycDao extends ApiBase {
           throw new Error(`${errorPrefix} - Token metadata not found`);
         }
 
-        txHash = await this.solana.mint(contractAddress, chainAndAddress.address, tokenMetadataUrl);
+        const tokenMetadataResponse = await fetch(tokenMetadataUrl);
+        const isJson = tokenMetadataResponse.headers
+          .get('content-type')
+          ?.includes('application/json');
+        const tokenMetadata = isJson ? await tokenMetadataResponse.json() : null;
+
+        if (
+          !tokenMetadataResponse.ok ||
+          !isLike<TokenMetadata>(tokenMetadata) ||
+          typeof tokenMetadata.name !== 'string' ||
+          typeof tokenMetadata.description !== 'string' ||
+          typeof tokenMetadata.image !== 'string'
+        ) {
+          throw new Error(`${errorPrefix} - Token metadata is invalid`);
+        }
+
+        txHash = await this.solana.mint(
+          contractAddress,
+          chainAndAddress.address,
+          tokenMetadataUrl,
+          tokenMetadata.name,
+        );
 
         if (txHash) {
           const transaction = await this.waitForTransaction(chainAndAddress, txHash);
