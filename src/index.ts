@@ -891,10 +891,10 @@ export class KycDao extends ApiBase {
   /**
    * Checks on chain if the provided (or the currently connected) wallet has a valid kycNFT.
    *
-   * @remarks \
-   * **IMPORTANT!** \
-   * The result of this request can be manipulated on the client side so make sure to verify this on the server side as well.
-   * @alpha
+   * @remarks
+   * **Security note:** \
+   * The result of this request is prone to client side manipulation. \
+   * For maximum security add the verification check directly to your smart contract or use server side verification.
    * @public
    * @async
    * @returns {Promise<boolean>}
