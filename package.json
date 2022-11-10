@@ -7,7 +7,6 @@
   "repository": "git@github.com:kycdao/kycdao-sdk.git",
   "author": "kycDAO",
   "license": "UNLICENSED",
-  "private": false,
   "scripts": {
     "start": "webpack serve --progress --no-hot --config ./webpack.config.development.js",
     "bundle": "webpack --config ./webpack.config.production.js",
@@ -61,5 +60,6 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "packageManager": "yarn@4.0.0-rc.26"
 }
