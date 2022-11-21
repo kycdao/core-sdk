@@ -64,41 +64,50 @@ export const BlockchainNetworkDetails: Record<BlockchainNetwork, BlockchainNetwo
     blockchain: Blockchains.Ethereum,
     rpcUrl: 'https://rpc.ankr.com/eth_goerli',
     chainId: '0x5',
+    isMainnet: false,
   },
   EthereumMainnet: {
     blockchain: Blockchains.Ethereum,
     rpcUrl: 'https://rpc.ankr.com/eth',
     chainId: '0x1',
+    isMainnet: true,
   },
   NearMainnet: {
     blockchain: Blockchains.Near,
     rpcUrl: 'https://rpc.mainnet.near.org',
+    isMainnet: true,
   },
   NearTestnet: {
     blockchain: Blockchains.Near,
     rpcUrl: 'https://rpc.testnet.near.org',
+    isMainnet: false,
   },
   PolygonMainnet: {
     blockchain: Blockchains.Ethereum,
     rpcUrl: 'https://polygon-rpc.com',
     chainId: '0x89',
+    isMainnet: true,
   },
   PolygonMumbai: {
     blockchain: Blockchains.Ethereum,
     rpcUrl: 'https://matic-mumbai.chainstacklabs.com',
     chainId: '0x13881',
+    isMainnet: false,
   },
   SolanaDevnet: {
     blockchain: Blockchains.Solana,
     rpcUrl: 'https://api.devnet.solana.com',
+    isMainnet: false,
   },
   SolanaMainnet: {
     blockchain: Blockchains.Solana,
     rpcUrl: 'https://api.mainnet-beta.solana.com',
+    isMainnet: true,
   },
   SolanaTestnet: {
     blockchain: Blockchains.Solana,
     rpcUrl: 'https://api.testnet.solana.com',
+    isMainnet: false,
   },
 };
 

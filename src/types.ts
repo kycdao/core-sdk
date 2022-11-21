@@ -111,6 +111,10 @@ export type RedirectEvent = 'NearLogin' | 'NearMint' | 'NearUserRejectedError';
 
 /* PUBLIC (included in API reference)*/
 
+export interface BlockchainNetworkConfiguration {
+  rpcUrl?: string;
+}
+
 /**
  * Configuration parameters required for instantiating the SDK object.
  *
@@ -177,6 +181,14 @@ export interface SdkConfiguration {
    * @type {?unknown}
    */
   evmProvider?: unknown;
+  /**
+   * An optional blockchain network configuration override parameter which allows certain netwark related values to be customized (e.g. custom RPC endpoints can be specified)
+   *
+   * @type {?Partial<Record<BlockchainNetwork, BlockchainNetworkConfiguration>>}
+   */
+  blockchainNetworkConfiguration?: Partial<
+    Record<BlockchainNetwork, BlockchainNetworkConfiguration>
+  >;
 }
 
 /**
@@ -193,25 +205,25 @@ export interface SdkStatus {
    */
   baseUrl: string;
   /**
-   * A flag indicating if demo mode is turned on or not. See {@link SdkConfiguration.demoMode}
+   * A flag indicating if demo mode is turned on or not. See {@link SdkConfiguration.demoMode}.
    *
    * @type {boolean}
    */
   demoMode: boolean;
   /**
-   * List of {@link BlockchainNetworks} currently available to use. See {@link SdkConfiguration.enabledBlockchainNetworks}
+   * List of {@link BlockchainNetworks} currently available to use. See {@link SdkConfiguration.enabledBlockchainNetworks}.
    *
    * @type {BlockchainNetwork[]}
    */
   availableBlockchainNetworks: BlockchainNetwork[];
   /**
-   * List of {@link VerificationTypes} currently available to use. See {@link SdkConfiguration.enabledVerificationTypes}
+   * List of {@link VerificationTypes} currently available to use. See {@link SdkConfiguration.enabledVerificationTypes}.
    *
    * @type {VerificationType[]}
    */
   availableVerificationTypes: VerificationType[];
   /**
-   * A flag indicating if an EVM provider is configured and ready to use or not. See {@link SdkConfiguration.evmProvider}
+   * A flag indicating if an EVM provider is configured and ready to use or not. See {@link SdkConfiguration.evmProvider}.
    *
    * @type {boolean}
    */
@@ -333,6 +345,12 @@ export interface BlockchainNetworkInfo {
    * @type {string}
    */
   rpcUrl: string;
+  /**
+   * A flag indicating if this is a main network or not.
+   *
+   * @type {boolean}
+   */
+  isMainnet: boolean;
 }
 
 export interface Country {
@@ -364,11 +382,42 @@ export interface NftCheckOptions {
    */
   networkAndAddress?: NetworkAndAddress;
   /**
+   * @deprecated since version 0.3.6, use {@link SdkConfiguration.blockchainNetworkConfiguration} instead to override RPC endpoints.
+   *
    * A custom RPC endpoint URL to use for the check instead of the default one.
    *
    * @type {string}
    */
   rpcUrl?: string;
+}
+
+/**
+ * The result of an on-chain valid kycDAO NFT check.
+ *
+ * @interface NftCheckResponse
+ * @typedef {NftCheckResponse}
+ */
+export interface NftCheckResponse {
+  /**
+   * The network and wallet address that was checked.
+   *
+   * @type {NetworkAndAddress}
+   */
+  networkAndAddress: NetworkAndAddress;
+  /**
+   * The result of the check.\
+   * It will always have a value if the check was successfully performed and it will be undefined if the check failed.
+   *
+   * @type {?boolean}
+   */
+  hasValidNft?: boolean;
+  /**
+   * The error encountered during the check.\
+   * It will always have a value if the checking process failed and it will be undefined if the check was successfully performed.
+   *
+   * @type {?string}
+   */
+  error?: string;
 }
 
 /**
