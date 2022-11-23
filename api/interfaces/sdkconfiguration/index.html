@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="turbo-root" content="/kycdao-js-sdk">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="2.4.0.721395566949">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="2.4.0.722520835067">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 2.4.0">
@@ -12,7 +12,7 @@
     <!-- Primary Meta Tags -->
     <title>SdkConfiguration</title>
     <meta name="title" content="SdkConfiguration">
-    <meta name="description" content="@kycdao/kycdao-sdk - v0.3.5/ SdkConfiguration" />
+    <meta name="description" content="@kycdao/kycdao-sdk - v0.3.6/ SdkConfiguration" />
 
     <!-- Canonical -->
     <link rel="canonical" href="https://kycdao.github.io/kycdao-js-sdk/api/interfaces/sdkconfiguration/" />
@@ -21,21 +21,21 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://kycdao.github.io/kycdao-js-sdk/api/interfaces/sdkconfiguration/">
     <meta property="og:title" content="SdkConfiguration">
-    <meta property="og:description" content="@kycdao/kycdao-sdk - v0.3.5/ SdkConfiguration">
+    <meta property="og:description" content="@kycdao/kycdao-sdk - v0.3.6/ SdkConfiguration">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://kycdao.github.io/kycdao-js-sdk/api/interfaces/sdkconfiguration/">
     <meta property="twitter:title" content="SdkConfiguration">
-    <meta property="twitter:description" content="@kycdao/kycdao-sdk - v0.3.5/ SdkConfiguration">
+    <meta property="twitter:description" content="@kycdao/kycdao-sdk - v0.3.6/ SdkConfiguration">
 
     <script>(function () { var el = document.documentElement, m = localStorage.getItem("/kycdao-js-sdk/doc_theme"), wm = window.matchMedia; if (m === "dark" || (!m && wm && wm("(prefers-color-scheme: dark)").matches)) { el.classList.add("dark") } else { el.classList.remove("dark") } })();</script>
 
-    <link href="../../../resources/css/retype.css?v=2.4.0.721395566949" rel="stylesheet" />
+    <link href="../../../resources/css/retype.css?v=2.4.0.722520835067" rel="stylesheet" />
 
-    <script type="text/javascript" src="../../../resources/js/config.js?v=2.4.0.721395566949" data-turbo-eval="false" defer></script>
+    <script type="text/javascript" src="../../../resources/js/config.js?v=2.4.0.722520835067" data-turbo-eval="false" defer></script>
     <script type="text/javascript" src="../../../resources/js/retype.js?v=2.4.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" type="text/javascript" src="../../../resources/js/lunr.js?v=2.4.0.721395566949" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" type="text/javascript" src="../../../resources/js/lunr.js?v=2.4.0.722520835067" data-turbo-eval="false" defer></script>
 </head>
 <body>
     <div id="docs-app" class="relative text-base antialiased text-gray-700 bg-white font-body dark:bg-dark-850 dark:text-dark-300">
@@ -162,7 +162,7 @@
         <span>SdkConfiguration</span>
     </h1>
 </doc-anchor-target>
-<p><a href="../../">@kycdao/kycdao-sdk - v0.3.5</a> / SdkConfiguration</p>
+<p><a href="../../">@kycdao/kycdao-sdk - v0.3.6</a> / SdkConfiguration</p>
 <p>Configuration parameters required for instantiating the SDK object.</p>
 <p><strong><code v-pre>Interface</code></strong></p>
 <p>SdkConfiguration</p>
@@ -181,6 +181,7 @@
 <ul>
 <li><doc-anchor-trigger to="#apikey">apiKey</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#baseurl">baseUrl</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#blockchainnetworkconfiguration">blockchainNetworkConfiguration</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#demomode">demoMode</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#enabledblockchainnetworks">enabledBlockchainNetworks</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#enabledverificationtypes">enabledVerificationTypes</doc-anchor-trigger></li>
@@ -208,7 +209,7 @@ Optional API key used to identify the client initializing the SDK.</p>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/ac8ddc3/src/types.ts#L127">types.ts:127</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/types.ts#L131">types.ts:131</a></p>
 <hr />
 <doc-anchor-target id="baseurl">
     <h3>
@@ -226,7 +227,23 @@ For production use <code v-pre>https://kycdao.xyz</code></p>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/ac8ddc3/src/types.ts#L153">types.ts:153</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/types.ts#L157">types.ts:157</a></p>
+<hr />
+<doc-anchor-target id="blockchainnetworkconfiguration">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#blockchainnetworkconfiguration">#</doc-anchor-trigger>
+        <span>blockchainNetworkConfiguration</span>
+    </h3>
+</doc-anchor-target>
+<p>• <code v-pre>Optional</code> <strong>blockchainNetworkConfiguration</strong>: <code v-pre>Partial</code>&lt;<code v-pre>Record</code>&lt;<code v-pre>&quot;EthereumGoerli&quot;</code> | <code v-pre>&quot;EthereumMainnet&quot;</code> | <code v-pre>&quot;PolygonMainnet&quot;</code> | <code v-pre>&quot;PolygonMumbai&quot;</code> | <code v-pre>&quot;NearMainnet&quot;</code> | <code v-pre>&quot;NearTestnet&quot;</code> | <code v-pre>&quot;SolanaDevnet&quot;</code> | <code v-pre>&quot;SolanaMainnet&quot;</code> | <code v-pre>&quot;SolanaTestnet&quot;</code>, <a href="../blockchainnetworkconfiguration/"><code v-pre>BlockchainNetworkConfiguration</code></a>&gt;&gt;</p>
+<p>An optional blockchain network configuration override parameter which allows certain netwark related values to be customized (e.g. custom RPC endpoints can be specified)</p>
+<doc-anchor-target id="defined-in-2">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-2">#</doc-anchor-trigger>
+        <span>Defined in</span>
+    </h4>
+</doc-anchor-target>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/types.ts#L189">types.ts:189</a></p>
 <hr />
 <doc-anchor-target id="demomode">
     <h3>
@@ -240,13 +257,13 @@ Demo mode is intended to be more conveninet for demonstrating (and also developi
 It removes some verification and minting restrictions so the same wallet/user can be used multiple times to start/finish the flows.</p>
 <p><strong><code v-pre>Default</code></strong></p>
 <p>false</p>
-<doc-anchor-target id="defined-in-2">
+<doc-anchor-target id="defined-in-3">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-2">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-3">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/ac8ddc3/src/types.ts#L145">types.ts:145</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/types.ts#L149">types.ts:149</a></p>
 <hr />
 <doc-anchor-target id="enabledblockchainnetworks">
     <h3>
@@ -259,13 +276,13 @@ It removes some verification and minting restrictions so the same wallet/user ca
 This can influence what third party providers will get initialized.<br />
 As a rule of thumb test networks will be available when connecting to a kycDAO test server and main networks when connecting to the kycDAO production server (see <doc-anchor-trigger to="#baseurl">baseUrl</doc-anchor-trigger>).</p>
 <p>If undefined, all networks available on the configured kycDAO server will be enabled.</p>
-<doc-anchor-target id="defined-in-3">
+<doc-anchor-target id="defined-in-4">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-3">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-4">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/ac8ddc3/src/types.ts#L163">types.ts:163</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/types.ts#L167">types.ts:167</a></p>
 <hr />
 <doc-anchor-target id="enabledverificationtypes">
     <h3>
@@ -276,13 +293,13 @@ As a rule of thumb test networks will be available when connecting to a kycDAO t
 <p>• <strong>enabledVerificationTypes</strong>: (<code v-pre>&quot;AccreditedInvestor&quot;</code> | <code v-pre>&quot;KYC&quot;</code>)[]</p>
 <p>List of <a href="../../enums/verificationtypes/">VerificationTypes</a> to be available to use.<br />
 This can influence what third party providers will get initialized.</p>
-<doc-anchor-target id="defined-in-4">
+<doc-anchor-target id="defined-in-5">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-4">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-5">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/ac8ddc3/src/types.ts#L170">types.ts:170</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/types.ts#L174">types.ts:174</a></p>
 <hr />
 <doc-anchor-target id="environment">
     <h3>
@@ -296,13 +313,13 @@ This can influence what third party providers will get initialized.</p>
 <p>Environment type used for influencing the behavior of the SDK.</p>
 <p><strong><code v-pre>See</code></strong></p>
 <p><a href="../../enums/kycdaoenvironments/">KycDaoEnvironments</a> for more details.</p>
-<doc-anchor-target id="defined-in-5">
+<doc-anchor-target id="defined-in-6">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-5">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-6">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/ac8ddc3/src/types.ts#L136">types.ts:136</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/types.ts#L140">types.ts:140</a></p>
 <hr />
 <doc-anchor-target id="evmprovider">
     <h3>
@@ -315,13 +332,13 @@ This can influence what third party providers will get initialized.</p>
 Historically, EVM providers have been made available as the <code v-pre>window.ethereum</code> object in web browsers, but this convention is not part of the mentioned specifications.<br />
 <br />
 Existance of required methods/fields will be verified during SDK initialization.</p>
-<doc-anchor-target id="defined-in-6">
+<doc-anchor-target id="defined-in-7">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-6">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-7">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/ac8ddc3/src/types.ts#L179">types.ts:179</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/types.ts#L183">types.ts:183</a></p>
 
                                 
                                 <!-- Required only on API pages -->
