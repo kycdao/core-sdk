@@ -27,7 +27,9 @@ import {
   MintingData,
   NearBlockchainNetwork,
   NearSdk,
+  NetworkAndAddress,
   NftCheckOptions,
+  NftCheckResponse,
   PersonaOptions,
   RedirectEvent,
   SdkConfiguration,
@@ -47,7 +49,7 @@ import {
 } from './types';
 import { default as COUNTRIES } from './countries.list.json';
 import { FinalExecutionOutcome, JsonRpcProvider } from 'near-api-js/lib/providers';
-import { isLike, partition, poll } from './utils';
+import { isFulfilled, isLike, partition, poll } from './utils';
 import { EvmProviderWrapper } from './blockchains/evm/evm-provider-wrapper';
 import { EvmProvider, EvmTransactionReceipt, ProviderRpcError } from './blockchains/evm/types';
 import { KycDaoJsonRpcProvider } from './blockchains/kycdao-json-rpc-provider';
@@ -68,6 +70,7 @@ export { ConnectConfig as NearConnectConfig } from 'near-api-js';
 export {
   Blockchain,
   BlockchainNetwork,
+  BlockchainNetworkConfiguration,
   ChainAndAddress,
   Country,
   EvmBlockchainNetwork,
@@ -75,6 +78,7 @@ export {
   NearBlockchainNetwork,
   NetworkAndAddress,
   NftCheckOptions,
+  NftCheckResponse,
   PersonaOptions,
   SdkConfiguration,
   SdkStatus,
@@ -134,13 +138,13 @@ export const Countries: Country[] = Array.from(COUNTRIES);
 export class KycDao extends ApiBase {
   private demoMode: boolean;
   private verificationTypes: VerificationType[];
-  private blockchainNetworks?: BlockchainNetwork[];
-  private evmProvider?: EvmProviderWrapper;
+  private blockchainNetworks: BlockchainNetwork[];
+  private blockchainNetworkDetails = BlockchainNetworkDetails;
 
   private apiStatus?: ApiStatus;
 
   private near?: NearSdk;
-
+  private evmProvider?: EvmProviderWrapper;
   private solana?: SolanaProviderWrapper;
 
   private _chainAndAddress?: ChainAndAddress;
@@ -155,8 +159,8 @@ export class KycDao extends ApiBase {
     return {
       baseUrl: this.baseUrl,
       demoMode: this.demoMode,
-      availableBlockchainNetworks: this.blockchainNetworks || [],
-      availableVerificationTypes: this.verificationTypes || [],
+      availableBlockchainNetworks: this.blockchainNetworks,
+      availableVerificationTypes: this.verificationTypes,
       evmProviderConfigured: !!this.evmProvider,
       nearNetworkConnected: this.near?.blockchainNetwork || null,
       solanaNetworkConnected: this.solana?.blockchainNetwork || null,
@@ -799,6 +803,7 @@ export class KycDao extends ApiBase {
 
     this.demoMode = !!config.demoMode;
     this.verificationTypes = config.enabledVerificationTypes;
+    this.blockchainNetworks = [];
 
     this.verificationStatus = {
       personaSessionData: undefined,
@@ -816,7 +821,21 @@ export class KycDao extends ApiBase {
    */
   public static async initialize(config: SdkConfiguration): Promise<KycDaoInitializationResult> {
     const kycDao = new KycDao(config);
+
+    // TODO handle and return specific error
     kycDao.apiStatus = await kycDao.get<ApiStatus>('status');
+
+    // update blockchain network details with values from the incoming config
+    const networkConf = config.blockchainNetworkConfiguration;
+    if (networkConf) {
+      let network: BlockchainNetwork;
+      for (network in networkConf) {
+        kycDao.blockchainNetworkDetails[network] = {
+          ...kycDao.blockchainNetworkDetails[network],
+          ...networkConf[network],
+        };
+      }
+    }
 
     kycDao.blockchainNetworks = KycDao.validateBlockchainNetworks(
       kycDao.apiStatus.enabled_networks,
@@ -826,6 +845,7 @@ export class KycDao extends ApiBase {
     const evmProvider = KycDao.validateEvmProvider(kycDao.blockchainNetworks, config.evmProvider);
     kycDao.evmProvider = evmProvider ? new EvmProviderWrapper(evmProvider) : undefined;
 
+    // remove EVM networks from the available list if no evmProvider is set in the congfig
     if (!evmProvider) {
       kycDao.blockchainNetworks = kycDao.blockchainNetworks.filter(
         (network) => !Object.keys(EvmBlockchainNetworks).includes(network),
@@ -834,6 +854,7 @@ export class KycDao extends ApiBase {
 
     // add EVM provider event handlers here with the `on` method (accountsChanged, chainChanged) if needed
 
+    // initialize NEAR if there is an available NEAR network
     const nearNetwork = kycDao.blockchainNetworks.find((network) =>
       network.startsWith('Near'),
     ) as NearBlockchainNetwork;
@@ -841,6 +862,7 @@ export class KycDao extends ApiBase {
       kycDao.initNear(nearNetwork);
     }
 
+    // initialize Solana if there is an available Solana network
     const solanaNetwork = kycDao.blockchainNetworks.find((network) =>
       network.startsWith('Solana'),
     ) as SolanaBlockchainNetwork;
@@ -888,6 +910,51 @@ export class KycDao extends ApiBase {
     };
   }
 
+  private getChainAndAddressForNftCheck(options?: NftCheckOptions): ChainAndAddress {
+    const networkAndAddress = options?.networkAndAddress;
+    const chainAndAddress = networkAndAddress
+      ? {
+          ...networkAndAddress,
+          blockchain: BlockchainNetworkDetails[networkAndAddress.blockchainNetwork].blockchain,
+        }
+      : this._chainAndAddress;
+
+    if (!chainAndAddress) {
+      throw new Error(
+        'BlockchainNetwork and address not set yet. Either connect a wallet with kycDAO first or specify them in the parameters.',
+      );
+    }
+
+    const address = chainAndAddress.address;
+
+    if (!address) {
+      throw new Error('Wallet address cannot be empty.');
+    }
+
+    return chainAndAddress;
+  }
+
+  private async checkValidNft(
+    verificationType: VerificationType,
+    chainAndAddress: ChainAndAddress,
+  ): Promise<boolean> {
+    const { address, blockchain, blockchainNetwork } = chainAndAddress;
+
+    // TODO - Maybe we should start using multiple RPC endpoints and retry with a different one after a fail?
+    const rpcUrl = BlockchainNetworkDetails[blockchainNetwork].rpcUrl;
+
+    const contractAddress =
+      this.apiStatus?.smart_contracts_info?.[blockchainNetwork]?.[verificationType]?.address;
+
+    if (!contractAddress) {
+      throw new Error('Smart contract address not found.');
+    }
+
+    const rpcProvider = new KycDaoJsonRpcProvider(blockchain, rpcUrl);
+
+    return await rpcProvider.hasValidToken(contractAddress, address);
+  }
+
   /**
    * Checks on chain if the provided (or the currently connected) wallet has a valid kycNFT.
    *
@@ -903,39 +970,66 @@ export class KycDao extends ApiBase {
     verificationType: VerificationType,
     options?: NftCheckOptions,
   ): Promise<boolean> {
-    const networkAndAddress = options?.networkAndAddress;
-    const chainAndAddress = networkAndAddress
-      ? {
-          ...networkAndAddress,
-          blockchain: BlockchainNetworkDetails[networkAndAddress.blockchainNetwork].blockchain,
-        }
-      : this._chainAndAddress;
+    const chainAndAddress = this.getChainAndAddressForNftCheck(options);
 
-    if (!chainAndAddress) {
-      throw new Error(
-        'BlockchainNetwork and address not set yet. Either connect a wallet with kycDAO first or specify them in the parameters.',
+    return await this.checkValidNft(verificationType, chainAndAddress);
+  }
+
+  /**
+   * Returns a list of NFT check responses where each element of the list is the response to a check performed on a different {@link BlockchainNetworks | blockchain network}.
+   * The list of networks is selected from the {@link SdkStatus.availableBlockchainNetworks | available networks} with the {@link Blockchains | blockchain} of the provided (or the currently connected) wallet.
+   * If the provided/connected wallet is on a main network the resulting list will only include main networks and if it's on a dev/test network the list will only include dev/test networks.
+   *
+   * @remarks
+   * **Security note:** \
+   * The result of this request is prone to client side manipulation. \
+   * For maximum security add the verification check directly to your smart contract or use server side verification.
+   * @public
+   * @async
+   * @returns {Promise<NftCheckResponse[]>}
+   */
+  public async checkVerifiedNetworks(
+    verificationType: VerificationType,
+    options?: NftCheckOptions,
+  ): Promise<NftCheckResponse[]> {
+    const chainAndAddress = this.getChainAndAddressForNftCheck(options);
+    const selectedNetworkInfo = this.blockchainNetworkDetails[chainAndAddress.blockchainNetwork];
+
+    const networksToCheck: BlockchainNetwork[] = (
+      Object.keys(this.blockchainNetworkDetails) as Array<BlockchainNetwork>
+    ).filter((blockchainNetwork) => {
+      const info = this.blockchainNetworkDetails[blockchainNetwork];
+      return (
+        this.blockchainNetworks.includes(blockchainNetwork) &&
+        info.blockchain === selectedNetworkInfo.blockchain &&
+        info.isMainnet === selectedNetworkInfo.isMainnet
       );
-    }
+    });
 
-    const { address, blockchain, blockchainNetwork } = chainAndAddress;
+    const promises: Promise<NftCheckResponse>[] = networksToCheck.map((blockchainNetwork) => {
+      const networkAndAddress: NetworkAndAddress = {
+        blockchainNetwork,
+        address: chainAndAddress.address,
+      };
 
-    if (!address) {
-      throw new Error('Wallet address cannot be empty.');
-    }
+      return new Promise((resolve, _) => {
+        this.checkValidNft(verificationType, {
+          ...chainAndAddress,
+          blockchainNetwork,
+        })
+          .then((hasValidNft) => {
+            resolve({ networkAndAddress, hasValidNft });
+          })
+          .catch((reason) => {
+            resolve({ networkAndAddress, error: String(reason) });
+          });
+      });
+    });
 
-    const rpcUrl =
-      options?.rpcUrl || BlockchainNetworkDetails[chainAndAddress.blockchainNetwork].rpcUrl;
+    const results = await Promise.allSettled(promises);
+    const fulfilled = results.filter(isFulfilled);
 
-    const contractAddress =
-      this.apiStatus?.smart_contracts_info?.[blockchainNetwork]?.[verificationType]?.address;
-
-    if (!contractAddress) {
-      throw new Error('Smart contract address not found.');
-    }
-
-    const rpcProvider = new KycDaoJsonRpcProvider(blockchain, rpcUrl);
-
-    return await rpcProvider.hasValidToken(contractAddress, address);
+    return fulfilled.map((fulfilled) => fulfilled.value);
   }
 
   /**
@@ -984,7 +1078,7 @@ export class KycDao extends ApiBase {
           throw new Error(`${errorPrefix} - Connected EVM network is not supported.`);
         }
 
-        if (!this.blockchainNetworks?.includes(blockchainNetwork)) {
+        if (!this.blockchainNetworks.includes(blockchainNetwork)) {
           throw new Error(`${errorPrefix} - Connected EVM network is not enabled.`);
         }
 

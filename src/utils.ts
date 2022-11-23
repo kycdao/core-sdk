@@ -10,6 +10,14 @@ export function isLike<T>(given: unknown): given is Partial<Record<keyof T, unkn
   return typeof given === 'object' && given !== null;
 }
 
+export function isFulfilled<T>(input: PromiseSettledResult<T>): input is PromiseFulfilledResult<T> {
+  return input.status === 'fulfilled';
+}
+
+export function isRejected(input: PromiseSettledResult<unknown>): input is PromiseRejectedResult {
+  return input.status === 'rejected';
+}
+
 export interface PollingOptions<T> {
   useExponentialBackoff?: boolean;
   resolvePredicate?: (result: T) => boolean;
