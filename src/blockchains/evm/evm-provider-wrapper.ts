@@ -18,6 +18,26 @@ export class EvmProviderWrapper {
     this.decoder = new EvmResponseDecoder();
   }
 
+  public isWalletConnect(): boolean {
+    return !!this.provider.isWalletConnect;
+  }
+
+  public async walletConnectEnable(): Promise<string[]> {
+    if (this.provider.isWalletConnect) {
+      return await this.provider.enable();
+    } else {
+      throw new Error('Provider is not WalletConnect');
+    }
+  }
+
+  public async walletConnectDisconnect(): Promise<void> {
+    if (this.provider.isWalletConnect) {
+      return await this.provider.disconnect();
+    } else {
+      throw new Error('Provider is not WalletConnect');
+    }
+  }
+
   private async getTokenTransferEventHash(): Promise<string> {
     if (!this.tokenTransferEventHash) {
       this.tokenTransferEventHash = await this.web3Sha3('Transfer(address,address,uint256)');

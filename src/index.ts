@@ -50,7 +50,7 @@ import {
 } from './types';
 import { default as COUNTRIES } from './countries.list.json';
 import { FinalExecutionOutcome, JsonRpcProvider } from 'near-api-js/lib/providers';
-import { isFulfilled, isLike, partition, poll } from './utils';
+import { isFulfilled, isLike, partition, poll, typedKeys } from './utils';
 import { EvmProviderWrapper } from './blockchains/evm/evm-provider-wrapper';
 import { EvmProvider, EvmTransactionReceipt, ProviderRpcError } from './blockchains/evm/types';
 import { KycDaoJsonRpcProvider } from './blockchains/kycdao-json-rpc-provider';
@@ -1001,16 +1001,16 @@ export class KycDao extends ApiBase {
     const chainAndAddress = this.getChainAndAddressForNftCheck(options);
     const selectedNetworkInfo = this.blockchainNetworkDetails[chainAndAddress.blockchainNetwork];
 
-    const networksToCheck: BlockchainNetwork[] = (
-      Object.keys(this.blockchainNetworkDetails) as Array<BlockchainNetwork>
-    ).filter((blockchainNetwork) => {
-      const info = this.blockchainNetworkDetails[blockchainNetwork];
-      return (
-        this.blockchainNetworks.includes(blockchainNetwork) &&
-        info.blockchain === selectedNetworkInfo.blockchain &&
-        info.isMainnet === selectedNetworkInfo.isMainnet
-      );
-    });
+    const networksToCheck: BlockchainNetwork[] = typedKeys(this.blockchainNetworkDetails).filter(
+      (blockchainNetwork) => {
+        const info = this.blockchainNetworkDetails[blockchainNetwork];
+        return (
+          this.blockchainNetworks.includes(blockchainNetwork) &&
+          info.blockchain === selectedNetworkInfo.blockchain &&
+          info.isMainnet === selectedNetworkInfo.isMainnet
+        );
+      },
+    );
 
     const promises: Promise<NftCheckResponse>[] = networksToCheck.map((blockchainNetwork) => {
       const networkAndAddress: NetworkAndAddress = {
@@ -1056,15 +1056,19 @@ export class KycDao extends ApiBase {
           console.error('EVM provider not configured');
           throw new Error(`${errorPrefix} - EVM provider not configured.`);
         }
+        let addresses: string[];
 
-        let addresses = await this.evmProvider.getAccounts();
-
-        if (!addresses.length) {
-          try {
-            addresses = await this.evmProvider.requestAccounts();
-          } catch (error) {
-            if (isLike<ProviderRpcError>(error) && error.code === 4001) {
-              throw new Error(`${errorPrefix} - User cancelled account connection request.`);
+        if (this.evmProvider.isWalletConnect()) {
+          addresses = await this.evmProvider.walletConnectEnable();
+        } else {
+          addresses = await this.evmProvider.getAccounts();
+          if (!addresses.length) {
+            try {
+              addresses = await this.evmProvider.requestAccounts();
+            } catch (error) {
+              if (isLike<ProviderRpcError>(error) && error.code === 4001) {
+                throw new Error(`${errorPrefix} - User cancelled account connection request.`);
+              }
             }
           }
         }
@@ -1076,9 +1080,10 @@ export class KycDao extends ApiBase {
 
         const chainId = await this.evmProvider.getChainId();
 
-        const blockchainNetwork = (
-          Object.keys(BlockchainNetworkDetails) as Array<BlockchainNetwork>
-        ).find((network) => BlockchainNetworkDetails[network].chainId === chainId);
+        const blockchainNetwork = typedKeys(BlockchainNetworkDetails).find(
+          // Note: WalletConnect returns chainId as a number
+          (network) => Number(BlockchainNetworkDetails[network].chainId) === Number(chainId),
+        );
 
         if (!blockchainNetwork) {
           throw new Error(`${errorPrefix} - Connected EVM network is not supported.`);
@@ -1170,6 +1175,18 @@ export class KycDao extends ApiBase {
     const errorPrefix = 'Cannot disconnect wallet';
     if (this._chainAndAddress) {
       switch (this._chainAndAddress.blockchain) {
+        case 'Ethereum':
+          if (!this.evmProvider) {
+            throw new Error(`${errorPrefix} - EVM provider not configured.`);
+          }
+          if (this.evmProvider.isWalletConnect()) {
+            await this.evmProvider.walletConnectDisconnect();
+          } else {
+            throw new Error(
+              `${errorPrefix} - Unsupported blockchain: ${this._chainAndAddress.blockchain}.`,
+            );
+          }
+          break;
         case 'Near':
           if (this.near) {
             this.near.wallet.signOut();
@@ -1248,7 +1265,7 @@ export class KycDao extends ApiBase {
               if (isLike<ProviderRpcError>(error) && error.code === 4001) {
                 throw new Error(`${errorPrefix} - User cancelled signature request.`);
               } else {
-                throw error;
+                throw new Error(`${errorPrefix} - ${error}`);
               }
             }
             break;
