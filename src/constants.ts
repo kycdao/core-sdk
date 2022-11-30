@@ -57,6 +57,18 @@ export const BlockchainNetworks = {
 } as const;
 
 /**
+ * Collection of image types
+ *
+ * @internal
+ * @enum
+ */
+export const TokenImageTypes = {
+  Identicon: 'Identicon',
+  AllowList: 'AllowList',
+  TypeSpecific: 'TypeSpecific', // E.g. all AccreditedInvestor verifications can choose the KaliDAO image
+} as const;
+
+/**
  * @internal
  */
 export const BlockchainNetworkDetails: Record<BlockchainNetwork, BlockchainNetworkInfo> = {
