@@ -1298,7 +1298,7 @@ export class KycDao extends ApiBase {
   }
 
   /**
-   * Update the active email address of the current user
+   * This method updates the active email address of the current user.
    *
    * @public
    * @async
@@ -1491,6 +1491,7 @@ export class KycDao extends ApiBase {
    * Returns the URL of the identicon that will be saved into the next minted NFT for the current user.\
    * The URL is static and always returns the currently generated image for the user.
    *
+   * @deprecated since version 0.3.8, use {@link getNftImageOptions} instead to get multiple NFT image options to select from.
    * @public
    * @returns {string}
    */
@@ -1501,6 +1502,7 @@ export class KycDao extends ApiBase {
   /**
    * This method generates a new identicon for the user.
    *
+   * @deprecated since version 0.3.8, use {@link regenerateNftImageOptions} instead to regenerate and all NFT image options.
    * @remark The image URL is static so it has to be force-reloaded after the change.
    * @public
    * @async
@@ -1510,10 +1512,52 @@ export class KycDao extends ApiBase {
     await this.request<string>('token/identicon', { method: 'POST' });
   }
 
-  // TODO later: more NFT image selection options: URL? File upload? We provide options the 3rd party site can implement a selector for?
+  /**
+   * This method returns multiple NFT image options currently available for the logged in user. The keys of the returned object are the image IDs.
+   * One of these can be passed in as part of the {@link MintingData} parameter of the {@link startMinting} method to select the desired NFT image.
+   *
+   * @public
+   * @returns {Promise<{ [imageId: string]: string }>}
+   */
+  public async getNftImageOptions(): Promise<{ [imageId: string]: string }> {
+    await this.refreshSession();
+
+    if (!this.user) {
+      throw new Error('User login required');
+    }
+
+    return Object.fromEntries(
+      Object.entries(this.user.available_images).map(([imageId, tokenImage]) => [
+        imageId,
+        tokenImage.url,
+      ]),
+    );
+  }
+
+  /**
+   * This method regenerates and returns a new set of NFT image options currently available for the logged in user.
+   * For more information see the {@link getNftImageOptions} method.
+   *
+   * @public
+   * @async
+   * @returns {Promise<{ [imageId: string]: string }>}
+   */
+  public async regenerateNftImageOptions(): Promise<{ [imageId: string]: string }> {
+    try {
+      await this.request<string>('token/identicon', { method: 'POST' });
+      return await this.getNftImageOptions();
+    } catch (e) {
+      if (e instanceof KycDaoApiError) {
+        throw new Error(e.errorCode);
+      }
+
+      throw e;
+    }
+  }
 
   private async authorizeMinting(
     chainAndAddress: ChainAndAddress,
+    mintingData: MintingData,
   ): Promise<MintingAuthorizationResponse> {
     const errorPrefix = 'Cannot authorize minting';
 
@@ -1525,6 +1569,7 @@ export class KycDao extends ApiBase {
       const data: MintingAuthorizationRequest = {
         blockchain_account_id: blockchainAccount.id,
         network,
+        selected_image_id: mintingData.imageId,
       };
 
       const res = await this.post<MintingAuthorizationResponse>('authorize_minting', data);
@@ -1741,7 +1786,7 @@ export class KycDao extends ApiBase {
     // const authCode = this.getValidAuthorizationCode() || (await this.authorizeMinting(chainAndAddress));
 
     // always get new authorization code for now, trying to save money/time by using an existing one can cause issues
-    const authCode = await this.authorizeMinting(chainAndAddress);
+    const authCode = await this.authorizeMinting(chainAndAddress, mintingData);
 
     // start minting
     // in case of Near, this will redirect and our page will get a callback so any further steps are need to be handled in the SDK init phase

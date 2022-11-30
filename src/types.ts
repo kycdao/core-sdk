@@ -8,6 +8,7 @@ import {
   EvmBlockchainNetworks,
   KycDaoEnvironments,
   NearBlockchainNetworks,
+  TokenImageTypes,
   SolanaBlockchainNetworks,
   VerificationProviders,
   VerificationStasuses,
@@ -60,6 +61,14 @@ export type BlockchainNetwork = keyof typeof BlockchainNetworks;
  * @typedef {KycDaoEnvironment}
  */
 export type KycDaoEnvironment = keyof typeof KycDaoEnvironments;
+
+/**
+ * Union type of string values of {@link TokenImageTypes}.
+ *
+ * @internal
+ * @typedef {TokenImageType}
+ */
+export type TokenImageType = keyof typeof TokenImageTypes;
 
 /**
  * @internal
@@ -565,6 +574,13 @@ export interface MintingData {
    * @default `"KYC"`
    */
   verificationType?: VerificationType;
+  /**
+   * The ID of the selected image to be minted in the NFT. Has to be one of the keys in the object returned by the {@link KycDao.getNftImageOptions} method.
+   * If omitted the first generated identicon will be used from the options.
+   *
+   * @type {?string}
+   */
+  imageId?: string;
 }
 
 /* INTERNAL (not in API reference) */
@@ -683,6 +699,11 @@ export interface BlockchainAccountDetails {
   tokens: TokenDetails[];
 }
 
+export interface TokenImage {
+  image_type: TokenImageType;
+  url: string;
+}
+
 export interface UserDetails {
   id: number;
   legal_entity?: boolean;
@@ -696,6 +717,7 @@ export interface UserDetails {
   provider_profiles: ProviderProfile[];
   verification_requests: VerificationRequest[];
   blockchain_accounts: BlockchainAccountDetails[];
+  available_images: { [imageId: string]: TokenImage };
 }
 
 export interface UserUpdateRequest {
@@ -726,6 +748,7 @@ export interface Session {
 export interface MintingAuthorizationRequest {
   blockchain_account_id: number;
   network: string;
+  selected_image_id?: string;
 }
 
 export interface MintingAuthorizationResponse {
