@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="turbo-root" content="/kycdao-js-sdk">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="2.4.0.722520835067">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="2.4.0.723086384326">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 2.4.0">
@@ -12,7 +12,7 @@
     <!-- Primary Meta Tags -->
     <title>KycDao</title>
     <meta name="title" content="KycDao">
-    <meta name="description" content="@kycdao/kycdao-sdk - v0.3.6/ KycDao" />
+    <meta name="description" content="@kycdao/kycdao-sdk - v0.3.7/ KycDao" />
 
     <!-- Canonical -->
     <link rel="canonical" href="https://kycdao.github.io/kycdao-js-sdk/api/classes/kycdao/" />
@@ -21,21 +21,21 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://kycdao.github.io/kycdao-js-sdk/api/classes/kycdao/">
     <meta property="og:title" content="KycDao">
-    <meta property="og:description" content="@kycdao/kycdao-sdk - v0.3.6/ KycDao">
+    <meta property="og:description" content="@kycdao/kycdao-sdk - v0.3.7/ KycDao">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://kycdao.github.io/kycdao-js-sdk/api/classes/kycdao/">
     <meta property="twitter:title" content="KycDao">
-    <meta property="twitter:description" content="@kycdao/kycdao-sdk - v0.3.6/ KycDao">
+    <meta property="twitter:description" content="@kycdao/kycdao-sdk - v0.3.7/ KycDao">
 
     <script>(function () { var el = document.documentElement, m = localStorage.getItem("/kycdao-js-sdk/doc_theme"), wm = window.matchMedia; if (m === "dark" || (!m && wm && wm("(prefers-color-scheme: dark)").matches)) { el.classList.add("dark") } else { el.classList.remove("dark") } })();</script>
 
-    <link href="../../../resources/css/retype.css?v=2.4.0.722520835067" rel="stylesheet" />
+    <link href="../../../resources/css/retype.css?v=2.4.0.723086384326" rel="stylesheet" />
 
-    <script type="text/javascript" src="../../../resources/js/config.js?v=2.4.0.722520835067" data-turbo-eval="false" defer></script>
+    <script type="text/javascript" src="../../../resources/js/config.js?v=2.4.0.723086384326" data-turbo-eval="false" defer></script>
     <script type="text/javascript" src="../../../resources/js/retype.js?v=2.4.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" type="text/javascript" src="../../../resources/js/lunr.js?v=2.4.0.722520835067" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" type="text/javascript" src="../../../resources/js/lunr.js?v=2.4.0.723086384326" data-turbo-eval="false" defer></script>
 </head>
 <body>
     <div id="docs-app" class="relative text-base antialiased text-gray-700 bg-white font-body dark:bg-dark-850 dark:text-dark-300">
@@ -162,7 +162,7 @@
         <span>KycDao</span>
     </h1>
 </doc-anchor-target>
-<p><a href="../../">@kycdao/kycdao-sdk - v0.3.6</a> / KycDao</p>
+<p><a href="../../">@kycdao/kycdao-sdk - v0.3.7</a> / KycDao</p>
 <p>This class provides the connection to a kycDAO server,
 initiates flows with third party providers (for wallet connection, verification, etc.)
 and handles responses and redirects from them.</p>
@@ -203,6 +203,7 @@ and handles responses and redirects from them.</p>
     </h3>
 </doc-anchor-target>
 <ul>
+<li><doc-anchor-trigger to="#checkemailconfirmed">checkEmailConfirmed</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#checkverificationstatus">checkVerificationStatus</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#checkverifiednetworks">checkVerifiedNetworks</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#connectwallet">connectWallet</doc-anchor-trigger></li>
@@ -212,8 +213,10 @@ and handles responses and redirects from them.</p>
 <li><doc-anchor-trigger to="#hasvalidnft">hasValidNft</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#regeneratenftimage">regenerateNftImage</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#registerorlogin">registerOrLogin</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#resendemailconfirmationcode">resendEmailConfirmationCode</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#startminting">startMinting</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#startverification">startVerification</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#updateemail">updateEmail</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#initialize">initialize</doc-anchor-trigger></li>
 </ul>
 <doc-anchor-target id="accessors-1">
@@ -250,7 +253,7 @@ and handles responses and redirects from them.</p>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/api-base.ts#L30">api-base.ts:30</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/132c6df/src/api-base.ts#L32">api-base.ts:32</a></p>
 <hr />
 <doc-anchor-target id="connectedwallet">
     <h3>
@@ -273,7 +276,7 @@ and handles responses and redirects from them.</p>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/index.ts#L176">index.ts:176</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/132c6df/src/index.ts#L178">index.ts:178</a></p>
 <hr />
 <doc-anchor-target id="loggedin">
     <h3>
@@ -296,7 +299,7 @@ and handles responses and redirects from them.</p>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/index.ts#L199">index.ts:199</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/132c6df/src/index.ts#L201">index.ts:201</a></p>
 <hr />
 <doc-anchor-target id="sdkstatus">
     <h3>
@@ -319,7 +322,7 @@ and handles responses and redirects from them.</p>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/index.ts#L158">index.ts:158</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/132c6df/src/index.ts#L160">index.ts:160</a></p>
 <hr />
 <doc-anchor-target id="walletconnected">
     <h3>
@@ -342,13 +345,37 @@ and handles responses and redirects from them.</p>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/index.ts#L186">index.ts:186</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/132c6df/src/index.ts#L188">index.ts:188</a></p>
 <doc-anchor-target id="methods-1">
     <h2>
         <doc-anchor-trigger class="header-anchor-trigger" to="#methods-1">#</doc-anchor-trigger>
         <span>Methods</span>
     </h2>
 </doc-anchor-target>
+<doc-anchor-target id="checkemailconfirmed">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#checkemailconfirmed">#</doc-anchor-trigger>
+        <span>checkEmailConfirmed</span>
+    </h3>
+</doc-anchor-target>
+<p>▸ <strong>checkEmailConfirmed</strong>(): <code v-pre>Promise</code>&lt;<a href="../../interfaces/emaildata/"><code v-pre>EmailData</code></a>&gt;</p>
+<p>This method can be used to poll the server, refreshing the user session and checking for the user&#x27;s email verification status.</p>
+<p><strong><code v-pre>Async</code></strong></p>
+<doc-anchor-target id="returns-5">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#returns-5">#</doc-anchor-trigger>
+        <span>Returns</span>
+    </h4>
+</doc-anchor-target>
+<p><code v-pre>Promise</code>&lt;<a href="../../interfaces/emaildata/"><code v-pre>EmailData</code></a>&gt;</p>
+<doc-anchor-target id="defined-in-5">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-5">#</doc-anchor-trigger>
+        <span>Defined in</span>
+    </h4>
+</doc-anchor-target>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/132c6df/src/index.ts#L1331">index.ts:1331</a></p>
+<hr />
 <doc-anchor-target id="checkverificationstatus">
     <h3>
         <doc-anchor-trigger class="header-anchor-trigger" to="#checkverificationstatus">#</doc-anchor-trigger>
@@ -356,24 +383,24 @@ and handles responses and redirects from them.</p>
     </h3>
 </doc-anchor-target>
 <p>▸ <strong>checkVerificationStatus</strong>(): <code v-pre>Promise</code>&lt;<code v-pre>Partial</code>&lt;<code v-pre>Record</code>&lt;<code v-pre>&quot;AccreditedInvestor&quot;</code> | <code v-pre>&quot;KYC&quot;</code>, <code v-pre>boolean</code>&gt;&gt;&gt;</p>
-<p>This method can be used to poll the backend, refreshing the user session and checking for the verification status.</p>
+<p>This method can be used to poll the server, refreshing the user session and checking for the user&#x27;s verification status.</p>
 <p><strong><code v-pre>Async</code></strong></p>
 <p><strong><code v-pre>See</code></strong></p>
 <p><a href="../../enums/verificationtypes/">VerificationTypes</a></p>
-<doc-anchor-target id="returns-5">
+<doc-anchor-target id="returns-6">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#returns-5">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#returns-6">#</doc-anchor-trigger>
         <span>Returns</span>
     </h4>
 </doc-anchor-target>
 <p><code v-pre>Promise</code>&lt;<code v-pre>Partial</code>&lt;<code v-pre>Record</code>&lt;<code v-pre>&quot;AccreditedInvestor&quot;</code> | <code v-pre>&quot;KYC&quot;</code>, <code v-pre>boolean</code>&gt;&gt;&gt;</p>
-<doc-anchor-target id="defined-in-5">
+<doc-anchor-target id="defined-in-6">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-5">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-6">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/index.ts#L1403">index.ts:1403</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/132c6df/src/index.ts#L1474">index.ts:1474</a></p>
 <hr />
 <doc-anchor-target id="checkverifiednetworks">
     <h3>
@@ -386,8 +413,8 @@ and handles responses and redirects from them.</p>
 The list of networks is selected from the <a href="../../interfaces/sdkstatus/#availableblockchainnetworks">available networks</a> with the <a href="../../enums/blockchains/">blockchain</a> of the provided (or the currently connected) wallet.
 If the provided/connected wallet is on a main network the resulting list will only include main networks and if it&#x27;s on a dev/test network the list will only include dev/test networks.</p>
 <p><strong><code v-pre>Remarks</code></strong></p>
-<p><strong>Security note:</strong> <br />
-The result of this request is prone to client side manipulation. <br />
+<p><strong>Security note:</strong><br />
+The result of this request is prone to client side manipulation.<br />
 For maximum security add the verification check directly to your smart contract or use server side verification.</p>
 <p><strong><code v-pre>Async</code></strong></p>
 <doc-anchor-target id="parameters">
@@ -416,20 +443,20 @@ For maximum security add the verification check directly to your smart contract 
 </tbody>
 </table>
 </div>
-<doc-anchor-target id="returns-6">
+<doc-anchor-target id="returns-7">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#returns-6">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#returns-7">#</doc-anchor-trigger>
         <span>Returns</span>
     </h4>
 </doc-anchor-target>
 <p><code v-pre>Promise</code>&lt;<a href="../../interfaces/nftcheckresponse/"><code v-pre>NftCheckResponse</code></a>[]&gt;</p>
-<doc-anchor-target id="defined-in-6">
+<doc-anchor-target id="defined-in-7">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-6">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-7">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/index.ts#L991">index.ts:991</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/132c6df/src/index.ts#L997">index.ts:997</a></p>
 <hr />
 <doc-anchor-target id="connectwallet">
     <h3>
@@ -464,31 +491,6 @@ For maximum security add the verification check directly to your smart contract 
 </tbody>
 </table>
 </div>
-<doc-anchor-target id="returns-7">
-    <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#returns-7">#</doc-anchor-trigger>
-        <span>Returns</span>
-    </h4>
-</doc-anchor-target>
-<p><code v-pre>Promise</code>&lt;<code v-pre>void</code>&gt;</p>
-<doc-anchor-target id="defined-in-7">
-    <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-7">#</doc-anchor-trigger>
-        <span>Defined in</span>
-    </h4>
-</doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/index.ts#L1044">index.ts:1044</a></p>
-<hr />
-<doc-anchor-target id="disconnectwallet">
-    <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#disconnectwallet">#</doc-anchor-trigger>
-        <span>disconnectWallet</span>
-    </h3>
-</doc-anchor-target>
-<p>▸ <strong>disconnectWallet</strong>(): <code v-pre>Promise</code>&lt;<code v-pre>void</code>&gt;</p>
-<p>Disconnects the currently connected wallet (from the current domain).<br />
-Only works with NEAR wallets, can be used before <doc-anchor-trigger to="#connectwallet">connectWallet</doc-anchor-trigger> to allow connecting a new NEAR wallet instead of a previously connected one.</p>
-<p><strong><code v-pre>Async</code></strong></p>
 <doc-anchor-target id="returns-8">
     <h4>
         <doc-anchor-trigger class="header-anchor-trigger" to="#returns-8">#</doc-anchor-trigger>
@@ -502,7 +504,32 @@ Only works with NEAR wallets, can be used before <doc-anchor-trigger to="#connec
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/index.ts#L1163">index.ts:1163</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/132c6df/src/index.ts#L1050">index.ts:1050</a></p>
+<hr />
+<doc-anchor-target id="disconnectwallet">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#disconnectwallet">#</doc-anchor-trigger>
+        <span>disconnectWallet</span>
+    </h3>
+</doc-anchor-target>
+<p>▸ <strong>disconnectWallet</strong>(): <code v-pre>Promise</code>&lt;<code v-pre>void</code>&gt;</p>
+<p>Disconnects the currently connected wallet (from the current domain).<br />
+Only works with NEAR wallets, can be used before <doc-anchor-trigger to="#connectwallet">connectWallet</doc-anchor-trigger> to allow connecting a new NEAR wallet instead of a previously connected one.</p>
+<p><strong><code v-pre>Async</code></strong></p>
+<doc-anchor-target id="returns-9">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#returns-9">#</doc-anchor-trigger>
+        <span>Returns</span>
+    </h4>
+</doc-anchor-target>
+<p><code v-pre>Promise</code>&lt;<code v-pre>void</code>&gt;</p>
+<doc-anchor-target id="defined-in-9">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-9">#</doc-anchor-trigger>
+        <span>Defined in</span>
+    </h4>
+</doc-anchor-target>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/132c6df/src/index.ts#L1169">index.ts:1169</a></p>
 <hr />
 <doc-anchor-target id="getnftimageurl">
     <h3>
@@ -513,20 +540,20 @@ Only works with NEAR wallets, can be used before <doc-anchor-trigger to="#connec
 <p>▸ <strong>getNftImageUrl</strong>(): <code v-pre>string</code></p>
 <p>Returns the URL of the identicon that will be saved into the next minted NFT for the current user.<br />
 The URL is static and always returns the currently generated image for the user.</p>
-<doc-anchor-target id="returns-9">
+<doc-anchor-target id="returns-10">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#returns-9">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#returns-10">#</doc-anchor-trigger>
         <span>Returns</span>
     </h4>
 </doc-anchor-target>
 <p><code v-pre>string</code></p>
-<doc-anchor-target id="defined-in-9">
+<doc-anchor-target id="defined-in-10">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-9">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-10">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/index.ts#L1426">index.ts:1426</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/132c6df/src/index.ts#L1497">index.ts:1497</a></p>
 <hr />
 <doc-anchor-target id="getserverstatus">
     <h3>
@@ -537,20 +564,20 @@ The URL is static and always returns the currently generated image for the user.
 <p>▸ <strong>getServerStatus</strong>(): <code v-pre>Promise</code>&lt;<a href="../../interfaces/serverstatus/"><code v-pre>ServerStatus</code></a>&gt;</p>
 <p>A test method to check configuration and kycDAO server access.</p>
 <p><strong><code v-pre>Async</code></strong></p>
-<doc-anchor-target id="returns-10">
+<doc-anchor-target id="returns-11">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#returns-10">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#returns-11">#</doc-anchor-trigger>
         <span>Returns</span>
     </h4>
 </doc-anchor-target>
 <p><code v-pre>Promise</code>&lt;<a href="../../interfaces/serverstatus/"><code v-pre>ServerStatus</code></a>&gt;</p>
-<doc-anchor-target id="defined-in-10">
+<doc-anchor-target id="defined-in-11">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-10">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-11">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/index.ts#L889">index.ts:889</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/132c6df/src/index.ts#L895">index.ts:895</a></p>
 <hr />
 <doc-anchor-target id="hasvalidnft">
     <h3>
@@ -561,8 +588,8 @@ The URL is static and always returns the currently generated image for the user.
 <p>▸ <strong>hasValidNft</strong>(<code v-pre>verificationType</code>, <code v-pre>options?</code>): <code v-pre>Promise</code>&lt;<code v-pre>boolean</code>&gt;</p>
 <p>Checks on chain if the provided (or the currently connected) wallet has a valid kycNFT.</p>
 <p><strong><code v-pre>Remarks</code></strong></p>
-<p><strong>Security note:</strong> <br />
-The result of this request is prone to client side manipulation. <br />
+<p><strong>Security note:</strong><br />
+The result of this request is prone to client side manipulation.<br />
 For maximum security add the verification check directly to your smart contract or use server side verification.</p>
 <p><strong><code v-pre>Async</code></strong></p>
 <doc-anchor-target id="parameters-2">
@@ -591,20 +618,20 @@ For maximum security add the verification check directly to your smart contract 
 </tbody>
 </table>
 </div>
-<doc-anchor-target id="returns-11">
+<doc-anchor-target id="returns-12">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#returns-11">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#returns-12">#</doc-anchor-trigger>
         <span>Returns</span>
     </h4>
 </doc-anchor-target>
 <p><code v-pre>Promise</code>&lt;<code v-pre>boolean</code>&gt;</p>
-<doc-anchor-target id="defined-in-11">
+<doc-anchor-target id="defined-in-12">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-11">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-12">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/index.ts#L969">index.ts:969</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/132c6df/src/index.ts#L975">index.ts:975</a></p>
 <hr />
 <doc-anchor-target id="regeneratenftimage">
     <h3>
@@ -616,34 +643,6 @@ For maximum security add the verification check directly to your smart contract 
 <p>This method generates a new identicon for the user.</p>
 <p><strong><code v-pre>Remark</code></strong></p>
 <p>The image URL is static so it has to be force-reloaded after the change.</p>
-<p><strong><code v-pre>Async</code></strong></p>
-<doc-anchor-target id="returns-12">
-    <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#returns-12">#</doc-anchor-trigger>
-        <span>Returns</span>
-    </h4>
-</doc-anchor-target>
-<p><code v-pre>Promise</code>&lt;<code v-pre>void</code>&gt;</p>
-<doc-anchor-target id="defined-in-12">
-    <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-12">#</doc-anchor-trigger>
-        <span>Defined in</span>
-    </h4>
-</doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/index.ts#L1438">index.ts:1438</a></p>
-<hr />
-<doc-anchor-target id="registerorlogin">
-    <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#registerorlogin">#</doc-anchor-trigger>
-        <span>registerOrLogin</span>
-    </h3>
-</doc-anchor-target>
-<p>▸ <strong>registerOrLogin</strong>(): <code v-pre>Promise</code>&lt;<code v-pre>void</code>&gt;</p>
-<p>This method creates a session and user for the connected wallet, or log them in. A session cookie will be saved in the browser.</p>
-<p><strong><code v-pre>Remarks</code></strong></p>
-<p><br />
-Ideally this method shouldn&#x27;t be called repeatedly in quick succession (before the previous call got resolved) because in case of new wallets/users
-the registration logic will be triggered multiple times and every call after the first one will result in an error. For the same reason, error handling is advised.</p>
 <p><strong><code v-pre>Async</code></strong></p>
 <doc-anchor-target id="returns-13">
     <h4>
@@ -658,7 +657,62 @@ the registration logic will be triggered multiple times and every call after the
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/index.ts#L1206">index.ts:1206</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/132c6df/src/index.ts#L1509">index.ts:1509</a></p>
+<hr />
+<doc-anchor-target id="registerorlogin">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#registerorlogin">#</doc-anchor-trigger>
+        <span>registerOrLogin</span>
+    </h3>
+</doc-anchor-target>
+<p>▸ <strong>registerOrLogin</strong>(): <code v-pre>Promise</code>&lt;<code v-pre>void</code>&gt;</p>
+<p>This method creates a session and user for the connected wallet, or log them in. A session cookie will be saved in the browser.</p>
+<p><strong><code v-pre>Remarks</code></strong></p>
+<p><br />
+Ideally this method shouldn&#x27;t be called repeatedly in quick succession (before the previous call got resolved) because in case of new wallets/users
+the registration logic will be triggered multiple times and every call after the first one will result in an error. For the same reason, error handling is advised.</p>
+<p><strong><code v-pre>Async</code></strong></p>
+<doc-anchor-target id="returns-14">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#returns-14">#</doc-anchor-trigger>
+        <span>Returns</span>
+    </h4>
+</doc-anchor-target>
+<p><code v-pre>Promise</code>&lt;<code v-pre>void</code>&gt;</p>
+<doc-anchor-target id="defined-in-14">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-14">#</doc-anchor-trigger>
+        <span>Defined in</span>
+    </h4>
+</doc-anchor-target>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/132c6df/src/index.ts#L1212">index.ts:1212</a></p>
+<hr />
+<doc-anchor-target id="resendemailconfirmationcode">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#resendemailconfirmationcode">#</doc-anchor-trigger>
+        <span>resendEmailConfirmationCode</span>
+    </h3>
+</doc-anchor-target>
+<p>▸ <strong>resendEmailConfirmationCode</strong>(): <code v-pre>Promise</code>&lt;<code v-pre>void</code>&gt;</p>
+<p>This method will resend the email verification code to the email address that was last set for the user.<br />
+<strong>Note:</strong><br />
+This call is limited to 1 per minute and 5 per address for every user to avoid spamming. When these limits are reached the method will throw an error.
+It will also throw an error if an email address is not set yet or if it has been already verified.</p>
+<p><strong><code v-pre>Async</code></strong></p>
+<doc-anchor-target id="returns-15">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#returns-15">#</doc-anchor-trigger>
+        <span>Returns</span>
+    </h4>
+</doc-anchor-target>
+<p><code v-pre>Promise</code>&lt;<code v-pre>void</code>&gt;</p>
+<doc-anchor-target id="defined-in-15">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-15">#</doc-anchor-trigger>
+        <span>Defined in</span>
+    </h4>
+</doc-anchor-target>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/132c6df/src/index.ts#L1358">index.ts:1358</a></p>
 <hr />
 <doc-anchor-target id="startminting">
     <h3>
@@ -693,20 +747,20 @@ After an authorization code is acquired it initiates the minting.</p>
 </tbody>
 </table>
 </div>
-<doc-anchor-target id="returns-14">
+<doc-anchor-target id="returns-16">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#returns-14">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#returns-16">#</doc-anchor-trigger>
         <span>Returns</span>
     </h4>
 </doc-anchor-target>
 <p><code v-pre>Promise</code>&lt;<code v-pre>void</code>&gt;</p>
-<doc-anchor-target id="defined-in-14">
+<doc-anchor-target id="defined-in-16">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-14">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-16">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/index.ts#L1635">index.ts:1635</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/132c6df/src/index.ts#L1706">index.ts:1706</a></p>
 <hr />
 <doc-anchor-target id="startverification">
     <h3>
@@ -743,20 +797,66 @@ After an authorization code is acquired it initiates the minting.</p>
 </tbody>
 </table>
 </div>
-<doc-anchor-target id="returns-15">
+<doc-anchor-target id="returns-17">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#returns-15">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#returns-17">#</doc-anchor-trigger>
         <span>Returns</span>
     </h4>
 </doc-anchor-target>
 <p><code v-pre>Promise</code>&lt;<code v-pre>void</code>&gt;</p>
-<doc-anchor-target id="defined-in-15">
+<doc-anchor-target id="defined-in-17">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-15">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-17">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/index.ts#L1370">index.ts:1370</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/132c6df/src/index.ts#L1441">index.ts:1441</a></p>
+<hr />
+<doc-anchor-target id="updateemail">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#updateemail">#</doc-anchor-trigger>
+        <span>updateEmail</span>
+    </h3>
+</doc-anchor-target>
+<p>▸ <strong>updateEmail</strong>(<code v-pre>email</code>): <code v-pre>Promise</code>&lt;<code v-pre>void</code>&gt;</p>
+<p>Update the active email address of the current user</p>
+<p><strong><code v-pre>Async</code></strong></p>
+<doc-anchor-target id="parameters-5">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#parameters-5">#</doc-anchor-trigger>
+        <span>Parameters</span>
+    </h4>
+</doc-anchor-target>
+<div class="table-wrapper scrollbar overflow-hidden">
+<table class="comfortable">
+<thead>
+<tr>
+<th style="text-align: left;">Name</th>
+<th style="text-align: left;">Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code v-pre>email</code></td>
+<td style="text-align: left;"><code v-pre>string</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<doc-anchor-target id="returns-18">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#returns-18">#</doc-anchor-trigger>
+        <span>Returns</span>
+    </h4>
+</doc-anchor-target>
+<p><code v-pre>Promise</code>&lt;<code v-pre>void</code>&gt;</p>
+<doc-anchor-target id="defined-in-18">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-18">#</doc-anchor-trigger>
+        <span>Defined in</span>
+    </h4>
+</doc-anchor-target>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/132c6df/src/index.ts#L1308">index.ts:1308</a></p>
 <hr />
 <doc-anchor-target id="initialize">
     <h3>
@@ -768,9 +868,9 @@ After an authorization code is acquired it initiates the minting.</p>
 <p>Connect to a kycDAO server and initialize the SDK using the provided configuration.</p>
 <p><strong><code v-pre>Static</code></strong></p>
 <p><strong><code v-pre>Async</code></strong></p>
-<doc-anchor-target id="parameters-5">
+<doc-anchor-target id="parameters-6">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#parameters-5">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#parameters-6">#</doc-anchor-trigger>
         <span>Parameters</span>
     </h4>
 </doc-anchor-target>
@@ -790,20 +890,20 @@ After an authorization code is acquired it initiates the minting.</p>
 </tbody>
 </table>
 </div>
-<doc-anchor-target id="returns-16">
+<doc-anchor-target id="returns-19">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#returns-16">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#returns-19">#</doc-anchor-trigger>
         <span>Returns</span>
     </h4>
 </doc-anchor-target>
 <p><code v-pre>Promise</code>&lt;<a href="../../interfaces/kycdaoinitializationresult/"><code v-pre>KycDaoInitializationResult</code></a>&gt;</p>
-<doc-anchor-target id="defined-in-16">
+<doc-anchor-target id="defined-in-19">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-16">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-19">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/73f126f/src/index.ts#L822">index.ts:822</a></p>
+<p><a href="https://github.com/kycdao/kycdao-js-sdk/blob/132c6df/src/index.ts#L828">index.ts:828</a></p>
 
                                 
                                 <!-- Required only on API pages -->
