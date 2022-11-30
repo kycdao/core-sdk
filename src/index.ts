@@ -3,7 +3,7 @@ import { Signature } from 'near-api-js/lib/utils/key_pair';
 import { base_encode } from 'near-api-js/lib/utils/serialize';
 import { Client as PersonaClient, ClientOptions } from 'persona';
 import { InquiryOptions } from 'persona/dist/lib/interfaces';
-import { ApiBase, HttpError } from './api-base';
+import { ApiBase, KycDaoApiError } from './api-base';
 import {
   BlockchainNetworkDetails,
   BlockchainNetworks,
@@ -21,6 +21,7 @@ import {
   BlockchainNetwork,
   ChainAndAddress,
   Country,
+  EmailData,
   KycDaoContract,
   MintingAuthorizationRequest,
   MintingAuthorizationResponse,
@@ -56,7 +57,7 @@ import { KycDaoJsonRpcProvider } from './blockchains/kycdao-json-rpc-provider';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets';
 import { SolanaProviderWrapper } from './blockchains/solana/solana-provider-wrapper';
 
-export { ApiBase, HttpError } from './api-base';
+export { ApiBase, KycDaoApiError } from './api-base';
 export {
   Blockchains,
   BlockchainNetworks,
@@ -73,6 +74,7 @@ export {
   BlockchainNetworkConfiguration,
   ChainAndAddress,
   Country,
+  EmailData,
   EvmBlockchainNetwork,
   MintingData,
   NearBlockchainNetwork,
@@ -508,6 +510,14 @@ export class KycDao extends ApiBase {
     return;
   }
 
+  private validateEmail(email: string): void {
+    // email format validation
+    const emailRegExp = new RegExp('^[^@]+@[a-z0-9-]+.[a-z]+$');
+    if (!email.match(emailRegExp)) {
+      throw new Error('Invalid email address format.');
+    }
+  }
+
   private validateVerificationData(verificationData: VerificationData): VerificationData {
     if (!verificationData.termsAccepted) {
       throw new Error(
@@ -531,11 +541,7 @@ export class KycDao extends ApiBase {
       );
     }
 
-    // email format validation
-    const emailRegExp = new RegExp('^[^@]+@[a-z0-9-]+.[a-z]+$');
-    if (!verificationData.email.match(emailRegExp)) {
-      throw new Error('Invalid email address format.');
-    }
+    this.validateEmail(verificationData.email);
 
     // tax residency validation
     const taxResidency = verificationData.taxResidency;
@@ -606,7 +612,7 @@ export class KycDao extends ApiBase {
       return this.session;
     } catch (e) {
       // there were eithere no session cookie saved or it has expired
-      if (e instanceof HttpError && e.statusCode === 401) {
+      if (e instanceof KycDaoApiError && e.statusCode === 401) {
         // if there is an initialized chain + address, try creating a new session
         if (this._chainAndAddress) {
           await createSession(this._chainAndAddress);
@@ -959,8 +965,8 @@ export class KycDao extends ApiBase {
    * Checks on chain if the provided (or the currently connected) wallet has a valid kycNFT.
    *
    * @remarks
-   * **Security note:** \
-   * The result of this request is prone to client side manipulation. \
+   * **Security note:**\
+   * The result of this request is prone to client side manipulation.\
    * For maximum security add the verification check directly to your smart contract or use server side verification.
    * @public
    * @async
@@ -981,8 +987,8 @@ export class KycDao extends ApiBase {
    * If the provided/connected wallet is on a main network the resulting list will only include main networks and if it's on a dev/test network the list will only include dev/test networks.
    *
    * @remarks
-   * **Security note:** \
-   * The result of this request is prone to client side manipulation. \
+   * **Security note:**\
+   * The result of this request is prone to client side manipulation.\
    * For maximum security add the verification check directly to your smart contract or use server side verification.
    * @public
    * @async
@@ -1291,9 +1297,74 @@ export class KycDao extends ApiBase {
     );
   }
 
-  // we can ask the backend to send the email but verification is not currently required for minting (but probably will be in the future)
-  private async sendEmailConfirmationCode(): Promise<void> {
-    return;
+  /**
+   * Update the active email address of the current user
+   *
+   * @public
+   * @async
+   * @param {string} email
+   * @returns {Promise<void>}
+   */
+  public async updateEmail(email: string): Promise<void> {
+    try {
+      this.validateEmail(email);
+
+      const userUpdateRequest: UserUpdateRequest = { email };
+      const user = await this.put<UserDetails>('user', userUpdateRequest);
+      this.user = user;
+    } catch (e) {
+      if (e instanceof KycDaoApiError) {
+        throw new Error(e.errorCode);
+      }
+
+      throw e;
+    }
+  }
+
+  /**
+   * This method can be used to poll the server, refreshing the user session and checking for the user's email verification status.
+   *
+   * @public
+   * @async
+   * @returns {Promise<boolean>}
+   */
+  public async checkEmailConfirmed(): Promise<EmailData> {
+    if (!this.user?.email_confirmed) {
+      await this.refreshSession();
+
+      if (!this.session) {
+        throw new Error(
+          'Cannot check kycDAO email confirmation status without an initialized wallet.',
+        );
+      }
+    }
+
+    return {
+      address: this.user?.email,
+      isConfirmed: !!this.user?.email_confirmed,
+    };
+  }
+
+  /**
+   * This method will resend the email verification code to the email address that was last set for the user.\
+   * **Note:**\
+   * This call is limited to 1 per minute and 5 per address for every user to avoid spamming. When these limits are reached the method will throw an error.
+   * It will also throw an error if an email address is not set yet or if it has been already verified.
+   *
+   * @public
+   * @async
+   * @returns {Promise<void>}
+   */
+  public async resendEmailConfirmationCode(): Promise<void> {
+    try {
+      return await this.post('user/email_confirmation');
+    } catch (e) {
+      if (e instanceof KycDaoApiError) {
+        throw new Error(e.errorCode);
+      }
+
+      throw e;
+    }
   }
 
   private loadPersona(user: UserDetails, personaOptions?: PersonaOptions): void {
@@ -1393,7 +1464,7 @@ export class KycDao extends ApiBase {
   }
 
   /**
-   * This method can be used to poll the backend, refreshing the user session and checking for the verification status.
+   * This method can be used to poll the server, refreshing the user session and checking for the user's verification status.
    *
    * @public
    * @async
