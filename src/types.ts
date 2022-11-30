@@ -421,6 +421,17 @@ export interface NftCheckResponse {
 }
 
 /**
+ * Information about a user's active email address
+ *
+ * @interface EmailData
+ * @typedef {EmailData}
+ */
+export interface EmailData {
+  address?: string;
+  isConfirmed?: boolean;
+}
+
+/**
  * Data required by kycDAO to initiate a verification flow.
  *
  * @interface VerificationData
@@ -574,6 +585,21 @@ export type SmartContractsByVerificationType = Partial<
 export type SmartContractsByBlockchainNetwork = Partial<
   Record<BlockchainNetwork, SmartContractsByVerificationType>
 >;
+
+export interface KycDaoDefaultApiError {
+  code: number;
+  reason: string;
+  description: string;
+}
+
+export interface KycDaoCustomApiError {
+  reference_id: string;
+  status_code: number;
+  internal: boolean;
+  error_code: string;
+  message: string; // human readable error message
+  error_details?: string; // only present for InternalErrors
+}
 
 export interface ApiStatus {
   current_time: string;
