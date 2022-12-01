@@ -5,7 +5,14 @@ import {
   EvmTransactionReceipt,
   EvmTransactionReceiptResponse,
 } from './types';
-import { hexEncodeString, hexEncodeUint, parseUnits } from './utils';
+import {
+  hexEncodeAddress,
+  hexEncodeString,
+  hexEncodeUint,
+  parseUnits,
+  removeHexPrefix,
+} from './utils';
+import BN from 'bn.js';
 
 export class EvmProviderWrapper {
   private provider: EvmProvider;
@@ -16,6 +23,26 @@ export class EvmProviderWrapper {
   constructor(provider: EvmProvider) {
     this.provider = provider;
     this.decoder = new EvmResponseDecoder();
+  }
+
+  public isWalletConnect(): boolean {
+    return !!this.provider.isWalletConnect;
+  }
+
+  public async walletConnectEnable(): Promise<string[]> {
+    if (this.provider.isWalletConnect) {
+      return await this.provider.enable();
+    } else {
+      throw new Error('Provider is not WalletConnect');
+    }
+  }
+
+  public async walletConnectDisconnect(): Promise<void> {
+    if (this.provider.isWalletConnect) {
+      return await this.provider.disconnect();
+    } else {
+      throw new Error('Provider is not WalletConnect');
+    }
   }
 
   private async getTokenTransferEventHash(): Promise<string> {
@@ -66,10 +93,16 @@ export class EvmProviderWrapper {
   }
 
   public async web3Sha3(input: string): Promise<string> {
-    return this.provider.request<string>({
-      method: 'web3_sha3',
-      params: [hexEncodeString(input, { addPrefix: true })],
-    });
+    switch (input) {
+      case 'Transfer(address,address,uint256)':
+        return '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+      case 'mintWithCode(uint32)':
+        return '0x71bff8e43607461eaf68af7b7bb306a32cbb13c4cdfe9a9f1a64f7832b050ae8';
+      case 'getRequiredMintCostForCode(uint32,address)':
+        return '0xf82bacf04f8cc3e49b7c065af00ec174710a0d8d0514c21a7c4cdffb661ce0f2';
+      default:
+        throw new Error('Unknown input');
+    }
   }
 
   // functionSignature must be: the function name with the parenthesised list of parameter types, parameter types are split by a single comma, without any spaces
@@ -79,7 +112,7 @@ export class EvmProviderWrapper {
     return web3Sha3.substring(0, 10); // the first 4 bytes of the Keccak hash of the ASCII form of the signature
   }
 
-  public async estimateGas(data: string, toAddress: string, fromAddress: string) {
+  public async estimateGas(data: string, toAddress: string, fromAddress: string, value: string) {
     return await this.provider.request<string>({
       method: 'eth_estimateGas',
       params: [
@@ -87,6 +120,7 @@ export class EvmProviderWrapper {
           data: data,
           to: toAddress,
           from: fromAddress,
+          value: value,
         },
       ],
     });
@@ -98,6 +132,7 @@ export class EvmProviderWrapper {
     fromAddress: string,
     gasPrice: string,
     gasLimit: string,
+    value?: string,
   ): Promise<string> {
     return await this.provider.request<string>({
       method: 'eth_sendTransaction',
@@ -108,7 +143,7 @@ export class EvmProviderWrapper {
           from: fromAddress,
           gasPrice: gasPrice,
           gas: gasLimit,
-          // value: '', // will be used for payment
+          value,
         },
       ],
     });
@@ -123,16 +158,52 @@ export class EvmProviderWrapper {
     return response ? this.decoder.transactionReceipt(response) : null;
   }
 
+  public async getMintingCostForCode(
+    toAddress: string,
+    fromAddress: string,
+    authCode: string,
+  ): Promise<string> {
+    const authCodeEncoded = hexEncodeUint(parseInt(authCode), { padToBytes: 32 });
+    const addressEncoded = hexEncodeAddress(fromAddress, { padToBytes: 32 });
+
+    const sighash = await this.getSighash('getRequiredMintCostForCode(uint32,address)');
+    const data = sighash + authCodeEncoded + addressEncoded;
+    const mintCostRaw = await this.provider.request<string>({
+      method: 'eth_call',
+      params: [
+        {
+          data: data,
+          to: toAddress,
+        },
+        'latest',
+      ],
+    });
+    return mintCostRaw;
+  }
+
   public async mint(
     toAddress: string,
     fromAddress: string,
     authCode: string,
   ): Promise<string | undefined> {
-    const sighash = await this.getSighash('mint(uint32)');
     const authCodeEncoded = hexEncodeUint(parseInt(authCode), { padToBytes: 32 });
+
+    const mintCostHex = await this.getMintingCostForCode(toAddress, fromAddress, authCode);
+    const mintCost = new BN(removeHexPrefix(mintCostHex), 'hex');
+
+    // assume +10% slippage
+    const mintCostWithSlippage = mintCost.muln(1.1);
+    const mintCostWithSlippageHex = '0x' + mintCostWithSlippage.toString('hex');
+
+    const sighash = await this.getSighash('mintWithCode(uint32)');
     const data = sighash + authCodeEncoded;
 
-    const gasLimitHex = await this.estimateGas(data, toAddress, fromAddress);
+    const gasLimitHex = await this.estimateGas(
+      data,
+      toAddress,
+      fromAddress,
+      mintCostWithSlippageHex,
+    );
 
     const providerGasPriceHex = await this.getGasPrice();
     const providerGasPriceDec = parseInt(providerGasPriceHex, 16);
@@ -148,7 +219,7 @@ export class EvmProviderWrapper {
       fromAddress,
       gasPriceHex,
       gasLimitHex,
-      // value: '', // will be used for payment, get as input
+      mintCostWithSlippageHex,
     );
 
     if (txHash !== hexEncodeUint(0, { addPrefix: true, padToBytes: 32 })) {

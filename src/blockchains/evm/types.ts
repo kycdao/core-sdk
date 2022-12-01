@@ -25,10 +25,23 @@ export interface EvmRequestArguments {
   readonly params?: readonly unknown[] | object;
 }
 
-export interface EvmProvider {
+interface WalletConnectProvider {
   request<T>(_: EvmRequestArguments): Promise<T>;
   on<T>(event: string, callback: (data: T) => void): void;
+
+  isWalletConnect: true;
+  enable(): Promise<string[]>;
+  disconnect(): Promise<void>;
 }
+
+export interface BaseEvmProvider {
+  request<T>(_: EvmRequestArguments): Promise<T>;
+  on<T>(event: string, callback: (data: T) => void): void;
+
+  isWalletConnect?: false | undefined;
+}
+
+export type EvmProvider = WalletConnectProvider | BaseEvmProvider;
 
 export interface EvmTransaction {
   to: string;

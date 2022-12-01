@@ -5,6 +5,9 @@ export function partition<T>(arr: T[], predicate: (_: T) => boolean): [T[], T[]]
   });
   return partitioned;
 }
+export function typedKeys<T extends object>(t: T) {
+  return Object.keys(t) as Extract<keyof T, string>[];
+}
 
 export function isLike<T>(given: unknown): given is Partial<Record<keyof T, unknown>> {
   return typeof given === 'object' && given !== null;
