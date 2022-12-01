@@ -93,10 +93,16 @@ export class EvmProviderWrapper {
   }
 
   public async web3Sha3(input: string): Promise<string> {
-    return this.provider.request<string>({
-      method: 'web3_sha3',
-      params: [hexEncodeString(input, { addPrefix: true })],
-    });
+    switch (input) {
+      case 'Transfer(address,address,uint256)':
+        return '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+      case 'mintWithCode(uint32)':
+        return '0x71bff8e43607461eaf68af7b7bb306a32cbb13c4cdfe9a9f1a64f7832b050ae8';
+      case 'getRequiredMintCostForCode(uint32,address)':
+        return '0xf82bacf04f8cc3e49b7c065af00ec174710a0d8d0514c21a7c4cdffb661ce0f2';
+      default:
+        throw new Error('Unknown input');
+    }
   }
 
   // functionSignature must be: the function name with the parenthesised list of parameter types, parameter types are split by a single comma, without any spaces
