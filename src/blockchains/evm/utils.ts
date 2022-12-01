@@ -17,6 +17,14 @@ export function hexEncodeUint(uint: number, options?: HexEncodeOptions): string 
   return applyHexEncodeOptions(uint.toString(16), options);
 }
 
+export function hexEncodeAddress(address: string, options?: HexEncodeOptions): string {
+  return applyHexEncodeOptions(removeHexPrefix(address), options);
+}
+
+export function removeHexPrefix(hex: string): string {
+  return hex.startsWith('0x') ? hex.slice(2) : hex;
+}
+
 export function hexDecodeToString(input: string, hasPrefix = true): string {
   if (hasPrefix) {
     input = input.substring(2);
