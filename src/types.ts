@@ -652,12 +652,15 @@ export interface NearSdk {
 }
 
 export interface KycDaoContract extends Contract {
-  mint: (_: {
-    args: Record<string, unknown>;
+  mint_with_code: (_: {
+    args: {
+      auth_code: number;
+    };
     gas: string;
     amount: string;
     callbackUrl?: string;
   }) => Promise<unknown>;
+  get_required_mint_cost_for_code: (_: { auth_code: number; dst: string }) => Promise<string>;
 }
 
 export interface Transaction {

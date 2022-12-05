@@ -4,6 +4,7 @@ import { base_encode } from 'near-api-js/lib/utils/serialize';
 import { Client as PersonaClient, ClientOptions } from 'persona';
 import { InquiryOptions } from 'persona/dist/lib/interfaces';
 import { ApiBase, KycDaoApiError } from './api-base';
+import { BN } from 'bn.js';
 import {
   BlockchainNetworkDetails,
   BlockchainNetworks,
@@ -1657,16 +1658,27 @@ export class KycDao extends ApiBase {
           this.near.wallet.account(),
           this.near.contractName,
           {
-            viewMethods: [],
-            changeMethods: ['mint'],
+            viewMethods: ['get_required_mint_cost_for_code'],
+            changeMethods: ['mint_with_code'],
           },
         ) as KycDaoContract;
+
+        const getRequiredCostFn = contract.get_required_mint_cost_for_code;
+        if (!getRequiredCostFn) {
+          throw new Error('Mint cost function not callable');
+        }
+
+        const result = await getRequiredCostFn({
+          auth_code: Number(authorizationCode),
+          dst: chainAndAddress.address,
+        });
+        const costWithSlippage = new BN(result).muln(1.1);
 
         const connectorSign = window.location.search.startsWith('?') ? '&' : '?';
         const data = `${connectorSign}authCode=${authorizationCode}`;
         const callbackUrl = `${window.location.origin}${window.location.pathname}${window.location.search}${data}${window.location.hash}`;
 
-        const mintFn = contract.mint;
+        const mintFn = contract.mint_with_code;
         if (!mintFn) {
           throw new Error('Mint function not callable');
         }
@@ -1674,7 +1686,7 @@ export class KycDao extends ApiBase {
         await mintFn({
           args: { auth_code: Number(authorizationCode) },
           gas: '300000000000000',
-          amount: '100000000000000000000000', // in yoctoNEAR
+          amount: costWithSlippage.toString(),
           callbackUrl,
         });
 
