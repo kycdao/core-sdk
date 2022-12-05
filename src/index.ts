@@ -1202,7 +1202,6 @@ export class KycDao extends ApiBase {
           }
           break;
         }
-        // there is no corresponding logic for 'Ethereum':
         default:
           throw new Error(
             `${errorPrefix} - Unsupported blockchain: ${this._chainAndAddress.blockchain}.`,
