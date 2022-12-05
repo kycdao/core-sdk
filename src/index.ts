@@ -202,6 +202,20 @@ export class KycDao extends ApiBase {
     return !!this.user;
   }
 
+  /**
+   * Returns if the current user has a kycDAO subscription. Requires a logged in user.
+   *
+   * @readonly
+   * @type {boolean}
+   */
+  get subscribed(): boolean {
+    if (!this.user) {
+      throw new Error('User login required');
+    }
+
+    return !!this.user.subscription_expiry;
+  }
+
   private verificationStatus: VerificationStatus;
 
   private isVerifiedForType(verificationType: VerificationType): boolean {
@@ -1202,7 +1216,6 @@ export class KycDao extends ApiBase {
           }
           break;
         }
-        // there is no corresponding logic for 'Ethereum':
         default:
           throw new Error(
             `${errorPrefix} - Unsupported blockchain: ${this._chainAndAddress.blockchain}.`,
@@ -1580,6 +1593,10 @@ export class KycDao extends ApiBase {
 
     const network = chainAndAddress.blockchainNetwork;
 
+    const subscriptionDuration = mintingData.subscriptionYears
+      ? `P${mintingData.subscriptionYears}Y`
+      : undefined;
+
     try {
       const blockchainAccount = this.getBlockchainAccount(chainAndAddress);
 
@@ -1587,6 +1604,7 @@ export class KycDao extends ApiBase {
         blockchain_account_id: blockchainAccount.id,
         network,
         selected_image_id: mintingData.imageId,
+        subscription_duration: subscriptionDuration,
       };
 
       const res = await this.post<MintingAuthorizationResponse>('authorize_minting', data);

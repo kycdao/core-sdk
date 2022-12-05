@@ -18,6 +18,8 @@ export const Blockchains = {
  * @enum
  */
 export const EvmBlockchainNetworks = {
+  CeloAlfajores: 'CeloAlfajores',
+  CeloMainnet: 'CeloMainnet',
   EthereumGoerli: 'EthereumGoerli',
   EthereumMainnet: 'EthereumMainnet',
   PolygonMainnet: 'PolygonMainnet',
@@ -72,6 +74,18 @@ export const TokenImageTypes = {
  * @internal
  */
 export const BlockchainNetworkDetails: Record<BlockchainNetwork, BlockchainNetworkInfo> = {
+  CeloAlfajores: {
+    blockchain: Blockchains.Ethereum,
+    rpcUrl: 'https://alfajores-forno.celo-testnet.org',
+    chainId: '0xaef3',
+    isMainnet: false,
+  },
+  CeloMainnet: {
+    blockchain: Blockchains.Ethereum,
+    rpcUrl: 'https://forno.celo.org',
+    chainId: '0xa4ec',
+    isMainnet: true,
+  },
   EthereumGoerli: {
     blockchain: Blockchains.Ethereum,
     rpcUrl: 'https://rpc.ankr.com/eth_goerli',
@@ -102,7 +116,7 @@ export const BlockchainNetworkDetails: Record<BlockchainNetwork, BlockchainNetwo
   },
   PolygonMumbai: {
     blockchain: Blockchains.Ethereum,
-    rpcUrl: 'https://matic-mumbai.chainstacklabs.com',
+    rpcUrl: 'https://rpc.ankr.com/polygon_mumbai',
     chainId: '0x13881',
     isMainnet: false,
   },

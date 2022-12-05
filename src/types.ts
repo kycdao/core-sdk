@@ -581,6 +581,13 @@ export interface MintingData {
    * @type {?string}
    */
   imageId?: string;
+  /**
+   * The number of years for which the user will be subscribed to kycDAO. This will directly influence the expiry time and the minting cost of the token. The default value is 1 year.\
+   * Currently it only has any effect if the user is not subscribed yet, otherwise this value will be ignored. The current user's subscription status can be checked with the {@link KycDao.subscribed}.
+   *
+   * @type {?number}
+   */
+  subscriptionYears?: number;
 }
 
 /* INTERNAL (not in API reference) */
@@ -718,6 +725,7 @@ export interface UserDetails {
   verification_requests: VerificationRequest[];
   blockchain_accounts: BlockchainAccountDetails[];
   available_images: { [imageId: string]: TokenImage };
+  subscription_expiry?: string;
 }
 
 export interface UserUpdateRequest {
@@ -749,6 +757,7 @@ export interface MintingAuthorizationRequest {
   blockchain_account_id: number;
   network: string;
   selected_image_id?: string;
+  subscription_duration?: string;
 }
 
 export interface MintingAuthorizationResponse {
