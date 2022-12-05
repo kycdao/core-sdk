@@ -28,6 +28,11 @@ module.exports = {
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
     }),
+    new webpack.DefinePlugin({
+      'process.env': {
+        NEAR_NO_LOGS: true,
+      },
+    }),
   ],
   output: {
     filename: 'kycdao-sdk.min.js',
