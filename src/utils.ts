@@ -1,3 +1,5 @@
+import { BlockchainNetwork } from './types';
+
 export function partition<T>(arr: T[], predicate: (_: T) => boolean): [T[], T[]] {
   const partitioned: [T[], T[]] = [[], []];
   arr.forEach((val: T) => {
@@ -70,4 +72,25 @@ export async function poll<T>(
   };
 
   return new Promise(executePoll);
+}
+
+export function getChainExplorerUrlForTransaction(
+  txHash: string,
+  blockchainNetwork: BlockchainNetwork,
+): string {
+  const urlMapping: Record<BlockchainNetwork, string> = {
+    CeloAlfajores: `https://explorer.celo.org/alfajores/tx/${txHash}`,
+    CeloMainnet: `https://explorer.celo.org/mainnet/tx/${txHash}`,
+    NearMainnet: `https://explorer.near.org/transactions/${txHash}`,
+    NearTestnet: `https://explorer.testnet.near.org/transactions/${txHash}`,
+    EthereumGoerli: `https://goerli.etherscan.io/tx/${txHash}`,
+    EthereumMainnet: `https://etherscan.io/tx/${txHash}`,
+    PolygonMainnet: `https://polygonscan.com/tx/${txHash}`,
+    PolygonMumbai: `https://mumbai.polygonscan.com/tx/${txHash}`,
+    SolanaDevnet: `https://explorer.solana.com/tx/${txHash}?cluster=devnet`,
+    SolanaMainnet: `https://explorer.solana.com/tx/${txHash}`,
+    SolanaTestnet: `https://explorer.solana.com/tx/${txHash}?cluster=testnet`,
+  };
+
+  return urlMapping[blockchainNetwork];
 }
