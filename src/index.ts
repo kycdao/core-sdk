@@ -34,6 +34,7 @@ import {
   NftCheckResponse,
   PersonaOptions,
   RedirectEvent,
+  RedirectResult,
   SdkConfiguration,
   SdkStatus,
   ServerStatus,
@@ -51,7 +52,14 @@ import {
 } from './types';
 import { default as COUNTRIES } from './countries.list.json';
 import { FinalExecutionOutcome, JsonRpcProvider } from 'near-api-js/lib/providers';
-import { isFulfilled, isLike, partition, poll, typedKeys } from './utils';
+import {
+  getChainExplorerUrlForTransaction,
+  isFulfilled,
+  isLike,
+  partition,
+  poll,
+  typedKeys,
+} from './utils';
 import { EvmProviderWrapper } from './blockchains/evm/evm-provider-wrapper';
 import { EvmProvider, EvmTransactionReceipt, ProviderRpcError } from './blockchains/evm/types';
 import { KycDaoJsonRpcProvider } from './blockchains/kycdao-json-rpc-provider';
@@ -120,6 +128,12 @@ export interface KycDaoInitializationResult {
    * @type {SdkStatus}
    */
   sdkStatus: SdkStatus;
+  /**
+   * Chain explorer URL of the transaction related to the handled {@link redirectEvent}, if there is any.
+   *
+   * @type {?string}
+   */
+  transactionUrl?: string;
 }
 
 /**
@@ -687,73 +701,84 @@ export class KycDao extends ApiBase {
     event: RedirectEvent,
     queryParams: URLSearchParams,
     detectedValue: string,
-  ): Promise<void> {
+  ): Promise<string | undefined> {
     if (!this.near) {
       throw new Error('Near callback detected but the Near SDK is  not initialized.');
-    } else {
-      if (this.near.wallet.isSignedIn()) {
-        const address: string = this.near.wallet.getAccountId();
-        this._chainAndAddress = {
-          blockchain: 'Near',
-          blockchainNetwork: this.near.blockchainNetwork,
-          address,
-        };
-
-        await this.refreshSession();
-
-        switch (event) {
-          case 'NearLogin':
-            break;
-          case 'NearMint': {
-            const authCode = queryParams.get('authCode');
-            if (authCode) {
-              const transaction = await this.getTx(this._chainAndAddress, detectedValue);
-
-              if (transaction.status !== 'Success') {
-                throw new Error(
-                  `NearMint callback detected but minting transaction is not successful. Status: ${transaction}.`,
-                );
-              }
-
-              const outcome = transaction.data as FinalExecutionOutcome;
-              if (typeof outcome.status === 'string' || !outcome.status.SuccessValue) {
-                throw new Error(
-                  'NearMint callback detected but transaction outcome does not have a SuccessValue (token ID).',
-                );
-              } else {
-                const successValue = outcome.status.SuccessValue;
-
-                try {
-                  const tokenId: string = JSON.parse(
-                    Buffer.from(successValue, 'base64').toString(),
-                  ).token_id;
-
-                  await this.post('token', {
-                    authorization_code: authCode,
-                    token_id: tokenId,
-                    minting_tx_id: detectedValue,
-                  });
-                } catch {
-                  throw new Error(
-                    'Failed to send Near minting transaction status update to kycDAO server.',
-                  );
-                }
-              }
-            } else {
-              throw new Error('authCode parameter is empty or missing from NearMint callback URL.');
-            }
-            break;
-          }
-          case 'NearUserRejectedError':
-            break;
-          default:
-            throw new Error(`Unhandled Near wallet redirect event: ${event}.`);
-        }
-      }
     }
+
+    if (this.near.wallet.isSignedIn()) {
+      const address: string = this.near.wallet.getAccountId();
+      this._chainAndAddress = {
+        blockchain: 'Near',
+        blockchainNetwork: this.near.blockchainNetwork,
+        address,
+      };
+
+      await this.refreshSession();
+
+      let transactionUrl: string | undefined;
+
+      switch (event) {
+        case 'NearLogin':
+          break;
+        case 'NearMint': {
+          const authCode = queryParams.get('authCode');
+          if (authCode) {
+            const transaction = await this.getTx(this._chainAndAddress, detectedValue);
+
+            if (transaction.status !== 'Success') {
+              throw new Error(
+                `NearMint callback detected but minting transaction is not successful. Status: ${transaction}.`,
+              );
+            }
+
+            const outcome = transaction.data as FinalExecutionOutcome;
+            if (typeof outcome.status === 'string' || !outcome.status.SuccessValue) {
+              throw new Error(
+                'NearMint callback detected but transaction outcome does not have a SuccessValue (token ID).',
+              );
+            } else {
+              const successValue = outcome.status.SuccessValue;
+
+              try {
+                const tokenId: string = JSON.parse(
+                  Buffer.from(successValue, 'base64').toString(),
+                ).token_id;
+
+                await this.post('token', {
+                  authorization_code: authCode,
+                  token_id: tokenId,
+                  minting_tx_id: detectedValue,
+                });
+
+                transactionUrl = getChainExplorerUrlForTransaction(
+                  detectedValue,
+                  this._chainAndAddress.blockchainNetwork,
+                );
+              } catch {
+                throw new Error(
+                  'Failed to send Near minting transaction status update to kycDAO server.',
+                );
+              }
+            }
+          } else {
+            throw new Error('authCode parameter is empty or missing from NearMint callback URL.');
+          }
+          break;
+        }
+        case 'NearUserRejectedError':
+          break;
+        default:
+          throw new Error(`Unhandled Near wallet redirect event: ${event}.`);
+      }
+
+      return transactionUrl;
+    }
+
+    return;
   }
 
-  private async handleRedirect(): Promise<RedirectEvent | undefined> {
+  private async handleRedirect(): Promise<RedirectResult | undefined> {
     const errorPrefix = 'Wallet callback handling error';
 
     const knownQueryParams: Record<string, RedirectEvent> = {
@@ -789,9 +814,11 @@ export class KycDao extends ApiBase {
       const value = match[1];
       const event = knownQueryParams[key];
 
+      let transactionUrl: string | undefined;
+
       if (event.startsWith('Near')) {
         try {
-          await this.handleNearWalletCallback(event, queryParams, value);
+          transactionUrl = await this.handleNearWalletCallback(event, queryParams, value);
         } catch (e) {
           if (e instanceof Error) {
             console.error(`${errorPrefix} - ${e.message}`);
@@ -803,7 +830,7 @@ export class KycDao extends ApiBase {
         }
       }
 
-      return event;
+      return { event, transactionUrl };
     }
 
     return;
@@ -891,11 +918,12 @@ export class KycDao extends ApiBase {
       kycDao.solana = new SolanaProviderWrapper(solanaNetwork);
     }
 
-    const redirectEvent = await kycDao.handleRedirect();
+    const redirectResult = await kycDao.handleRedirect();
 
     return {
       kycDao,
-      redirectEvent,
+      redirectEvent: redirectResult?.event,
+      transactionUrl: redirectResult?.transactionUrl,
       sdkStatus: kycDao.sdkStatus,
     };
   }
@@ -1634,7 +1662,7 @@ export class KycDao extends ApiBase {
     chainAndAddress: ChainAndAddress,
     mintAuthResponse: MintingAuthorizationResponse,
     verificationType: VerificationType,
-  ): Promise<void> {
+  ): Promise<string | undefined> {
     const errorPrefix = 'Cannot mint';
 
     const contractAddress = this.getSmartContractAddress(
@@ -1668,11 +1696,13 @@ export class KycDao extends ApiBase {
           throw new Error('Mint cost function not callable');
         }
 
+        const storageCost = new BN('100000000000000000000000');
+
         const result = await getRequiredCostFn({
           auth_code: Number(authorizationCode),
           dst: chainAndAddress.address,
         });
-        const costWithSlippage = new BN(result).muln(1.1);
+        const costWithSlippage = new BN(result).muln(1.1).add(storageCost);
 
         const connectorSign = window.location.search.startsWith('?') ? '&' : '?';
         const data = `${connectorSign}authCode=${authorizationCode}`;
@@ -1783,19 +1813,22 @@ export class KycDao extends ApiBase {
         minting_tx_id: txHash,
       });
     }
+
+    return txHash;
   }
 
   /**
    * This step updates the user based on the {@link MintingData} provided and checks if the user is eligible to mint a token.
    * Then calls the server to authorize minting for the current wallet and waits for the transaction to succeed (but max about 2 minutes).
-   * After an authorization code is acquired it initiates the minting.
+   * After an authorization code is acquired it initiates the minting.\
+   * Returns the chain explorer URL for the minting transaction if it's possible. In general it should always return an URL unless an error occured or the site got redirected by the provider (e.g. NEAR).
    *
    * @public
    * @async
    * @param {MintingData} mintingData
-   * @returns {Promise<void>}
+   * @returns {Promise<string | undefined>}
    */
-  public async startMinting(mintingData: MintingData): Promise<void> {
+  public async startMinting(mintingData: MintingData): Promise<string | undefined> {
     const errorPrefix = 'Cannot start minting';
     let verificationType = mintingData.verificationType;
 
@@ -1838,6 +1871,10 @@ export class KycDao extends ApiBase {
     // start minting
     // in case of Near, this will redirect and our page will get a callback so any further steps are need to be handled in the SDK init phase
     // in case of EVM, this will wait for the transaction to succeed before returning
-    await this.mint(chainAndAddress, authCode, verificationType);
+    const txHash = await this.mint(chainAndAddress, authCode, verificationType);
+
+    return txHash
+      ? getChainExplorerUrlForTransaction(txHash, chainAndAddress.blockchainNetwork)
+      : undefined;
   }
 }

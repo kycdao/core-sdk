@@ -592,6 +592,11 @@ export interface MintingData {
 
 /* INTERNAL (not in API reference) */
 
+export interface RedirectResult {
+  event?: RedirectEvent;
+  transactionUrl?: string;
+}
+
 export interface PersonaStatus {
   template_id: string;
   sandbox: boolean;
