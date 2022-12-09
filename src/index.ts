@@ -407,72 +407,93 @@ export class KycDao extends ApiBase {
 
   private static validateBlockchainNetworks(
     availableBlockchainNetworks: BlockchainNetwork[],
-    enabledBlockchainNetworks?: BlockchainNetwork[],
+    enabledBlockchainNetworks: BlockchainNetwork[],
   ): BlockchainNetwork[] {
     const errorPrefix = 'kycDAO SDK';
     const allBlockchainNetworks = Object.values(BlockchainNetworks);
 
-    if (enabledBlockchainNetworks) {
-      const [validBlockchainNetworks, invalidBlockchainNetworks] = partition(
-        [...new Set(enabledBlockchainNetworks)],
-        (network) => allBlockchainNetworks.includes(network),
+    const [validBlockchainNetworks, invalidBlockchainNetworks] = partition(
+      [...new Set(enabledBlockchainNetworks)],
+      (network) => allBlockchainNetworks.includes(network),
+    );
+
+    if (invalidBlockchainNetworks.length > 0) {
+      console.warn(
+        `${errorPrefix} - Invalid network name(s) were found in configuration and will be ignored: ${invalidBlockchainNetworks.join(
+          ', ',
+        )}. Valid values are: ${allBlockchainNetworks.join(', ')}.`,
       );
-
-      if (invalidBlockchainNetworks.length > 0) {
-        console.warn(
-          `${errorPrefix} - Invalid network name(s) were found in configuration and will be ignored: ${invalidBlockchainNetworks.join(
-            ', ',
-          )}. Valid values are: ${allBlockchainNetworks.join(', ')}.`,
-        );
-      }
-
-      if (!validBlockchainNetworks.length) {
-        throw new Error(
-          `${errorPrefix} - No valid network names were found in configuration. Valid values are: ${allBlockchainNetworks.join(
-            ', ',
-          )}.`,
-        );
-      }
-
-      const [finalBlockchainNetworks, unavailableBlockchainNetworks] = partition(
-        validBlockchainNetworks,
-        (network) => availableBlockchainNetworks.includes(network),
-      );
-
-      if (unavailableBlockchainNetworks.length > 0) {
-        console.warn(
-          `${errorPrefix} - The following configured networks are unavailable on the connected server: ${unavailableBlockchainNetworks.join(
-            ', ',
-          )}. Avaliable networks are: ${availableBlockchainNetworks.join(', ')}.`,
-        );
-      }
-
-      if (!finalBlockchainNetworks.length) {
-        throw new Error(
-          `${errorPrefix} - No available networks were found in configuration. Available networks are: ${allBlockchainNetworks.join(
-            ', ',
-          )}.`,
-        );
-      }
-
-      const multipleNearNetworks =
-        finalBlockchainNetworks.filter((network) => network.startsWith('Near')).length > 1;
-      // This will probably never happen since the server will only have one enabled
-      if (multipleNearNetworks) {
-        throw new Error(`${errorPrefix} - Only one Near network can be configured at a time.`);
-      }
-
-      const multipleSolanaNetworks =
-        finalBlockchainNetworks.filter((network) => network.startsWith('Solana')).length > 1;
-      // This will probably never happen since the server will only have one enabled
-      if (multipleSolanaNetworks) {
-        throw new Error(`${errorPrefix} - Only one Solana network can be configured at a time.`);
-      }
-
-      return finalBlockchainNetworks;
     }
 
-    return availableBlockchainNetworks.filter((network) => allBlockchainNetworks.includes(network));
+    if (!validBlockchainNetworks.length) {
+      throw new Error(
+        `${errorPrefix} - No valid network names were found in configuration. Valid values are: ${allBlockchainNetworks.join(
+          ', ',
+        )}.`,
+      );
+    }
+
+    const ensureSingleChain = (): boolean => {
+      let currentChain: Blockchain | undefined;
+      let network: BlockchainNetwork;
+
+      for (network of validBlockchainNetworks) {
+        const chain = BlockchainNetworkDetails[network].blockchain;
+
+        if (!currentChain) {
+          currentChain = chain;
+        } else {
+          if (chain !== currentChain) {
+            return false;
+          }
+        }
+      }
+
+      return true;
+    };
+
+    if (!ensureSingleChain()) {
+      throw new Error(
+        `${errorPrefix} - Only networks of a single chain type/protocol can be enabled at a time.`,
+      );
+    }
+
+    const [finalBlockchainNetworks, unavailableBlockchainNetworks] = partition(
+      validBlockchainNetworks,
+      (network) => availableBlockchainNetworks.includes(network),
+    );
+
+    if (unavailableBlockchainNetworks.length > 0) {
+      console.warn(
+        `${errorPrefix} - The following configured networks are unavailable on the connected server: ${unavailableBlockchainNetworks.join(
+          ', ',
+        )}. Avaliable networks are: ${availableBlockchainNetworks.join(', ')}.`,
+      );
+    }
+
+    if (!finalBlockchainNetworks.length) {
+      throw new Error(
+        `${errorPrefix} - No available networks were found in configuration. Available networks are: ${allBlockchainNetworks.join(
+          ', ',
+        )}.`,
+      );
+    }
+
+    const multipleNearNetworks =
+      finalBlockchainNetworks.filter((network) => network.startsWith('Near')).length > 1;
+    // This will probably never happen since the server will only have one enabled
+    if (multipleNearNetworks) {
+      throw new Error(`${errorPrefix} - Only one Near network can be configured at a time.`);
+    }
+
+    const multipleSolanaNetworks =
+      finalBlockchainNetworks.filter((network) => network.startsWith('Solana')).length > 1;
+    // This will probably never happen since the server will only have one enabled
+    if (multipleSolanaNetworks) {
+      throw new Error(`${errorPrefix} - Only one Solana network can be configured at a time.`);
+    }
+
+    return finalBlockchainNetworks;
   }
 
   private static validateVerificationTypes(
