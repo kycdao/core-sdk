@@ -165,24 +165,24 @@ export interface SdkConfiguration {
    */
   baseUrl: string;
   /**
-   * List of {@link BlockchainNetworks} to be available to use.\
-   * This can influence what third party providers will get initialized.\
+   * List of {@link BlockchainNetworks} to be available to use. This can influence what third party providers will get initialized.
    * As a rule of thumb test networks will be available when connecting to a kycDAO test server and main networks when connecting to the kycDAO production server (see {@link baseUrl}).
    *
-   * If undefined, all networks available on the configured kycDAO server will be enabled.
-   *
-   * @type {?BlockchainNetwork[]}
+   * @type {BlockchainNetwork[]}
    */
-  enabledBlockchainNetworks?: BlockchainNetwork[];
+  enabledBlockchainNetworks: BlockchainNetwork[];
   /**
    * List of {@link VerificationTypes} to be available to use.\
-   * This can influence what third party providers will get initialized.
+   * This can influence what third party providers will get initialized.\
+   * \
+   * Limitations:\
+   * Only networks of a single chain type/protocol can be enabled at a time. Currently we do not allow initialization with multiple protocols.
    *
    * @type {VerificationType[]}
    */
   enabledVerificationTypes: VerificationType[];
   /**
-   * If there are any EVM networks enabled this object will be used as the EVM provider (i.e.: MetaMask or anything [EIP-1193](https://eips.ethereum.org/EIPS/eip-1193), [EIP-2255](https://eips.ethereum.org/EIPS/eip-2255) compatible).
+   * If there are any EVM networks enabled this object will be used as the EVM provider (i.e.: MetaMask, WalletConnect or anything [EIP-1193](https://eips.ethereum.org/EIPS/eip-1193), [EIP-2255](https://eips.ethereum.org/EIPS/eip-2255) compatible).
    * Historically, EVM providers have been made available as the `window.ethereum` object in web browsers, but this convention is not part of the mentioned specifications.\
    * \
    * Existance of required methods/fields will be verified during SDK initialization.
@@ -191,7 +191,7 @@ export interface SdkConfiguration {
    */
   evmProvider?: unknown;
   /**
-   * An optional blockchain network configuration override parameter which allows certain netwark related values to be customized (e.g. custom RPC endpoints can be specified)
+   * An optional blockchain network configuration override parameter which allows certain network related values to be customized (e.g. custom RPC endpoints can be specified)
    *
    * @type {?Partial<Record<BlockchainNetwork, BlockchainNetworkConfiguration>>}
    */
