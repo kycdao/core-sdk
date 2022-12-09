@@ -1171,10 +1171,16 @@ export class KycDao extends ApiBase {
 
         if (!this.near.wallet.isSignedIn()) {
           try {
+            // redirects to the wallet
             await this.near.wallet.requestSignIn(this.near.contractName, 'kycDAO');
           } catch (e) {
             throw new Error(`${errorPrefix} - ${(e as Error).message}`);
           }
+          // the redirect is non-blocking, so we return a promise that never resolves
+          // to stop code executing until the redirect happens
+          return new Promise(() => {
+            return;
+          });
         } else {
           const address: string = this.near.wallet.getAccountId();
           this._chainAndAddress = {
@@ -1733,14 +1739,18 @@ export class KycDao extends ApiBase {
         if (!mintFn) {
           throw new Error('Mint function not callable');
         }
-
+        // redirects to the wallet
         await mintFn({
           args: { auth_code: Number(authorizationCode) },
           gas: '300000000000000',
           amount: costWithSlippage.toString(),
           callbackUrl,
         });
-
+        // the redirect is non-blocking, so we return a promise that never resolves
+        // to stop code executing until the redirect happens
+        return new Promise(() => {
+          return;
+        });
         break;
       }
       case 'Ethereum': {
