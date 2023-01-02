@@ -1102,6 +1102,80 @@ export class KycDao extends ApiBase {
     return fulfilled.map((fulfilled) => fulfilled.value);
   }
 
+  // TODO split this up/move this to providers/wrappers or something
+  private async ensureValidProviderNetwork(blockchain: Blockchain): Promise<BlockchainNetwork> {
+    const networkDetails = this.blockchainNetworkDetails;
+    let blockchainNetwork: BlockchainNetwork | undefined;
+
+    switch (blockchain) {
+      case 'Ethereum': {
+        if (!this.evmProvider) {
+          throw new Error('EVM provider not configured.');
+        }
+
+        const chainId = await this.evmProvider.getChainId();
+
+        blockchainNetwork = typedKeys(networkDetails).find(
+          // Note: WalletConnect returns chainId as a number
+          (network) => Number(networkDetails[network].chainId) === Number(chainId),
+        );
+
+        // selected network is not recognized
+        if (!blockchainNetwork) {
+          throw new Error('Selected EVM network is not supported.');
+        }
+
+        // selected network is not enabled
+        if (!this.blockchainNetworks.includes(blockchainNetwork)) {
+          // there is only one enabled network
+          if (this.blockchainNetworks.length === 1) {
+            const enabledNetwork = this.blockchainNetworks[0];
+            const enabledNetworkDetails = networkDetails[enabledNetwork];
+
+            // the enabled network has the same chain as the selected one and it has a chain ID
+            if (
+              enabledNetworkDetails.blockchain === networkDetails[blockchainNetwork].blockchain &&
+              enabledNetworkDetails.chainId
+            ) {
+              try {
+                await this.evmProvider.switchNetwork(enabledNetworkDetails.chainId);
+                // TODO will it always fail if the wallet does not support this? Should we check if the switch was successful?
+              } catch {
+                throw new Error('Automatic network switching failed');
+              }
+            }
+          }
+
+          throw new Error('Selected EVM network is not enabled.');
+        }
+
+        break;
+      }
+      case 'Near': {
+        if (!this.near) {
+          throw new Error('Near SDK not initialized.');
+        }
+
+        blockchainNetwork = this.near.blockchainNetwork;
+
+        break;
+      }
+      case 'Solana': {
+        if (!this.solana) {
+          throw new Error('Solana support is not enabled.');
+        }
+
+        blockchainNetwork = this.solana.blockchainNetwork;
+
+        break;
+      }
+      default:
+        throw new Error(`Unsupported blockchain: ${blockchain}.`);
+    }
+
+    return blockchainNetwork;
+  }
+
   /**
    * Initiates wallet connection with a third party wallet provider.
    *
@@ -1142,20 +1216,7 @@ export class KycDao extends ApiBase {
           throw new Error(`${errorPrefix} - No connected EVM networks detected.`);
         }
 
-        const chainId = await this.evmProvider.getChainId();
-
-        const blockchainNetwork = typedKeys(BlockchainNetworkDetails).find(
-          // Note: WalletConnect returns chainId as a number
-          (network) => Number(BlockchainNetworkDetails[network].chainId) === Number(chainId),
-        );
-
-        if (!blockchainNetwork) {
-          throw new Error(`${errorPrefix} - Connected EVM network is not supported.`);
-        }
-
-        if (!this.blockchainNetworks.includes(blockchainNetwork)) {
-          throw new Error(`${errorPrefix} - Connected EVM network is not enabled.`);
-        }
+        const blockchainNetwork = await this.ensureValidProviderNetwork(blockchain);
 
         this._chainAndAddress = {
           blockchain: 'Ethereum',
@@ -1869,12 +1930,15 @@ export class KycDao extends ApiBase {
       );
     }
 
-    const chainAndAddress = this._chainAndAddress;
+    const chainAndAddress = Object.assign({}, this._chainAndAddress);
 
     // validate minting data
     if (!mintingData.disclaimerAccepted) {
       throw new Error(`${errorPrefix} - Disclaimer must be accepted.`);
     }
+
+    // ensure that the selected network in the provider/wallet is supported and enabled
+    await this.ensureValidProviderNetwork(chainAndAddress.blockchain);
 
     await this.refreshSession();
 
