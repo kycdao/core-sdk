@@ -928,11 +928,13 @@ export class KycDao extends ApiBase {
         const blockchainNetwork = typedKeys(networkDetails).find(
           (network) => Number(networkDetails[network].chainId) === Number(chainId),
         );
+        const isSupportedAndEnabled =
+          blockchainNetwork && kycDao.blockchainNetworks.includes(blockchainNetwork);
 
         if (
           kycDao._chainAndAddress &&
           kycDao._chainAndAddress.blockchain === 'Ethereum' &&
-          blockchainNetwork
+          isSupportedAndEnabled
         ) {
           kycDao._chainAndAddress.blockchainNetwork = blockchainNetwork;
         }
