@@ -627,7 +627,11 @@ export class KycDao extends ApiBase {
         this.session = undefined;
       }
     } else if (this.session) {
-      const isSameWallet = this.session.chain_and_address === this._chainAndAddress;
+      const isSameWallet =
+        this.session.chain_and_address.address === this._chainAndAddress?.address &&
+        this.session.chain_and_address.blockchain === this._chainAndAddress?.blockchain &&
+        this.session.chain_and_address.blockchainNetwork ===
+          this._chainAndAddress?.blockchainNetwork;
       if (!isSameWallet) {
         this.session = undefined;
       }
@@ -912,16 +916,30 @@ export class KycDao extends ApiBase {
     );
 
     const evmProvider = KycDao.validateEvmProvider(kycDao.blockchainNetworks, config.evmProvider);
-    kycDao.evmProvider = evmProvider ? new EvmProviderWrapper(evmProvider) : undefined;
 
     // remove EVM networks from the available list if no evmProvider is set in the congfig
     if (!evmProvider) {
       kycDao.blockchainNetworks = kycDao.blockchainNetworks.filter(
         (network) => !Object.keys(EvmBlockchainNetworks).includes(network),
       );
-    }
+    } else {
+      evmProvider.on('chainChanged', (chainId: number) => {
+        const networkDetails = kycDao.blockchainNetworkDetails;
+        const blockchainNetwork = typedKeys(networkDetails).find(
+          (network) => Number(networkDetails[network].chainId) === Number(chainId),
+        );
 
-    // add EVM provider event handlers here with the `on` method (accountsChanged, chainChanged) if needed
+        if (
+          kycDao._chainAndAddress &&
+          kycDao._chainAndAddress.blockchain === 'Ethereum' &&
+          blockchainNetwork
+        ) {
+          kycDao._chainAndAddress.blockchainNetwork = blockchainNetwork;
+        }
+      });
+
+      kycDao.evmProvider = new EvmProviderWrapper(evmProvider);
+    }
 
     // initialize NEAR if there is an available NEAR network
     const nearNetwork = kycDao.blockchainNetworks.find((network) =>
@@ -1137,16 +1155,25 @@ export class KycDao extends ApiBase {
               enabledNetworkDetails.blockchain === networkDetails[blockchainNetwork].blockchain &&
               enabledNetworkDetails.chainId
             ) {
+              const newChainId = enabledNetworkDetails.chainId;
               try {
-                await this.evmProvider.switchNetwork(enabledNetworkDetails.chainId);
-                // TODO will it always fail if the wallet does not support this? Should we check if the switch was successful?
-              } catch {
-                throw new Error('Automatic network switching failed');
-              }
-            }
-          }
+                await this.evmProvider.switchNetwork(newChainId);
 
-          throw new Error('Selected EVM network is not enabled.');
+                const updatedChainId = await this.evmProvider.getChainId();
+                if (updatedChainId !== newChainId) {
+                  throw new Error();
+                }
+              } catch {
+                throw new Error(
+                  'Automatic network switching failed, selected EVM network is not enabled.',
+                );
+              }
+
+              blockchainNetwork = enabledNetwork;
+            }
+          } else {
+            throw new Error('Selected EVM network is not enabled.');
+          }
         }
 
         break;
@@ -1930,15 +1957,17 @@ export class KycDao extends ApiBase {
       );
     }
 
-    const chainAndAddress = Object.assign({}, this._chainAndAddress);
-
     // validate minting data
     if (!mintingData.disclaimerAccepted) {
       throw new Error(`${errorPrefix} - Disclaimer must be accepted.`);
     }
 
+    const chainAndAddress = Object.assign({}, this._chainAndAddress);
+
     // ensure that the selected network in the provider/wallet is supported and enabled
-    await this.ensureValidProviderNetwork(chainAndAddress.blockchain);
+    chainAndAddress.blockchainNetwork = await this.ensureValidProviderNetwork(
+      chainAndAddress.blockchain,
+    );
 
     await this.refreshSession();
 
