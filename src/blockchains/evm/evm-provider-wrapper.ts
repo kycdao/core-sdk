@@ -79,6 +79,13 @@ export class EvmProviderWrapper {
     });
   }
 
+  public async switchNetwork(chainId: string): Promise<void> {
+    return this.provider.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId }],
+    });
+  }
+
   public async personalSign(message: string, address: string): Promise<string> {
     return this.provider.request<string>({
       method: 'personal_sign',
