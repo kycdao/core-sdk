@@ -4,12 +4,9 @@ label: Getting started
 order: 0
 ---
 
-![](https://blog.kycdao.xyz/content/images/2022/05/docs-cover.jpg)
+This SDK is designed to enable web3 projects to integrate kycDAO verification flow into their website with the maximum flexibility around UI/UX.
 
 kycDAO JS/TS SDK canonical URL: https://github.com/kycdao/kycdao-js-sdk
-
-[kycDAO](https://kycdao.xyz/home) creates a shared bridge of on-chain verification proofs that enable web3 service providers to deliver products to trusted users across ecosystems and blockchains. Non-transferable NFTs are minted as proof-of-verifications (no PII) to enable compliant composability while eliminating data duplication. kycNFTs are the base for a permissionless identity and serve as a unique web3 version of a twitter tick.
-
 
 ## Installation
 
@@ -32,13 +29,13 @@ yarn add near-api-js persona react react-dom styled-components @kycdao/kycdao-sd
 +++ HTML
 ```html
 <script
-  src="https://cdn.jsdelivr.net/npm/@kycdao/kycdao-sdk@0.2.0/dist/kycdao-sdk.min.js"
-  integrity="sha256-A1Qb6wilgW2Nzara9H3nCIM7UIAHA51EU0ILVbj+kzA="
+  src="https://cdn.jsdelivr.net/npm/@kycdao/kycdao-sdk@0.4.2/dist/kycdao-sdk.min.js"
+  integrity="sha256-mbKIQDqxeJTz0v6eSxcayZclL46J+43By6VVrVUWLSY="
   crossorigin="anonymous">
-</script>
+<script>
 ```
 
-You can always find all versions and generate script tags for them at https://www.jsdelivr.com/package/npm/@kycdao/kycdao-sdk
+You can always find all versions and generate script tags for them at https://www.jsdelivr.com/package/npm/@kycdao/kycdao-sdk. We encourage using a specific version and checking for updates reqularly rather then defaulting to the latest version, to avoid potential compatibility issues.
 +++
 
 ## Initialization
