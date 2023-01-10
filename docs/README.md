@@ -8,7 +8,9 @@ This SDK is designed to enable web3 projects to integrate kycDAO verification fl
 
 kycDAO JS/TS SDK canonical URL: https://github.com/kycdao/kycdao-js-sdk
 
-## Installation
+## Integration steps
+
+[!badge variant="contrast" size="l" text="Step 1" corners="pill"] Installation
 
 The SDK can be used two ways:
 1. by installing the NPM package
@@ -17,12 +19,12 @@ The SDK can be used two ways:
 When using the NPM package make sure to install the peer dependencies as well.
 
 +++ NPM
-```
+```bash
 npm install near-api-js persona react react-dom styled-components @kycdao/kycdao-sdk
 ```
 
 +++ Yarn
-```
+```bash
 yarn add near-api-js persona react react-dom styled-components @kycdao/kycdao-sdk
 ```
 
@@ -38,7 +40,7 @@ yarn add near-api-js persona react react-dom styled-components @kycdao/kycdao-sd
 You can always find all versions and generate script tags for them at https://www.jsdelivr.com/package/npm/@kycdao/kycdao-sdk. We encourage using a specific version and checking for updates reqularly rather then defaulting to the latest version, to avoid potential compatibility issues.
 +++
 
-## Initialization
+[!badge variant="contrast" size="l" text="Step 2" corners="pill"] Initialization
 
 The SDK has an asynchronous initializer method which returns the SDK object as one of its fields which can be used to acccess the SDK methods. For details on the configuration options check out the API reference.
 
