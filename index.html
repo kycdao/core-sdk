@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="turbo-root" content="/kycdao-js-sdk">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="2.4.0.726323306465">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="2.4.0.726676230777">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 2.4.0">
@@ -31,12 +31,12 @@
 
     <script>(function () { var el = document.documentElement, m = localStorage.getItem("/kycdao-js-sdk/doc_theme"), wm = window.matchMedia; if (m === "dark" || (!m && wm && wm("(prefers-color-scheme: dark)").matches)) { el.classList.add("dark") } else { el.classList.remove("dark") } })();</script>
 
-    <link href="resources/css/retype.css?v=2.4.0.726323306465" rel="stylesheet" />
+    <link href="resources/css/retype.css?v=2.4.0.726676230777" rel="stylesheet" />
 
-    <script type="text/javascript" src="resources/js/config.js?v=2.4.0.726323306465" data-turbo-eval="false" defer></script>
+    <script type="text/javascript" src="resources/js/config.js?v=2.4.0.726676230777" data-turbo-eval="false" defer></script>
     <script type="text/javascript" src="resources/js/retype.js?v=2.4.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" type="text/javascript" src="resources/js/lunr.js?v=2.4.0.726323306465" data-turbo-eval="false" defer></script>
-    <script id="prism-js" type="text/javascript" src="resources/js/prism.js?v=2.4.0.726323306465" defer></script>
+    <script id="lunr-js" type="text/javascript" src="resources/js/lunr.js?v=2.4.0.726676230777" data-turbo-eval="false" defer></script>
+    <script id="prism-js" type="text/javascript" src="resources/js/prism.js?v=2.4.0.726676230777" defer></script>
 </head>
 <body>
     <div id="docs-app" class="relative text-base antialiased text-gray-700 bg-white font-body dark:bg-dark-850 dark:text-dark-300">
@@ -165,12 +165,15 @@
 </doc-anchor-target>
 <p>This SDK is designed to enable web3 projects to integrate kycDAO verification flow into their website with the maximum flexibility around UI/UX.</p>
 <p>kycDAO JS/TS SDK canonical URL: <a href="https://github.com/kycdao/kycdao-js-sdk">https://github.com/kycdao/kycdao-js-sdk</a></p>
-<doc-anchor-target id="installation">
+<doc-anchor-target id="integration-steps">
     <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#installation">#</doc-anchor-trigger>
-        <span>Installation</span>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#integration-steps">#</doc-anchor-trigger>
+        <span>Integration steps</span>
     </h2>
 </doc-anchor-target>
+<p><span class="no-link inline-flex items-center justify-center font-medium leading-none whitespace-nowrap text-white dark:text-dark-850 bg-gray-900 dark:bg-white h-8 px-3 text-sm rounded-full">
+    <span>Step 1</span>
+</span> Installation</p>
 <p>The SDK can be used two ways:</p>
 <ol>
 <li>by installing the NPM package</li>
@@ -181,13 +184,13 @@
 <doc-tab id="npm">
 <template #title>NPM</template>
 <div class="codeblock-wrapper"><doc-codeblock>
-<pre class="language-none"><code v-pre class="language-none">npm install near-api-js persona react react-dom styled-components @kycdao/kycdao-sdk</code></pre>
+<pre class="language-bash"><code v-pre class="language-bash">npm install near-api-js persona react react-dom styled-components @kycdao/kycdao-sdk</code></pre>
 </doc-codeblock></div>
 </doc-tab>
 <doc-tab id="yarn">
 <template #title>Yarn</template>
 <div class="codeblock-wrapper"><doc-codeblock>
-<pre class="language-none"><code v-pre class="language-none">yarn add near-api-js persona react react-dom styled-components @kycdao/kycdao-sdk</code></pre>
+<pre class="language-bash"><code v-pre class="language-bash">yarn add near-api-js persona react react-dom styled-components @kycdao/kycdao-sdk</code></pre>
 </doc-codeblock></div>
 </doc-tab>
 <doc-tab id="html">
@@ -202,12 +205,9 @@
 <p>You can always find all versions and generate script tags for them at <a href="https://www.jsdelivr.com/package/npm/@kycdao/kycdao-sdk">https://www.jsdelivr.com/package/npm/@kycdao/kycdao-sdk</a>. We encourage using a specific version and checking for updates reqularly rather then defaulting to the latest version, to avoid potential compatibility issues.</p>
 </doc-tab>
 </doc-tabs>
-<doc-anchor-target id="initialization">
-    <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#initialization">#</doc-anchor-trigger>
-        <span>Initialization</span>
-    </h2>
-</doc-anchor-target>
+<p><span class="no-link inline-flex items-center justify-center font-medium leading-none whitespace-nowrap text-white dark:text-dark-850 bg-gray-900 dark:bg-white h-8 px-3 text-sm rounded-full">
+    <span>Step 2</span>
+</span> Initialization</p>
 <p>The SDK has an asynchronous initializer method which returns the SDK object as one of its fields which can be used to acccess the SDK methods. For details on the configuration options check out the API reference.</p>
 <doc-tabs>
 <doc-tab id="package">
