@@ -13,7 +13,7 @@ import {
   removeHexPrefix,
 } from './utils';
 import BN from 'bn.js';
-import { poll } from 'src/utils';
+import { poll } from '../../utils';
 
 export class EvmProviderWrapper {
   private provider: EvmProvider;
