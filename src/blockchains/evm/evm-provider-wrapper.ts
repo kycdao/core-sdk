@@ -13,6 +13,7 @@ import {
   removeHexPrefix,
 } from './utils';
 import BN from 'bn.js';
+import { poll } from 'src/utils';
 
 export class EvmProviderWrapper {
   private provider: EvmProvider;
@@ -112,6 +113,34 @@ export class EvmProviderWrapper {
     }
   }
 
+  private isRepeatableError(error: unknown) {
+    const err = error as {
+      code: number;
+      message: string;
+      data?: { code: number; message: string };
+    };
+    if (!err.code || !err.message) {
+      console.log(`Unknown error: ${err}`);
+      return false;
+    }
+    let code = err.code;
+    let msg = err.message;
+
+    // in case of metamask the error is wrapped into an outer JSON-RPC error
+    if (code === -32603 && err.data) {
+      code = err.data.code;
+      msg = err.data.message;
+    }
+
+    if (code === -32000 || code === 3) {
+      console.log(`Repeatable error: ${msg} (code: ${code})`);
+      return true;
+    }
+
+    console.log(`Non-repeatable error: ${msg} (code: ${code})`);
+    return false;
+  }
+
   // functionSignature must be: the function name with the parenthesised list of parameter types, parameter types are split by a single comma, without any spaces
   // e.g.: foo(uint32,bool)
   public async getSighash(functionSignature: string): Promise<string> {
@@ -172,19 +201,28 @@ export class EvmProviderWrapper {
   ): Promise<string> {
     const authCodeEncoded = hexEncodeUint(parseInt(authCode), { padToBytes: 32 });
     const addressEncoded = hexEncodeAddress(fromAddress, { padToBytes: 32 });
-
     const sighash = await this.getSighash('getRequiredMintCostForCode(uint32,address)');
     const data = sighash + authCodeEncoded + addressEncoded;
-    const mintCostRaw = await this.provider.request<string>({
-      method: 'eth_call',
-      params: [
-        {
-          data: data,
-          to: toAddress,
-        },
-        'latest',
-      ],
-    });
+
+    const mintCostRaw = await poll(
+      () =>
+        this.provider.request<string>({
+          method: 'eth_call',
+          params: [
+            {
+              data: data,
+              to: toAddress,
+            },
+            'latest',
+          ],
+        }),
+      2000,
+      15,
+      {
+        retryOnErrorPredicate: (e) => this.isRepeatableError(e),
+        useExponentialBackoff: false,
+      },
+    );
     return mintCostRaw;
   }
 
@@ -205,11 +243,14 @@ export class EvmProviderWrapper {
     const sighash = await this.getSighash('mintWithCode(uint32)');
     const data = sighash + authCodeEncoded;
 
-    const gasLimitHex = await this.estimateGas(
-      data,
-      toAddress,
-      fromAddress,
-      mintCostWithSlippageHex,
+    const gasLimitHex = await poll(
+      () => this.estimateGas(data, toAddress, fromAddress, mintCostWithSlippageHex),
+      2000,
+      15,
+      {
+        retryOnErrorPredicate: (e) => this.isRepeatableError(e),
+        useExponentialBackoff: false,
+      },
     );
 
     const providerGasPriceHex = await this.getGasPrice();
