@@ -1,4 +1,4 @@
-import { BlockchainNetwork } from './types';
+import { BlockchainNetwork, MintingResult, TokenDetails } from './types';
 
 export function partition<T>(arr: T[], predicate: (_: T) => boolean): [T[], T[]] {
   const partitioned: [T[], T[]] = [[], []];
@@ -93,4 +93,19 @@ export function getChainExplorerUrlForTransaction(
   };
 
   return urlMapping[blockchainNetwork];
+}
+
+export function getMintingResult(
+  blockchainNetwork: BlockchainNetwork,
+  txHash: string,
+  tokenId: string,
+  tokenDetails: TokenDetails,
+): MintingResult {
+  const transactionUrl = getChainExplorerUrlForTransaction(txHash, blockchainNetwork);
+
+  return {
+    transactionUrl,
+    tokenId,
+    imageUrl: tokenDetails.image_url,
+  };
 }
