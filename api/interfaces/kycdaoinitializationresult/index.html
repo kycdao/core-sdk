@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="turbo-root" content="/kycdao-js-sdk">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="2.4.0.726759908042">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="2.4.0.726844504875">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 2.4.0">
@@ -12,7 +12,7 @@
     <!-- Primary Meta Tags -->
     <title>KycDaoInitializationResult</title>
     <meta name="title" content="KycDaoInitializationResult">
-    <meta name="description" content="@kycdao/kycdao-sdk - v0.4.4/ KycDaoInitializationResult" />
+    <meta name="description" content="@kycdao/kycdao-sdk - v0.5.0/ KycDaoInitializationResult" />
 
     <!-- Canonical -->
     <link rel="canonical" href="https://kycdao.github.io/kycdao-js-sdk/api/interfaces/kycdaoinitializationresult/" />
@@ -21,21 +21,21 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://kycdao.github.io/kycdao-js-sdk/api/interfaces/kycdaoinitializationresult/">
     <meta property="og:title" content="KycDaoInitializationResult">
-    <meta property="og:description" content="@kycdao/kycdao-sdk - v0.4.4/ KycDaoInitializationResult">
+    <meta property="og:description" content="@kycdao/kycdao-sdk - v0.5.0/ KycDaoInitializationResult">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://kycdao.github.io/kycdao-js-sdk/api/interfaces/kycdaoinitializationresult/">
     <meta property="twitter:title" content="KycDaoInitializationResult">
-    <meta property="twitter:description" content="@kycdao/kycdao-sdk - v0.4.4/ KycDaoInitializationResult">
+    <meta property="twitter:description" content="@kycdao/kycdao-sdk - v0.5.0/ KycDaoInitializationResult">
 
     <script>(function () { var el = document.documentElement, m = localStorage.getItem("/kycdao-js-sdk/doc_theme"), wm = window.matchMedia; if (m === "dark" || (!m && wm && wm("(prefers-color-scheme: dark)").matches)) { el.classList.add("dark") } else { el.classList.remove("dark") } })();</script>
 
-    <link href="../../../resources/css/retype.css?v=2.4.0.726759908042" rel="stylesheet" />
+    <link href="../../../resources/css/retype.css?v=2.4.0.726844504875" rel="stylesheet" />
 
-    <script type="text/javascript" src="../../../resources/js/config.js?v=2.4.0.726759908042" data-turbo-eval="false" defer></script>
+    <script type="text/javascript" src="../../../resources/js/config.js?v=2.4.0.726844504875" data-turbo-eval="false" defer></script>
     <script type="text/javascript" src="../../../resources/js/retype.js?v=2.4.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" type="text/javascript" src="../../../resources/js/lunr.js?v=2.4.0.726759908042" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" type="text/javascript" src="../../../resources/js/lunr.js?v=2.4.0.726844504875" data-turbo-eval="false" defer></script>
 </head>
 <body>
     <div id="docs-app" class="relative text-base antialiased text-gray-700 bg-white font-body dark:bg-dark-850 dark:text-dark-300">
@@ -162,7 +162,7 @@
         <span>KycDaoInitializationResult</span>
     </h1>
 </doc-anchor-target>
-<p><a href="../../">@kycdao/kycdao-sdk - v0.4.4</a> / KycDaoInitializationResult</p>
+<p><a href="../../">@kycdao/kycdao-sdk - v0.5.0</a> / KycDaoInitializationResult</p>
 <p>The result of the SDK initialization process.</p>
 <p><strong><code v-pre>Interface</code></strong></p>
 <p>KycDaoInitializationResult</p>
@@ -180,6 +180,7 @@
 </doc-anchor-target>
 <ul>
 <li><doc-anchor-trigger to="#kycdao">kycDao</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#mintingresult">mintingResult</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#redirectevent">redirectEvent</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#sdkstatus">sdkStatus</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#transactionurl">transactionUrl</doc-anchor-trigger></li>
@@ -204,7 +205,23 @@
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/core-sdk/blob/40d7c32/src/index.ts#L118">index.ts:118</a></p>
+<p><a href="https://github.com/kycdao/core-sdk/blob/22e79a8/src/index.ts#L114">index.ts:114</a></p>
+<hr />
+<doc-anchor-target id="mintingresult">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#mintingresult">#</doc-anchor-trigger>
+        <span>mintingResult</span>
+    </h3>
+</doc-anchor-target>
+<p>• <code v-pre>Optional</code> <strong>mintingResult</strong>: <a href="../mintingresult/"><code v-pre>MintingResult</code></a></p>
+<p>Data related to a successful mint transaction and the minted token, if the handled <doc-anchor-trigger to="#redirectevent">redirectEvent</doc-anchor-trigger> was a mint even.</p>
+<doc-anchor-target id="defined-in-1">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-1">#</doc-anchor-trigger>
+        <span>Defined in</span>
+    </h4>
+</doc-anchor-target>
+<p><a href="https://github.com/kycdao/core-sdk/blob/22e79a8/src/index.ts#L140">index.ts:140</a></p>
 <hr />
 <doc-anchor-target id="redirectevent">
     <h3>
@@ -214,13 +231,13 @@
 </doc-anchor-target>
 <p>• <code v-pre>Optional</code> <strong>redirectEvent</strong>: <a href="../../#redirectevent"><code v-pre>RedirectEvent</code></a></p>
 <p>The type of <a href="../../#redirectevent">RedirectEvent</a> that was detected and handled during the initialization, if there was one.</p>
-<doc-anchor-target id="defined-in-1">
+<doc-anchor-target id="defined-in-2">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-1">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-2">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/core-sdk/blob/40d7c32/src/index.ts#L124">index.ts:124</a></p>
+<p><a href="https://github.com/kycdao/core-sdk/blob/22e79a8/src/index.ts#L120">index.ts:120</a></p>
 <hr />
 <doc-anchor-target id="sdkstatus">
     <h3>
@@ -230,13 +247,13 @@
 </doc-anchor-target>
 <p>• <strong>sdkStatus</strong>: <a href="../sdkstatus/"><code v-pre>SdkStatus</code></a></p>
 <p>The current status of the SDK.</p>
-<doc-anchor-target id="defined-in-2">
+<doc-anchor-target id="defined-in-3">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-2">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-3">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/core-sdk/blob/40d7c32/src/index.ts#L130">index.ts:130</a></p>
+<p><a href="https://github.com/kycdao/core-sdk/blob/22e79a8/src/index.ts#L126">index.ts:126</a></p>
 <hr />
 <doc-anchor-target id="transactionurl">
     <h3>
@@ -245,14 +262,16 @@
     </h3>
 </doc-anchor-target>
 <p>• <code v-pre>Optional</code> <strong>transactionUrl</strong>: <code v-pre>string</code></p>
+<p><strong><code v-pre>Deprecated</code></strong></p>
+<p>since version 0.5.0, see <doc-anchor-trigger to="#mintingresult">mintingResult</doc-anchor-trigger></p>
 <p>Chain explorer URL of the transaction related to the handled <doc-anchor-trigger to="#redirectevent">redirectEvent</doc-anchor-trigger>, if there is any.</p>
-<doc-anchor-target id="defined-in-3">
+<doc-anchor-target id="defined-in-4">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-3">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-4">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/core-sdk/blob/40d7c32/src/index.ts#L136">index.ts:136</a></p>
+<p><a href="https://github.com/kycdao/core-sdk/blob/22e79a8/src/index.ts#L134">index.ts:134</a></p>
 
                                 
                                 <!-- Required only on API pages -->
