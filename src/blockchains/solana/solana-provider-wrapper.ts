@@ -110,7 +110,7 @@ export class SolanaProviderWrapper {
     fromAddress: string,
     metadataUrl: string,
     tokenTitle: string,
-  ): Promise<string | undefined> {
+  ): Promise<string> {
     if (!this._adapter) {
       throw new Error('Solana wallet adapter not initialized');
     }

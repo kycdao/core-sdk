@@ -590,11 +590,38 @@ export interface MintingData {
   subscriptionYears?: number;
 }
 
+/**
+ * Data related to a successful mint transaction and the minted token.
+ *
+ * @interface MintingResult
+ * @typedef {MintingResult}
+ */
+export interface MintingResult {
+  /**
+   * Chain explorer URL of the minting transaction.
+   *
+   * @type {string}
+   */
+  transactionUrl: string;
+  /**
+   * The ID associated with the minted token.
+   *
+   * @type {string}
+   */
+  tokenId: string;
+  /**
+   * The URL of the image associated with the minted token.
+   *
+   * @type {string}
+   */
+  imageUrl: string;
+}
+
 /* INTERNAL (not in API reference) */
 
 export interface RedirectResult {
   event?: RedirectEvent;
-  transactionUrl?: string;
+  mintingResult?: MintingResult;
 }
 
 export interface PersonaStatus {

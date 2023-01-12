@@ -27,6 +27,7 @@ import {
   MintingAuthorizationRequest,
   MintingAuthorizationResponse,
   MintingData,
+  MintingResult,
   NearBlockchainNetwork,
   NearSdk,
   NetworkAndAddress,
@@ -40,6 +41,7 @@ import {
   ServerStatus,
   Session,
   SolanaBlockchainNetwork,
+  TokenDetails,
   TokenMetadata,
   Transaction,
   UserDetails,
@@ -52,14 +54,7 @@ import {
 } from './types';
 import { default as COUNTRIES } from './countries.list.json';
 import { FinalExecutionOutcome, JsonRpcProvider } from 'near-api-js/lib/providers';
-import {
-  getChainExplorerUrlForTransaction,
-  isFulfilled,
-  isLike,
-  partition,
-  poll,
-  typedKeys,
-} from './utils';
+import { getMintingResult, isFulfilled, isLike, partition, poll, typedKeys } from './utils';
 import { EvmProviderWrapper } from './blockchains/evm/evm-provider-wrapper';
 import { EvmProvider, EvmTransactionReceipt, ProviderRpcError } from './blockchains/evm/types';
 import { KycDaoJsonRpcProvider } from './blockchains/kycdao-json-rpc-provider';
@@ -86,6 +81,7 @@ export {
   EmailData,
   EvmBlockchainNetwork,
   MintingData,
+  MintingResult,
   NearBlockchainNetwork,
   NetworkAndAddress,
   NftCheckOptions,
@@ -129,11 +125,19 @@ export interface KycDaoInitializationResult {
    */
   sdkStatus: SdkStatus;
   /**
+   * @deprecated since version 0.5.0, see {@link mintingResult}
+   *
    * Chain explorer URL of the transaction related to the handled {@link redirectEvent}, if there is any.
    *
    * @type {?string}
    */
   transactionUrl?: string;
+  /**
+   * Data related to a successful mint transaction and the minted token, if the handled {@link redirectEvent} was a mint even.
+   *
+   * @type {MintingResult}
+   */
+  mintingResult?: MintingResult;
 }
 
 /**
@@ -726,7 +730,7 @@ export class KycDao extends ApiBase {
     event: RedirectEvent,
     queryParams: URLSearchParams,
     detectedValue: string,
-  ): Promise<string | undefined> {
+  ): Promise<MintingResult | undefined> {
     if (!this.near) {
       throw new Error('Near callback detected but the Near SDK is  not initialized.');
     }
@@ -741,7 +745,7 @@ export class KycDao extends ApiBase {
 
       await this.refreshSession();
 
-      let transactionUrl: string | undefined;
+      let mintingResult: MintingResult | undefined;
 
       switch (event) {
         case 'NearLogin':
@@ -770,15 +774,17 @@ export class KycDao extends ApiBase {
                   Buffer.from(successValue, 'base64').toString(),
                 ).token_id;
 
-                await this.post('token', {
+                const tokenDetails = await this.post<TokenDetails>('token', {
                   authorization_code: authCode,
                   token_id: tokenId,
                   minting_tx_id: detectedValue,
                 });
 
-                transactionUrl = getChainExplorerUrlForTransaction(
-                  detectedValue,
+                mintingResult = getMintingResult(
                   this._chainAndAddress.blockchainNetwork,
+                  detectedValue,
+                  tokenId,
+                  tokenDetails,
                 );
               } catch {
                 throw new Error(
@@ -797,7 +803,7 @@ export class KycDao extends ApiBase {
           throw new Error(`Unhandled Near wallet redirect event: ${event}.`);
       }
 
-      return transactionUrl;
+      return mintingResult;
     }
 
     return;
@@ -839,11 +845,11 @@ export class KycDao extends ApiBase {
       const value = match[1];
       const event = knownQueryParams[key];
 
-      let transactionUrl: string | undefined;
+      let mintingResult: MintingResult | undefined;
 
       if (event.startsWith('Near')) {
         try {
-          transactionUrl = await this.handleNearWalletCallback(event, queryParams, value);
+          mintingResult = await this.handleNearWalletCallback(event, queryParams, value);
         } catch (e) {
           if (e instanceof Error) {
             console.error(`${errorPrefix} - ${e.message}`);
@@ -855,7 +861,7 @@ export class KycDao extends ApiBase {
         }
       }
 
-      return { event, transactionUrl };
+      return { event, mintingResult };
     }
 
     return;
@@ -964,7 +970,8 @@ export class KycDao extends ApiBase {
     return {
       kycDao,
       redirectEvent: redirectResult?.event,
-      transactionUrl: redirectResult?.transactionUrl,
+      transactionUrl: redirectResult?.mintingResult?.transactionUrl, // deprecated
+      mintingResult: redirectResult?.mintingResult,
       sdkStatus: kycDao.sdkStatus,
     };
   }
@@ -1859,7 +1866,7 @@ export class KycDao extends ApiBase {
     chainAndAddress: ChainAndAddress,
     mintAuthResponse: MintingAuthorizationResponse,
     verificationType: VerificationType,
-  ): Promise<string | undefined> {
+  ): Promise<MintingResult | undefined> {
     const errorPrefix = 'Cannot mint';
 
     const contractAddress = this.getSmartContractAddress(
@@ -1921,7 +1928,6 @@ export class KycDao extends ApiBase {
         return new Promise(() => {
           return;
         });
-        break;
       }
       case 'Ethereum': {
         if (!this.evmProvider) {
@@ -1989,17 +1995,13 @@ export class KycDao extends ApiBase {
           tokenMetadata.name,
         );
 
-        if (txHash) {
-          const transaction = await this.waitForTransaction(chainAndAddress, txHash);
+        const transaction = await this.waitForTransaction(chainAndAddress, txHash);
 
-          if (transaction.status === 'Failure') {
-            throw new Error(`${errorPrefix} - Transaction failed`);
-          }
-
-          tokenId = transaction.data as string;
-        } else {
-          // TODO throw error that transaction cannot be verified? Can we do anything else?
+        if (transaction.status === 'Failure') {
+          throw new Error(`${errorPrefix} - Transaction failed`);
         }
+
+        tokenId = transaction.data as string;
 
         break;
       }
@@ -2008,28 +2010,31 @@ export class KycDao extends ApiBase {
     }
 
     if (txHash && tokenId) {
-      await this.post('token', {
+      const tokenDetails = await this.post<TokenDetails>('token', {
         authorization_code: authorizationCode,
         token_id: tokenId,
         minting_tx_id: txHash,
       });
+
+      return getMintingResult(chainAndAddress.blockchainNetwork, txHash, tokenId, tokenDetails);
     }
 
-    return txHash;
+    return;
   }
 
   /**
    * This step updates the user based on the {@link MintingData} provided and checks if the user is eligible to mint a token.
    * Then calls the server to authorize minting for the current wallet and waits for the transaction to succeed (but max about 2 minutes).
    * After an authorization code is acquired it initiates the minting.\
-   * Returns the chain explorer URL for the minting transaction if it's possible. In general it should always return an URL unless an error occured or the site got redirected by the provider (e.g. NEAR).
+   * Returns data related to the successful mint transaction and the minted token, if it's possible.
+   * In general it should always return this data unless an error occured or the site got redirected by the provider (e.g. NEAR).
    *
    * @public
    * @async
    * @param {MintingData} mintingData
-   * @returns {Promise<string | undefined>}
+   * @returns {Promise<MintingResult | undefined>}
    */
-  public async startMinting(mintingData: MintingData): Promise<string | undefined> {
+  public async startMinting(mintingData: MintingData): Promise<MintingResult | undefined> {
     const errorPrefix = 'Cannot start minting';
     let verificationType = mintingData.verificationType;
 
@@ -2078,10 +2083,6 @@ export class KycDao extends ApiBase {
     // start minting
     // in case of Near, this will redirect and our page will get a callback so any further steps are need to be handled in the SDK init phase
     // in case of EVM, this will wait for the transaction to succeed before returning
-    const txHash = await this.mint(chainAndAddress, authCode, verificationType);
-
-    return txHash
-      ? getChainExplorerUrlForTransaction(txHash, chainAndAddress.blockchainNetwork)
-      : undefined;
+    return this.mint(chainAndAddress, authCode, verificationType);
   }
 }
