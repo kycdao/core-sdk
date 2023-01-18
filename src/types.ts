@@ -576,11 +576,10 @@ export interface MintingData {
   verificationType?: VerificationType;
   /**
    * The ID of the selected image to be minted in the NFT. Has to be one of the keys in the object returned by the {@link KycDao.getNftImageOptions} method.
-   * If omitted the first generated identicon will be used from the options.
    *
-   * @type {?string}
+   * @type {string}
    */
-  imageId?: string;
+  imageId: string;
   /**
    * The number of years for which the user will be subscribed to kycDAO. This will directly influence the expiry time and the minting cost of the token. The default value is 1 year.\
    * Currently it only has any effect if the user is not subscribed yet, otherwise this value will be ignored. The current user's subscription status can be checked with the {@link KycDao.subscribed}.
@@ -681,6 +680,12 @@ export interface NearSdk {
   wallet: WalletConnection;
   archival: string;
   contractName: string;
+}
+
+export interface MintingState {
+  chainAndAddress: ChainAndAddress;
+  mintingData: MintingData;
+  mintAuthResponse: MintingAuthorizationResponse;
 }
 
 export interface KycDaoContract extends Contract {

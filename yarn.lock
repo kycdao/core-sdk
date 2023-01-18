@@ -499,6 +499,7 @@ __metadata:
     eslint: "npm:^8.14.0"
     eslint-config-prettier: "npm:^8.5.0"
     eslint-plugin-prettier: "npm:^4.0.0"
+    lodash: "npm:^4.17.21"
     near-api-js: "npm:^0.44.2"
     persona: "npm:^4.6.0"
     prettier: "npm:^2.6.2"
