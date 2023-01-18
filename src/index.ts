@@ -60,6 +60,7 @@ import { EvmProvider, EvmTransactionReceipt, ProviderRpcError } from './blockcha
 import { KycDaoJsonRpcProvider } from './blockchains/kycdao-json-rpc-provider';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets';
 import { SolanaProviderWrapper } from './blockchains/solana/solana-provider-wrapper';
+import { Transaction as SolanaTransaction } from '@solana/web3.js';
 
 export { ApiBase, KycDaoApiError } from './api-base';
 export {
@@ -1844,12 +1845,15 @@ export class KycDao extends ApiBase {
       const txHash = res.token.authorization_tx_id;
 
       if (!txHash) {
-        throw new Error(`${errorPrefix} - Transaction ID not found`);
-      }
-
-      const transaction = await this.waitForTransaction(chainAndAddress, txHash);
-      if (transaction.status === 'Failure') {
-        throw new Error('Transaction failed');
+        // Either txHash or transaction is required
+        if (!res.transaction) {
+          throw new Error(`${errorPrefix} - Transaction ID not found`);
+        }
+      } else {
+        const transaction = await this.waitForTransaction(chainAndAddress, txHash);
+        if (transaction.status === 'Failure') {
+          throw new Error('Transaction failed');
+        }
       }
 
       return res;
@@ -1988,21 +1992,20 @@ export class KycDao extends ApiBase {
           throw new Error(`${errorPrefix} - Token metadata is invalid`);
         }
 
-        txHash = await this.solana.mint(
-          contractAddress,
-          chainAndAddress.address,
-          tokenMetadataUrl,
-          tokenMetadata.name,
-        );
+        if (mintAuthResponse.transaction) {
+          const mintTransaction = SolanaTransaction.from(
+            Buffer.from(mintAuthResponse.transaction, 'hex'),
+          );
+          txHash = await this.solana.mint(chainAndAddress.address, mintTransaction);
+          const transaction = await this.waitForTransaction(chainAndAddress, txHash);
+          if (transaction.status === 'Failure') {
+            throw new Error(`${errorPrefix} - Transaction failed`);
+          }
 
-        const transaction = await this.waitForTransaction(chainAndAddress, txHash);
-
-        if (transaction.status === 'Failure') {
-          throw new Error(`${errorPrefix} - Transaction failed`);
+          tokenId = transaction.data as string;
+        } else {
+          throw new Error(`${errorPrefix} - Backend transaction not found`);
         }
-
-        tokenId = transaction.data as string;
-
         break;
       }
       default:
