@@ -132,7 +132,7 @@ export class EvmProviderWrapper {
       msg = err.data.message;
     }
 
-    if (code === -32000 || code === 3) {
+    if (code === 3) {
       console.log(`Repeatable error: ${msg} (code: ${code})`);
       return true;
     }
