@@ -798,6 +798,7 @@ export interface MintingAuthorizationRequest {
 export interface MintingAuthorizationResponse {
   token: TokenDetails;
   metadata_url?: string;
+  transaction?: string;
 }
 
 export interface TokenMetadata {

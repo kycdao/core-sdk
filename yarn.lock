@@ -483,7 +483,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kycdao/kycdao-sdk@workspace:."
   dependencies:
-    "@solana/spl-token": "npm:^0.3.5"
     "@solana/wallet-adapter-base": "npm:^0.9.18"
     "@solana/wallet-adapter-wallets": "npm:^0.19.3"
     "@solana/web3.js": "npm:^1.66.1"
@@ -746,37 +745,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@solana/buffer-layout-utils@npm:^0.2.0":
-  version: 0.2.0
-  resolution: "@solana/buffer-layout-utils@npm:0.2.0"
-  dependencies:
-    "@solana/buffer-layout": "npm:^4.0.0"
-    "@solana/web3.js": "npm:^1.32.0"
-    bigint-buffer: "npm:^1.1.5"
-    bignumber.js: "npm:^9.0.1"
-  checksum: df7f3f35f2ad2dd97eab97259b705efbe75ff3d232cb82f1c70ad4c2b5661de8330148a41576c6ccf8b7013cb84259500a9e66ea157e881bc9f8092f792f311f
-  languageName: node
-  linkType: hard
-
 "@solana/buffer-layout@npm:^4.0.0":
   version: 4.0.0
   resolution: "@solana/buffer-layout@npm:4.0.0"
   dependencies:
     buffer: "npm:~6.0.3"
   checksum: aa212ebb7d63a46013c116dee0e4add3db533a7431507297fe73774bbbd357a7ee5d9ef42898590e998683eca5b10bad3ca7a5ca98c0bd12c36e7ab0cf82c6ce
-  languageName: node
-  linkType: hard
-
-"@solana/spl-token@npm:^0.3.5":
-  version: 0.3.5
-  resolution: "@solana/spl-token@npm:0.3.5"
-  dependencies:
-    "@solana/buffer-layout": "npm:^4.0.0"
-    "@solana/buffer-layout-utils": "npm:^0.2.0"
-    buffer: "npm:^6.0.3"
-  peerDependencies:
-    "@solana/web3.js": ^1.47.4
-  checksum: 423550182677da87052a1d46ee09e1dd9be3e0acd773535de3f6816b21fa056c038e150cd3d980f3c5d17f5e36dbb0328fb5155240f119bb345025516a7eda97
   languageName: node
   linkType: hard
 
@@ -1349,7 +1323,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@solana/web3.js@npm:^1.32.0, @solana/web3.js@npm:^1.36.0, @solana/web3.js@npm:^1.44.3, @solana/web3.js@npm:^1.66.1":
+"@solana/web3.js@npm:^1.36.0, @solana/web3.js@npm:^1.44.3, @solana/web3.js@npm:^1.66.1":
   version: 1.66.2
   resolution: "@solana/web3.js@npm:1.66.2"
   dependencies:

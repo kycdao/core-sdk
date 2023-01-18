@@ -1,28 +1,11 @@
 import {
-  createAssociatedTokenAccountInstruction,
-  createInitializeMintInstruction,
-  getAssociatedTokenAddress,
-  getMinimumBalanceForRentExemptAccount,
-  MINT_SIZE,
-  TOKEN_PROGRAM_ID,
-} from '@solana/spl-token';
-import {
   MessageSignerWalletAdapter,
   SignerWalletAdapter,
   WalletAdapter,
   WalletAdapterNetwork,
   WalletReadyState,
 } from '@solana/wallet-adapter-base';
-import {
-  clusterApiUrl,
-  Connection,
-  Keypair,
-  PublicKey,
-  SystemProgram,
-  SYSVAR_RENT_PUBKEY,
-  Transaction,
-  TransactionBlockhashCtor,
-} from '@solana/web3.js';
+import { clusterApiUrl, Connection, Transaction } from '@solana/web3.js';
 import bs58 from 'bs58';
 import {
   SolanaBlockchainNetwork,
@@ -30,7 +13,6 @@ import {
   TransactionStatus as SdkTransactionStatus,
 } from '../../types';
 import { isLike } from '../../utils';
-import { mintAndFreezeNft } from './contract';
 
 const WalletAdapterNetworkMapping: Record<SolanaBlockchainNetwork, WalletAdapterNetwork> = {
   SolanaDevnet: WalletAdapterNetwork.Devnet,
@@ -105,12 +87,7 @@ export class SolanaProviderWrapper {
     return bs58.encode(signature);
   }
 
-  public async mint(
-    toAddress: string,
-    fromAddress: string,
-    metadataUrl: string,
-    tokenTitle: string,
-  ): Promise<string> {
+  public async mint(toAddress: string, mintTransaction: Transaction): Promise<string> {
     if (!this._adapter) {
       throw new Error('Solana wallet adapter not initialized');
     }
@@ -119,78 +96,11 @@ export class SolanaProviderWrapper {
       toAddress = toAddress.slice(2);
     }
 
-    const programID = new PublicKey(toAddress);
-
-    const TOKEN_METADATA_PROGRAM_ID = new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s');
-
-    const walletPubKey = new PublicKey(fromAddress);
-    const mintKey = Keypair.generate();
-    const mintPubKey = mintKey.publicKey;
-
-    const lamports = await getMinimumBalanceForRentExemptAccount(this._connection);
-
-    const tokenAccount = await getAssociatedTokenAddress(mintPubKey, walletPubKey);
-
-    const getMetadata = async (mint: PublicKey): Promise<PublicKey> => {
-      return (
-        await PublicKey.findProgramAddress(
-          [Buffer.from('metadata'), TOKEN_METADATA_PROGRAM_ID.toBuffer(), mint.toBuffer()],
-          TOKEN_METADATA_PROGRAM_ID,
-        )
-      )[0];
-    };
-
-    const metadataAddress = await getMetadata(mintKey.publicKey);
-
-    const mintInstruction = mintAndFreezeNft(
-      programID,
-      {
-        creatorKey: mintKey.publicKey,
-        uri: metadataUrl,
-        title: tokenTitle,
-      },
-      {
-        mintAuthority: walletPubKey,
-        mint: mintKey.publicKey,
-        tokenAccount: tokenAccount,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        metadata: metadataAddress,
-        tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
-        payer: walletPubKey,
-        systemProgram: SystemProgram.programId,
-        rent: SYSVAR_RENT_PUBKEY,
-      },
-    );
-
-    const latestBlockhash = await this._connection.getLatestBlockhash();
-
-    const mintTransaction = new Transaction({
-      ...latestBlockhash,
-      feePayer: walletPubKey,
-    } as TransactionBlockhashCtor).add(
-      SystemProgram.createAccount({
-        fromPubkey: walletPubKey,
-        newAccountPubkey: mintPubKey,
-        space: MINT_SIZE,
-        programId: TOKEN_PROGRAM_ID,
-        lamports,
-      }),
-      createInitializeMintInstruction(mintPubKey, 0, walletPubKey, walletPubKey),
-      createAssociatedTokenAccountInstruction(walletPubKey, tokenAccount, walletPubKey, mintPubKey),
-      mintInstruction,
-    );
-
-    mintTransaction.partialSign(mintKey);
     return await this._adapter.sendTransaction(mintTransaction, this._connection);
   }
 
   public async getTransaction(txHash: string): Promise<SdkTransaction> {
     try {
-      // TODO added acceptance of fake auth minting result, because of KYC-413
-      if (txHash === 'fake_solana_authorize_minting_hash') {
-        return { status: 'Success' };
-      }
-
       const receipt = await this._connection.getTransaction(txHash, {
         commitment: 'finalized',
         maxSupportedTransactionVersion: 0, // it has to be a number and the only number version is 0
