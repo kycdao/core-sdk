@@ -57,8 +57,7 @@
     "@solana/wallet-adapter-wallets": "^0.19.3",
     "@solana/web3.js": "^1.66.1",
     "bn.js": "^5.2.1",
-    "bs58": "^5.0.0",
-    "lodash": "^4.17.21"
+    "bs58": "^5.0.0"
   },
   "files": [
     "dist"

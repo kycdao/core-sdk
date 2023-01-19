@@ -7,6 +7,7 @@ export function partition<T>(arr: T[], predicate: (_: T) => boolean): [T[], T[]]
   });
   return partitioned;
 }
+
 export function typedKeys<T extends object>(t: T) {
   return Object.keys(t) as Extract<keyof T, string>[];
 }
@@ -21,6 +22,58 @@ export function isFulfilled<T>(input: PromiseSettledResult<T>): input is Promise
 
 export function isRejected(input: PromiseSettledResult<unknown>): input is PromiseRejectedResult {
   return input.status === 'rejected';
+}
+
+/**
+ * Performs a deep comparison between two values to determine if they are equivalent.
+ *
+ * **Note:** This method supports comparing arrays, booleans, numbers, `Object` objects, strings and symbols.
+ * `Object` objects are compared by their own, not inherited, enumerable properties.
+ *
+ * @param {unknown} val1 The value to compare.
+ * @param {unknown} val2 The other value to compare.
+ * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
+ */
+export function isEqual(val1: unknown, val2: unknown): boolean {
+  // check if the values are actually equal
+  if (val1 === val2) {
+    return true;
+  }
+
+  // check if any of the objects are null or undefined
+  if (val1 == null || val2 == null) {
+    return false;
+  }
+
+  // check if both values are objects
+  if (typeof val1 !== 'object' || typeof val2 !== 'object') {
+    return val1 === val2;
+  }
+
+  // get the keys of the objects
+  const keys1 = typedKeys(val1);
+  const keys2 = typedKeys(val2);
+
+  // check if the number of keys is the same
+  if (keys1.length !== keys2.length) {
+    return false;
+  }
+
+  // check if the keys are the same
+  for (const key of keys1) {
+    if (!keys2.includes(key)) {
+      return false;
+    }
+  }
+
+  // recursively check if the value pairs are the same
+  for (const key of keys1) {
+    if (!isEqual(val1[key], val2[key])) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 export interface PollingOptions<T> {

@@ -1,4 +1,3 @@
-import { isEqual } from 'lodash';
 import { ConnectConfig, Contract, keyStores, Near, WalletConnection } from 'near-api-js';
 import { Signature } from 'near-api-js/lib/utils/key_pair';
 import { base_encode } from 'near-api-js/lib/utils/serialize';
@@ -56,7 +55,15 @@ import {
 } from './types';
 import { default as COUNTRIES } from './countries.list.json';
 import { FinalExecutionOutcome, JsonRpcProvider } from 'near-api-js/lib/providers';
-import { getMintingResult, isFulfilled, isLike, partition, poll, typedKeys } from './utils';
+import {
+  getMintingResult,
+  isFulfilled,
+  isLike,
+  isEqual,
+  partition,
+  poll,
+  typedKeys,
+} from './utils';
 import { EvmProviderWrapper } from './blockchains/evm/evm-provider-wrapper';
 import { EvmProvider, EvmTransactionReceipt, ProviderRpcError } from './blockchains/evm/types';
 import { KycDaoJsonRpcProvider } from './blockchains/kycdao-json-rpc-provider';
