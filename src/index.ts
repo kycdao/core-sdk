@@ -28,6 +28,7 @@ import {
   MintingAuthorizationResponse,
   MintingData,
   MintingResult,
+  MintingState,
   NearBlockchainNetwork,
   NearSdk,
   NetworkAndAddress,
@@ -54,7 +55,15 @@ import {
 } from './types';
 import { default as COUNTRIES } from './countries.list.json';
 import { FinalExecutionOutcome, JsonRpcProvider } from 'near-api-js/lib/providers';
-import { getMintingResult, isFulfilled, isLike, partition, poll, typedKeys } from './utils';
+import {
+  getMintingResult,
+  isFulfilled,
+  isLike,
+  isEqual,
+  partition,
+  poll,
+  typedKeys,
+} from './utils';
 import { EvmProviderWrapper } from './blockchains/evm/evm-provider-wrapper';
 import { EvmProvider, EvmTransactionReceipt, ProviderRpcError } from './blockchains/evm/types';
 import { KycDaoJsonRpcProvider } from './blockchains/kycdao-json-rpc-provider';
@@ -170,6 +179,8 @@ export class KycDao extends ApiBase {
   private solana?: SolanaProviderWrapper;
 
   private _chainAndAddress?: ChainAndAddress;
+
+  private _mintingState?: MintingState;
 
   /**
    * Returns the current status of the SDK.
@@ -632,11 +643,7 @@ export class KycDao extends ApiBase {
         this.session = undefined;
       }
     } else if (this.session) {
-      const isSameWallet =
-        this.session.chain_and_address.address === this._chainAndAddress?.address &&
-        this.session.chain_and_address.blockchain === this._chainAndAddress?.blockchain &&
-        this.session.chain_and_address.blockchainNetwork ===
-          this._chainAndAddress?.blockchainNetwork;
+      const isSameWallet = isEqual(this.session.chain_and_address, this._chainAndAddress);
       if (!isSameWallet) {
         this.session = undefined;
       }
@@ -1305,6 +1312,10 @@ export class KycDao extends ApiBase {
   public async connectWallet(blockchain: Blockchain): Promise<void> {
     const errorPrefix = 'Cannot connect wallet';
 
+    // clear saved minting state on wallet connection
+    // maybe we could do this after successful connection but this way will not hurt either
+    this._mintingState = undefined;
+
     switch (blockchain) {
       case 'Ethereum': {
         if (!this.evmProvider) {
@@ -1459,6 +1470,7 @@ export class KycDao extends ApiBase {
       this._chainAndAddress = undefined;
       this.user = undefined;
       this.session = undefined;
+      this._mintingState = undefined;
     }
   }
 
@@ -1610,7 +1622,8 @@ export class KycDao extends ApiBase {
   }
 
   /**
-   * This method will resend the email verification code to the email address that was last set for the user.\
+   * This method will resend the email verification code to the email address that was last set for the user.
+   *
    * **Note:**\
    * This call is limited to 1 per minute and 5 per address for every user to avoid spamming. When these limits are reached the method will throw an error.
    * It will also throw an error if an email address is not set yet or if it has been already verified.
@@ -2028,9 +2041,15 @@ export class KycDao extends ApiBase {
   /**
    * This step updates the user based on the {@link MintingData} provided and checks if the user is eligible to mint a token.
    * Then calls the server to authorize minting for the current wallet and waits for the transaction to succeed (but max about 2 minutes).
-   * After an authorization code is acquired it initiates the minting.\
+   * After an authorization code is acquired it initiates the minting.
+   *
    * Returns data related to the successful mint transaction and the minted token, if it's possible.
    * In general it should always return this data unless an error occured or the site got redirected by the provider (e.g. NEAR).
+   *
+   * In case of an error, based on the type of the error `startMinting` can be called again with the same {@link MintingData} to retry minting
+   * or it can be used to start a completely new minting flow with new values.
+   * Some properties of {@link MintingData} like the {@link MintingData.imageId | imageId} need to be unique for every minting flow,
+   * so when a non-retriable error occurs make sure to call `startMinting` with new unique values.
    *
    * @public
    * @async
@@ -2042,9 +2061,7 @@ export class KycDao extends ApiBase {
     let verificationType = mintingData.verificationType;
 
     if (!this._chainAndAddress) {
-      throw new Error(
-        `${errorPrefix} - Blockchain and address is not specified (no connected wallet).`,
-      );
+      throw new Error(`${errorPrefix} - Wallet connection required.`);
     }
 
     // validate minting data
@@ -2076,16 +2093,46 @@ export class KycDao extends ApiBase {
       await this.post('disclaimer', { accept: true });
     }
 
-    // check if there is a valid authorization code already that can be used for minting
-    // if there is no valid authorization code yet, authorize minting through backend and wait for the transaction to finish
-    // const authCode = this.getValidAuthorizationCode() || (await this.authorizeMinting(chainAndAddress));
+    const getReusableMintAuthResponse = (): MintingAuthorizationResponse | undefined => {
+      if (!this._mintingState) {
+        return;
+      }
 
-    // always get new authorization code for now, trying to save money/time by using an existing one can cause issues
-    const authCode = await this.authorizeMinting(chainAndAddress, mintingData);
+      const mintingState = Object.assign({}, this._mintingState);
+      const isSameWallet = isEqual(mintingState.chainAndAddress, chainAndAddress);
+
+      if (!isSameWallet) {
+        this._mintingState = undefined;
+        return;
+      }
+
+      if (isEqual(mintingState.mintingData, mintingData)) {
+        return mintingState.mintAuthResponse;
+      } else {
+        return;
+      }
+    };
+
+    let mintAuthResponse = getReusableMintAuthResponse();
+
+    if (!mintAuthResponse) {
+      mintAuthResponse = await this.authorizeMinting(chainAndAddress, mintingData);
+
+      this._mintingState = {
+        chainAndAddress,
+        mintingData,
+        mintAuthResponse,
+      };
+    }
 
     // start minting
     // in case of Near, this will redirect and our page will get a callback so any further steps are need to be handled in the SDK init phase
     // in case of EVM, this will wait for the transaction to succeed before returning
-    return this.mint(chainAndAddress, authCode, verificationType);
+    const mintingResult = await this.mint(chainAndAddress, mintAuthResponse, verificationType);
+
+    // if the minting was successful, clear the stored minting state so no retry will be possible
+    this._mintingState = undefined;
+
+    return mintingResult;
   }
 }
