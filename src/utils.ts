@@ -1,5 +1,21 @@
 import { BlockchainNetwork, MintingResult, TokenDetails } from './types';
 
+export const AlphanumericChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+export function getRandomString(length: number, characters: string): string {
+  let randomString = '';
+
+  for (let i = 0; i < length; i++) {
+    randomString += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+
+  return randomString;
+}
+
+export function getRandomAlphanumericString(length: number): string {
+  return getRandomString(length, AlphanumericChars);
+}
+
 export function partition<T>(arr: T[], predicate: (_: T) => boolean): [T[], T[]] {
   const partitioned: [T[], T[]] = [[], []];
   arr.forEach((val: T) => {

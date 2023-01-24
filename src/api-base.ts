@@ -7,12 +7,14 @@ import { KycDaoCustomApiError, KycDaoDefaultApiError, SdkConfiguration } from '.
 export class KycDaoApiError extends Error {
   public statusCode: number;
   public errorCode: string;
+  public referenceId?: string;
 
-  constructor(statusCode: number, errorCode: string, message: string) {
+  constructor(statusCode: number, errorCode: string, message: string, referenceId?: string) {
     super(message);
     this.name = 'KycDaoApiError';
     this.statusCode = statusCode;
     this.errorCode = errorCode;
+    this.referenceId = referenceId;
   }
 }
 
@@ -85,7 +87,8 @@ export abstract class ApiBase {
     if (!response.ok) {
       let status = response.status;
       let errorCode = 'KycDaoApiError';
-      let message = 'Unknown error';
+      let message = status.toString();
+      let referenceId: string | undefined;
 
       if (data) {
         const error = data;
@@ -108,16 +111,11 @@ export abstract class ApiBase {
           status = apiError.status_code;
           errorCode = apiError.error_code;
           message = apiError.message;
+          referenceId = apiError.reference_id;
         }
       }
 
-      const apiError = new KycDaoApiError(status, errorCode, message);
-      console.log(
-        `${apiError.name} - ${response.url} ${
-          options?.method || 'GET'
-        } ${status} - ${errorCode} : ${message}`,
-      );
-      throw apiError;
+      throw new KycDaoApiError(status, errorCode, message, referenceId);
     }
 
     return data;
