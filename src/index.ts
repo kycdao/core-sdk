@@ -70,6 +70,7 @@ import { KycDaoJsonRpcProvider } from './blockchains/kycdao-json-rpc-provider';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets';
 import { SolanaProviderWrapper } from './blockchains/solana/solana-provider-wrapper';
 import { Transaction as SolanaTransaction } from '@solana/web3.js';
+import { Catch } from './errors';
 
 export { ApiBase, KycDaoApiError } from './api-base';
 export {
@@ -906,6 +907,7 @@ export class KycDao extends ApiBase {
    * @param {SdkConfiguration} config
    * @returns {Promise<KycDaoInitializationResult>}
    */
+  @Catch()
   public static async initialize(config: SdkConfiguration): Promise<KycDaoInitializationResult> {
     const kycDao = new KycDao(config);
 
@@ -991,6 +993,7 @@ export class KycDao extends ApiBase {
    * @async
    * @returns {Promise<ServerStatus>}
    */
+  @Catch()
   public async getServerStatus(): Promise<ServerStatus> {
     let apiStatus: string;
     let isOk: boolean;
@@ -1071,6 +1074,7 @@ export class KycDao extends ApiBase {
    * @async
    * @returns {Promise<boolean>}
    */
+  @Catch()
   public async hasValidNft(
     verificationType: VerificationType,
     options?: NftCheckOptions,
@@ -1093,6 +1097,7 @@ export class KycDao extends ApiBase {
    * @async
    * @returns {Promise<NftCheckResponse[]>}
    */
+  @Catch()
   public async checkVerifiedNetworks(
     verificationType: VerificationType,
     options?: NftCheckOptions,
@@ -1233,6 +1238,7 @@ export class KycDao extends ApiBase {
    * @async
    * @returns {Promise<BlockchainNetwork>}
    */
+  @Catch()
   public async checkProviderNetwork(): Promise<BlockchainNetwork> {
     if (!this._chainAndAddress) {
       throw new Error('Wallet connection required.');
@@ -1250,6 +1256,7 @@ export class KycDao extends ApiBase {
    * @param {BlockchainNetwork} blockchainNetwork
    * @returns {Promise<void>}
    */
+  @Catch()
   public async switchProviderNetwork(blockchainNetwork: BlockchainNetwork): Promise<void> {
     if (!this._chainAndAddress) {
       throw new Error('Wallet connection required.');
@@ -1309,6 +1316,7 @@ export class KycDao extends ApiBase {
    * @param {Blockchain} blockchain
    * @returns {Promise<void>}
    */
+  @Catch()
   public async connectWallet(blockchain: Blockchain): Promise<void> {
     const errorPrefix = 'Cannot connect wallet';
 
@@ -1430,6 +1438,7 @@ export class KycDao extends ApiBase {
    * @async
    * @returns {Promise<void>}
    */
+  @Catch()
   public async disconnectWallet(): Promise<void> {
     const errorPrefix = 'Cannot disconnect wallet';
     if (this._chainAndAddress) {
@@ -1485,6 +1494,7 @@ export class KycDao extends ApiBase {
    * @async
    * @returns {Promise<void>}
    */
+  @Catch()
   public async registerOrLogin(): Promise<void> {
     if (this._chainAndAddress) {
       this.session = await this.post<Session>('session', this._chainAndAddress);
@@ -1581,6 +1591,7 @@ export class KycDao extends ApiBase {
    * @param {string} email
    * @returns {Promise<void>}
    */
+  @Catch()
   public async updateEmail(email: string): Promise<void> {
     try {
       this.validateEmail(email);
@@ -1604,6 +1615,7 @@ export class KycDao extends ApiBase {
    * @async
    * @returns {Promise<boolean>}
    */
+  @Catch()
   public async checkEmailConfirmed(): Promise<EmailData> {
     if (!this.user?.email_confirmed) {
       await this.refreshSession();
@@ -1632,6 +1644,7 @@ export class KycDao extends ApiBase {
    * @async
    * @returns {Promise<void>}
    */
+  @Catch()
   public async resendEmailConfirmationCode(): Promise<void> {
     try {
       return await this.post('user/email_confirmation');
@@ -1715,6 +1728,7 @@ export class KycDao extends ApiBase {
    * @param {?VerificationProviderOptions} [providerOptions]
    * @returns {Promise<void>}
    */
+  @Catch()
   public async startVerification(
     verificationData: VerificationData,
     providerOptions?: VerificationProviderOptions,
@@ -1748,6 +1762,7 @@ export class KycDao extends ApiBase {
    * @see {@link VerificationTypes}
    * @returns {Promise<VerificationStasusByType>}
    */
+  @Catch()
   public async checkVerificationStatus(): Promise<VerificationStasusByType> {
     const status = this.getVerificationStatusByType();
     const allVerified = !Object.values(status).some((value) => !value);
@@ -1772,6 +1787,7 @@ export class KycDao extends ApiBase {
    * @public
    * @returns {string}
    */
+  @Catch()
   public getNftImageUrl(): string {
     return this.url('token/identicon');
   }
@@ -1785,6 +1801,7 @@ export class KycDao extends ApiBase {
    * @async
    * @returns {Promise<void>}
    */
+  @Catch()
   public async regenerateNftImage(): Promise<void> {
     await this.request<string>('token/identicon', { method: 'POST' });
   }
@@ -1796,6 +1813,7 @@ export class KycDao extends ApiBase {
    * @public
    * @returns {Promise<{ [imageId: string]: string }>}
    */
+  @Catch()
   public async getNftImageOptions(): Promise<{ [imageId: string]: string }> {
     await this.refreshSession();
 
@@ -1819,6 +1837,7 @@ export class KycDao extends ApiBase {
    * @async
    * @returns {Promise<{ [imageId: string]: string }>}
    */
+  @Catch()
   public async regenerateNftImageOptions(): Promise<{ [imageId: string]: string }> {
     try {
       await this.request<string>('token/identicon', { method: 'POST' });
@@ -2056,6 +2075,7 @@ export class KycDao extends ApiBase {
    * @param {MintingData} mintingData
    * @returns {Promise<MintingResult | undefined>}
    */
+  @Catch()
   public async startMinting(mintingData: MintingData): Promise<MintingResult | undefined> {
     const errorPrefix = 'Cannot start minting';
     let verificationType = mintingData.verificationType;
