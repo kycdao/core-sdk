@@ -133,8 +133,10 @@ export class EvmProviderWrapper {
     }
 
     if (code === 3) {
-      console.log(`Repeatable error: ${msg} (code: ${code})`);
-      return true;
+      if (msg.indexOf('Unauthorized code') >= 0) {
+        console.log(`Repeatable error: ${msg} (code: ${code})`);
+        return true;
+      }
     }
 
     console.log(`Non-repeatable error: ${msg} (code: ${code})`);
