@@ -70,7 +70,7 @@ import { KycDaoJsonRpcProvider } from './blockchains/kycdao-json-rpc-provider';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets';
 import { SolanaProviderWrapper } from './blockchains/solana/solana-provider-wrapper';
 import { Transaction as SolanaTransaction } from '@solana/web3.js';
-import { Catch } from './errors';
+import { Catch, SentryWrapper } from './errors';
 
 export { ApiBase, KycDaoApiError } from './api-base';
 export {
@@ -910,6 +910,11 @@ export class KycDao extends ApiBase {
   @Catch()
   public static async initialize(config: SdkConfiguration): Promise<KycDaoInitializationResult> {
     const kycDao = new KycDao(config);
+
+    if (config.sentryConfiguration) {
+      const sentry = new SentryWrapper(config.sentryConfiguration);
+      void sentry.lazyLoad(); // don't wait for it to load, if it's configured properly and the CDN is available it should be quick
+    }
 
     // TODO handle and return specific error
     kycDao.apiStatus = await kycDao.get<ApiStatus>('status');

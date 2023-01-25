@@ -120,8 +120,24 @@ export type RedirectEvent = 'NearLogin' | 'NearMint' | 'NearUserRejectedError';
 
 /* PUBLIC (included in API reference)*/
 
+/**
+ * Blockchain network configuration options.
+ *
+ * @interface BlockchainNetworkConfiguration
+ * @typedef {BlockchainNetworkConfiguration}
+ */
 export interface BlockchainNetworkConfiguration {
   rpcUrl?: string;
+}
+
+/**
+ * Sentry configuration options.
+ *
+ * @interface SentryConfiguration
+ * @typedef {SentryConfiguration}
+ */
+export interface SentryConfiguration {
+  dsn: string;
 }
 
 /**
@@ -191,13 +207,19 @@ export interface SdkConfiguration {
    */
   evmProvider?: unknown;
   /**
-   * An optional blockchain network configuration override parameter which allows certain network related values to be customized (e.g. custom RPC endpoints can be specified)
+   * An optional blockchain network configuration override parameter which allows certain network related values to be customized (e.g. custom RPC endpoints can be specified).
    *
    * @type {?Partial<Record<BlockchainNetwork, BlockchainNetworkConfiguration>>}
    */
   blockchainNetworkConfiguration?: Partial<
     Record<BlockchainNetwork, BlockchainNetworkConfiguration>
   >;
+  /**
+   * Optional configuration for Sentry. If a configuration is provided the Sentry package will be lazy-loaded by the SDK and errors will be reported.
+   *
+   * @type {?SentryConfiguration}
+   */
+  sentryConfiguration?: SentryConfiguration;
 }
 
 /**
