@@ -143,7 +143,7 @@ export function Catch(handler?: (_: Error) => void) {
   };
 }
 
-export type Environment = 'local' | 'development' | 'production';
+export type Environment = 'local' | 'development' | 'production' | 'unknown';
 
 export class SentryWrapper {
   private _config: SentryConfiguration;
@@ -158,26 +158,41 @@ export class SentryWrapper {
 
   private _isLoaded: boolean;
 
-  // FIXME This implementation only works if we are not in an iframe...
-  // by basing this logic on the backend url we can't reliably differentiate between local and dev envs
-  // we can add an iframe env but can we reliable detect that we are in an iframe (cross-origin issues)
-  // we can add optional iframe config input, ouir widget already needs window.origin, but other 3rd parties may miss it
+  // This implementation might not be perfect for all browsers but at least it will not return the wrong env from inside an iframe
   private getEnvironment(): Environment {
-    const hostname = window.location.hostname;
+    const getHostname = (): string | undefined => {
+      const inIframe = window !== window.self;
 
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return 'local';
+      if (inIframe) {
+        try {
+          return window.top?.location.hostname;
+        } catch {
+          return;
+        }
+      } else {
+        return window.location.hostname;
+      }
+    };
+
+    const hostname = getHostname();
+
+    if (hostname != null) {
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return 'local';
+      }
+
+      if (
+        hostname.includes('pre.kycdao.xyz') ||
+        hostname.includes('dev.kycdao.xyz') ||
+        hostname.includes('staging.kycdao.xyz')
+      ) {
+        return 'development';
+      }
+
+      return 'production';
     }
 
-    if (
-      hostname.includes('pre.kycdao.xyz') ||
-      hostname.includes('dev.kycdao.xyz') ||
-      hostname.includes('staging.kycdao.xyz')
-    ) {
-      return 'development';
-    }
-
-    return 'production';
+    return 'unknown';
   }
 
   constructor(config: SentryConfiguration) {
@@ -187,6 +202,11 @@ export class SentryWrapper {
   }
 
   private async loadScript(): Promise<void> {
+    const sentry = (window as any).Sentry as any;
+    if (sentry != null) {
+      throw new Error('window.Sentry is already defined');
+    }
+
     if (this._isLoaded === false) {
       const tag = document.createElement('script');
       tag.type = 'text/javascript';
