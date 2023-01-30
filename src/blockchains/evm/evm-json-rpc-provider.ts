@@ -1,3 +1,4 @@
+import { InternalError } from 'src/errors';
 import { IKycDaoJsonRpcProvider } from '../kycdao-json-rpc-provider';
 import { EvmRequestArguments } from './types';
 
@@ -31,19 +32,19 @@ export class EvmJsonRpcProvider implements IKycDaoJsonRpcProvider {
 
       if (!isJson) {
         console.error(response);
-        throw new Error();
+        throw new InternalError('EVM RPC response is not JSON');
       }
 
       const data = await response.json();
 
       if (data.error) {
         console.error(data.error);
-        throw new Error();
+        throw new InternalError('EVM RPC response error');
       }
 
       return data.result;
     } catch (_) {
-      throw new Error('EVM RPC fetch error');
+      throw new InternalError('EVM RPC fetch error');
     }
   }
 

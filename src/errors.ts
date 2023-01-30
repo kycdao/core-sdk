@@ -1,63 +1,101 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { WalletError } from '@solana/wallet-adapter-base';
+import { WalletError as SolanaWalletError } from '@solana/wallet-adapter-base';
 import { KycDaoApiError } from './api-base';
 import { SentryConfiguration } from './types';
 import { getRandomAlphanumericString, isLike, waitForDomElement } from './utils';
 
+function ensureType<T>() {
+  return <Actual extends T>(a: Actual) => a;
+}
+
 /**
- * Collection of error codes returned by the SDK.
- *
- * @readonly
+ * Error codes for the {@link StatusError} class
  * @enum {string}
  */
-export const KycDaoSDKErrorCodes = {
-  KycDaoApiError: 'KycDaoApiError',
-  KycDaoConfigurationError: 'KycDaoConfigurationError',
-  UserCancelError: 'UserCancelError',
-  UserUnauthorizedError: 'UserUnauthorizedError',
-  UserNotConnected: 'UserNotConnected',
-  UserWrongChainError: 'UserWrongChainError',
-  InternalError: 'InternalError',
-  TransactionRejectedError: 'TransactionRejectedError',
-  RateLimitError: 'RateLimitError',
-  UnexpectedError: 'UnexpectedError',
-} as const;
+export const StatusErrors = ensureType<Record<string, string>>()({
+  /** The called API function requires an active logged in user */
+  UserNotLoggedIn: 'User is not logged in',
+  /** The provided email address is invalid */
+  InvalidEmailAddress: 'Invalid email address',
+  /** The provided tax resideny was invalid */
+  InvalidTaxResidency: 'Invalid taxResidency. Please use the country list provided by the SDK.',
+  /** The called API function reqires the terms and condition to be accepted by the user */
+  TermsAndConditionsNotAccepted:
+    'Terms and Conditions and Privacy Policy must be accepted to start verification.',
+  /** The called API function reqires the disclaimer to be accepted by the user */
+  DisclaimerNotAccepted: 'Disclaimer must be accepted.',
+  /** The called API function requires a wallet to be connected */
+  WalletNotConnected: 'Wallet connection required.',
+  /** The called API function requires the user to be verified */
+  UserNotVerified: 'User must be verified to be able to mint an NFT.',
+  /** The user has an active verification while requesting a new verification */
+  UserAlreadyVerified: 'User already verified',
+  /** The selected network is not supported by the SDK */
+  NetworkNotSupported: 'Selected network is not supported',
+  /** The selected network is supported by the SDK but not enabled by the site */
+  NetworkNotEnabled: 'Selected network is not enabled',
+  /** Automatic network switching failed */
+  NetworkSwitchingFailed: 'Network switching failed',
+});
 
 /**
- * Union type of string values of {@link KycDaoSDKErrorCodes}.
- *
- * @typedef {KycDaoSDKErrorCode}
+ * Error codes for the {@link WalletError} class
+ * @enum {string}
  */
-export type KycDaoSDKErrorCode = keyof typeof KycDaoSDKErrorCodes;
-
-export const KycDaoSDKErrorMessages: Record<KycDaoSDKErrorCode, string> = {
-  KycDaoApiError: 'kycDAO server error',
-  KycDaoConfigurationError: 'kycDAO SDK configuration error',
-  UserCancelError: 'User cancelled the operation',
-  UserUnauthorizedError: 'The account used is unauthorized',
-  UserNotConnected: 'The user is not connected',
-  UserWrongChainError: 'The user is connected to the wrong chain',
-  InternalError: 'Internal error',
-  TransactionRejectedError: 'The transaction was rejected',
-  RateLimitError: 'An RPC rate limit error occurred',
-  UnexpectedError: 'Unexpected error',
-} as const;
+export const WalletErrors = ensureType<Record<string, string>>()({
+  /** The user is not connected to chain. It can happen because of network connecr*/
+  UserNotConnected: 'User is not connected to a wallet',
+  /** The SDK is trying to do a wallet asction, but the account provided by the wallet was not authorized before.  */
+  AccountUnauthorized: 'Account is not authorized',
+  /** The wallet action initiated by the SDK was cancelled by the user */
+  RejectedByUser: 'User cancelled the transaction',
+  /** An internal wallet error occured */
+  InternalWalletError: 'Internal wallet error',
+});
 
 /**
- * The specific error class returned by SDK methods.
+ * Error codes for the {@link TransactionError} class
+ * @enum {string}
+ */
+export const TransactionErrors = ensureType<Record<string, string>>()({
+  /** The transaction was not found on the chain in time. */
+  TransactionNotFound: 'Transaction not found',
+  /** The transaction was found on the chain but its in a failed state. */
+  TransactionFailed: 'Transaction failed',
+  /** The transaction was rejected by the contract. */
+  TransactionRejected: 'Transaction rejected by the contract',
+  /** An error occurred during evaluating the minting cost. Can be caused by unstable RPC endpoint. */
+  MintingCostCalculationError: 'Minting cost calculation error',
+  /** An error occurred during evaluating the required gas. Can be caused by unstable RPC endpoint. */
+  GasEstimationError: 'Gas estimation error',
+});
+
+export type WalletErrorCode = keyof typeof WalletErrors;
+export type StatusErrorCode = keyof typeof StatusErrors;
+export type TransactionErrorCode = keyof typeof TransactionErrors;
+
+export type ErrorCode = TransactionErrorCode | StatusErrorCode | WalletErrorCode;
+
+/**
+ * The abstract class of all the error classes returned by SDK methods.
  *
- * @interface KycDaoSDKError
+ * Subclasses represent various error types:
+ * - Integration errors:
+ *   - {@link ConfigurationError}
+ * - Runtime errors (to be handled by the client):
+ *   - {@link StatusError}
+ *   - {@link WalletError}
+ *   - {@link TransactionError}
+ * - Unexpected errors (not to be handled by the client):
+ *   - {@link InternalError}
+ *   - {@link UnknownError}
+ *
+ * @class KycDaoSDKError
  * @typedef {KycDaoSDKError}
  * @extends {Error}
  */
-export class KycDaoSDKError extends Error {
-  /**
-   * The type of the error.
-   *
-   * @type {KycDaoSDKErrorCode}
-   */
-  public errorCode: KycDaoSDKErrorCode;
+export abstract class KycDaoSDKError extends Error {
   /**
    * This is a unique reference to the error that can help us identify and solve the issue.
    *
@@ -65,19 +103,163 @@ export class KycDaoSDKError extends Error {
    */
   public referenceId: string;
 
-  constructor(errorCode: KycDaoSDKErrorCode, message?: string | null, referenceId?: string) {
-    const staticMessage = KycDaoSDKErrorMessages[errorCode];
+  protected _errorCode: ErrorCode | undefined;
 
-    if (!message) {
-      message = staticMessage;
-    } else {
-      message = `${staticMessage} - ${message}`;
-    }
-
+  constructor(errorCode: ErrorCode | undefined, message: string, referenceId?: string) {
     super(message);
     this.name = 'KycDaoSDKError';
-    this.errorCode = errorCode;
+    this._errorCode = errorCode;
     this.referenceId = referenceId || getRandomAlphanumericString(10);
+  }
+
+  override toString(): string {
+    return `${this.name}${this.errorCode ? '[' + this.errorCode + ']' : ''}: ${
+      this.message
+    } (ref: ${this.referenceId})`;
+  }
+
+  /** Some subclasses contain an error code. The accessor here is provided for convenience */
+  get errorCode(): ErrorCode | undefined {
+    return this._errorCode;
+  }
+}
+
+/**
+ * This error class represents the errors that can occur when the SDK evaluates its configuration.
+ *
+ * These errors intend to guide you to fix configuration problems while integrating the SDK. They should not occur in normal circumstances.
+ * The {@link errorCode} property is always undefined for these error, the message property contains the error description.
+ *
+ * @class ConfigurationError
+ * @typedef {ConfigurationError}
+ */
+export class ConfigurationError extends KycDaoSDKError {
+  constructor(message: string) {
+    super(undefined, message);
+    this.name = 'ConfigurationError';
+  }
+
+  /** Error code is always undefined for this subclass */
+  override get errorCode(): undefined {
+    return undefined;
+  }
+}
+
+/**
+ * This error class represents the various errors that can occur when interacting with the SDK while some preconditions are not met.
+ *
+ * The {@link errorCode} property can be used to identify the specific error. See {@link StatusErrors} for the list of possible errors.
+ *
+ * @class StatusError
+ * @typedef {StatusError}
+ */
+export class StatusError extends KycDaoSDKError {
+  constructor(errorCode: StatusErrorCode, message?: string) {
+    if (!message) {
+      message = StatusErrors[errorCode];
+    }
+    super(errorCode, message);
+    this.name = `StatusError`;
+  }
+
+  /** Error code represents various subtypes of the error, see {@link StatusErrors} for details. */
+  override get errorCode(): StatusErrorCode {
+    return super.errorCode as StatusErrorCode;
+  }
+}
+
+/**
+ * This error class represents the various errors that can occur when the SDK is doing some wallet action.
+ *
+ * The {@link errorCode} property can be used to identify the specific error. See {@link WalletErrors} for the list of possible problems.
+ * @class WalletError
+ * @typedef {WalletError}
+ */
+export class WalletError extends KycDaoSDKError {
+  public errorCodeFromWallet: number;
+  constructor(errorCode: WalletErrorCode, message: string, errorCodeFromWallet: number) {
+    super(errorCode, message);
+    this.name = `WalletError`;
+    this.errorCodeFromWallet = errorCodeFromWallet;
+  }
+
+  /** Error code represents various subtypes of the error, see {@link WalletErrors} for details. */
+  override get errorCode(): WalletErrorCode {
+    return super.errorCode as WalletErrorCode;
+  }
+
+  override toString(): string {
+    return `${this.name}[${this.errorCode}]: ${this.message} (ref: ${this.referenceId}, errorCodeFromWallet: ${this.errorCodeFromWallet})`;
+  }
+}
+
+/**
+ * This error class represents the various errors that can occur during the minting transaction.
+ *
+ * The {@link errorCode} property can be used to identify the specific error. See {@link TransactionErrors} for the list of possible problems.
+ * @class TransactionError
+ * @typedef {TransactionError}
+ */
+export class TransactionError extends KycDaoSDKError {
+  constructor(errorCode: TransactionErrorCode, message?: string) {
+    if (!message) {
+      message = TransactionErrors[errorCode];
+    }
+    super(errorCode, message);
+    this.name = 'TransactionError';
+  }
+
+  /** Error code represents various subtypes of the error, see {@link TransactionErrors} for details. */
+  override get errorCode(): TransactionErrorCode {
+    return super.errorCode as TransactionErrorCode;
+  }
+}
+
+/**
+ * This error class represents errors that can occur independently from the SDK state. They can be caused by network issues, unstable RPC endpoints, errors in the SDK, etc.
+ *
+ * The {@link errorCode} property is always undefined for these error, the message property contains the error description.*
+ *
+ * @class InternalError
+ * @typedef {InternalError}
+ */
+export class InternalError extends KycDaoSDKError {
+  constructor(message: string, referenceId?: string) {
+    super(undefined, message, referenceId);
+    this.name = 'InternalError';
+  }
+
+  /** Error code is always undefined for this subclass */
+  override get errorCode(): undefined {
+    return undefined;
+  }
+}
+
+/**
+ * @internal
+ */
+export class UnreachableCaseError extends InternalError {
+  constructor(val: never) {
+    super(`Unreachable case: ${JSON.stringify(val)}`);
+  }
+}
+
+/**
+ * This error class represents errors that can occur because of some unexpected behavior of the SDK.
+ *
+ * The {@link errorCode} property is always undefined for these error, the message property contains the error description.
+ * @class UnknownError
+ * @typedef {UnknownError}
+ */
+export class UnknownError extends KycDaoSDKError {
+  constructor(message: string) {
+    super(undefined, message);
+    this.name = 'UnknownError';
+  }
+
+  /** Error code is always undefined for this subclass */
+  override get errorCode(): undefined {
+    return undefined;
   }
 }
 
@@ -94,7 +276,7 @@ function publicErrorHandler(error: unknown): void {
     err = error;
   } else if (error instanceof KycDaoApiError) {
     const message = `${error.errorCode} - ${error.message}`;
-    err = new KycDaoSDKError('KycDaoApiError', message, error.referenceId);
+    err = new InternalError(message, error.referenceId);
   }
   // apply error transformations
   for (const fn of [transformSolanaErrors, transformEVMErrors]) {
@@ -102,29 +284,36 @@ function publicErrorHandler(error: unknown): void {
       err = fn(error);
     }
   }
+
   if (!err) {
     if (typeof error === 'string') {
-      err = new KycDaoSDKError('UnexpectedError', error);
+      err = new UnknownError(error);
     } else if (error instanceof Error) {
-      err = new KycDaoSDKError('UnexpectedError', error.message);
+      err = new UnknownError(error.message);
     } else {
-      err = new KycDaoSDKError('UnexpectedError', JSON.stringify(error));
+      err = new UnknownError(JSON.stringify(error));
     }
   }
 
-  if (isLike<{ stack: string }>(error) && error.stack) {
-    // append the original stack to know what function call the error happened in
-    err.stack = err.stack + '\nCaused by:\n' + error.stack;
+  let errorCodeFromWallet;
+  if (err instanceof WalletError) {
+    errorCodeFromWallet = err.errorCodeFromWallet;
+  }
+
+  if (err !== error) {
+    if (isLike<{ stack: string }>(error) && error.stack) {
+      err.stack = '' + error.stack;
+    }
   }
 
   // report to sentry
-  // TODO only report UnexpectedErrors?
   const sentry = (window as any).Sentry as any;
   if (sentry != null) {
     sentry.captureException(err, {
       tags: {
         errorCode: err.errorCode,
         referenceId: err.referenceId,
+        errorCodeFromWallet,
       },
     });
   }
@@ -132,6 +321,32 @@ function publicErrorHandler(error: unknown): void {
   // TODO only log UnexpectedErrors?
   console.error(err);
   throw err;
+}
+
+function transformWalletErrorCode(code: number, msg: string) {
+  switch (code) {
+    case 4001: // user rejected
+      return new WalletError('RejectedByUser', msg, code);
+    case 4100: // unauthorized account
+      return new WalletError('AccountUnauthorized', msg, code);
+    case 4900: // user not connected
+    case 4901: // user not connected to the right chain
+      return new WalletError('UserNotConnected', msg, code);
+    case 4200: // method not implemented
+    case -32700: // parse error
+    case -32600: // invalid request
+    case -32601: // method not found
+    case -32602: // invalid params
+    case -32603: // internal error, TODO: is it always unwrapped by metamask?
+    case -32000: // invalid input
+    case -32001: // resource doesnt exists
+    case -32002: // resource unavailable
+    case -32004: // method not supported
+    case -32005: // rate limit exceeded
+    case -32003: // transaction rejected, TODO: maybe should have an explicit error code
+      return new WalletError('InternalWalletError', msg, code);
+  }
+  return;
 }
 
 function transformEVMErrors(error: unknown): KycDaoSDKError | undefined {
@@ -154,38 +369,16 @@ function transformEVMErrors(error: unknown): KycDaoSDKError | undefined {
     msg = err.data.message;
   }
 
-  switch (code) {
-    case 4001: // user rejected
-      return new KycDaoSDKError('UserCancelError', msg);
-    case 4100: // unauthorized account
-      return new KycDaoSDKError('UserUnauthorizedError', msg);
-    case 4900: // user not connected
-      return new KycDaoSDKError('UserNotConnected', msg);
-    case 4901: // user not connected to the right chain
-      return new KycDaoSDKError('UserWrongChainError', msg);
-    case 4200: // method not implemented
-    case -32700: // parse error
-    case -32600: // invalid request
-    case -32601: // method not found
-    case -32602: // invalid params
-    case -32603: // internal error (???)
-    case -32000: // invalid input
-    case -32001: // resource doesnt exists
-    case -32002: // resource unavailable
-    case -32004: // method not supported
-      return new KycDaoSDKError('InternalError', msg);
-    case -32003:
-      return new KycDaoSDKError('TransactionRejectedError', msg);
-    case -32005:
-      return new KycDaoSDKError('RateLimitError', msg);
+  if (code === 3) {
+    return new TransactionError('TransactionRejected', msg);
   }
 
-  return;
+  return transformWalletErrorCode(code, msg);
 }
 
 // https://docs.phantom.app/solana/integrating-phantom/errors
 function transformSolanaErrors(error: unknown): KycDaoSDKError | undefined {
-  if (error instanceof WalletError) {
+  if (error instanceof SolanaWalletError) {
     const err = error.error as unknown as {
       code: number;
       message: string;
@@ -193,21 +386,7 @@ function transformSolanaErrors(error: unknown): KycDaoSDKError | undefined {
     if (!err || !err.code || !err.message) {
       return;
     }
-    switch (err.code) {
-      case 4001: // user rejected
-        return new KycDaoSDKError('UserCancelError', err.message);
-      case 4100: // unauthorized account
-        return new KycDaoSDKError('UserUnauthorizedError', err.message);
-      case 4900: // user not connected
-        return new KycDaoSDKError('UserNotConnected', err.message);
-      case -32000: // invalid input
-      case -32002: // resource unavailable
-      case -32601: // method not found
-      case -32603: // internal error
-        return new KycDaoSDKError('InternalError', err.message);
-      case -32003:
-        return new KycDaoSDKError('TransactionRejectedError', err.message);
-    }
+    return transformWalletErrorCode(err.code, err.message);
   }
   return;
 }
@@ -217,7 +396,7 @@ function transformSolanaErrors(error: unknown): KycDaoSDKError | undefined {
  * If the handler parameter is omitted it will use the general {@link publicErrorHandler} method by default.
  *
  * @internal
- * @param {?(_: Error) => void} [handler] An optional handler function.
+ * @param {?(_: unknown) => void} [handler] An optional handler function.
  * @returns {(void) => (target: any, propertyKey: string, descriptor: PropertyDescriptor)} The original function wrapped.
  */
 export function Catch(handler?: (_: unknown) => void) {

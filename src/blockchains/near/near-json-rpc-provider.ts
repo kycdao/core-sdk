@@ -1,5 +1,6 @@
 import { JsonRpcProvider } from 'near-api-js/lib/providers';
 import { CodeResult } from 'near-api-js/lib/providers/provider';
+import { InternalError } from 'src/errors';
 import { IKycDaoJsonRpcProvider } from '../kycdao-json-rpc-provider';
 
 export class NearJsonRpcProvider implements IKycDaoJsonRpcProvider {
@@ -29,7 +30,7 @@ export class NearJsonRpcProvider implements IKycDaoJsonRpcProvider {
       return result;
     } catch (e) {
       console.error(e);
-      throw new Error('NEAR RPC query error');
+      throw new InternalError('NEAR RPC query error');
     }
   }
 }
