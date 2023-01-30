@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { KycDaoApiError } from './api-base';
-import { getRandomAlphanumericString } from './utils';
+import { SentryConfiguration } from './types';
+import { getRandomAlphanumericString, waitForDomElement } from './utils';
 
 /**
  * Collection of error codes returned by the SDK.
@@ -89,8 +90,19 @@ function publicErrorHandler(error: Error): void {
   // use the original stack to know what function call the error happened in
   err.stack = error.stack;
 
-  // TODO add Sentry report
+  // report to sentry
+  // TODO only report UnexpectedErrors?
+  const sentry = (window as any).Sentry as any;
+  if (sentry != null) {
+    sentry.captureException(err, {
+      tags: {
+        errorCode: err.errorCode,
+        referenceId: err.referenceId,
+      },
+    });
+  }
 
+  // TODO only log UnexpectedErrors?
   console.error(err);
   throw err;
 }
@@ -129,4 +141,107 @@ export function Catch(handler?: (_: Error) => void) {
 
     return descriptor;
   };
+}
+
+export type Environment = 'local' | 'development' | 'production' | 'unknown';
+
+export class SentryWrapper {
+  private _config: SentryConfiguration;
+  get config() {
+    return this._config;
+  }
+
+  private _environment: Environment;
+  get environment() {
+    return this._environment;
+  }
+
+  private _isLoaded: boolean;
+
+  // This implementation might not be perfect for all browsers but at least it will not return the wrong env from inside an iframe
+  private getEnvironment(): Environment {
+    const getHostname = (): string | undefined => {
+      const inIframe = window !== window.self;
+
+      if (inIframe) {
+        try {
+          return window.top?.location.hostname;
+        } catch {
+          return;
+        }
+      } else {
+        return window.location.hostname;
+      }
+    };
+
+    const hostname = getHostname();
+
+    if (hostname != null) {
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return 'local';
+      }
+
+      if (
+        hostname.includes('pre.kycdao.xyz') ||
+        hostname.includes('dev.kycdao.xyz') ||
+        hostname.includes('staging.kycdao.xyz')
+      ) {
+        return 'development';
+      }
+
+      return 'production';
+    }
+
+    return 'unknown';
+  }
+
+  constructor(config: SentryConfiguration) {
+    this._config = config;
+    this._environment = this.getEnvironment();
+    this._isLoaded = false;
+  }
+
+  private async loadScript(): Promise<void> {
+    const sentry = (window as any).Sentry as any;
+    if (sentry != null) {
+      throw new Error('window.Sentry is already defined');
+    }
+
+    if (this._isLoaded === false) {
+      const tag = document.createElement('script');
+      tag.type = 'text/javascript';
+      tag.src = 'https://browser.sentry-cdn.com/7.33.0/bundle.min.js';
+      tag.integrity = 'sha384-fqi7Nj+xYL2iw/JEQszlVbuFt0CckGZmcb7XqOEOF5DBR0Ajzp3ZAlG3CT765hE3';
+      tag.crossOrigin = 'anonymous';
+      document.body.appendChild(tag);
+      this._isLoaded = true;
+    }
+
+    await waitForDomElement((window) => window.Sentry);
+  }
+
+  private init(): void {
+    const sentry = (window as any).Sentry as any;
+    sentry.onLoad(() => {
+      sentry.init({
+        dsn: this._config.dsn,
+        environment: this._environment,
+      });
+
+      /* sentry.configureScope(scope => {
+        scope.setTag( ... );
+      }); */
+    });
+
+    sentry.forceLoad();
+  }
+
+  public async lazyLoad(): Promise<void> {
+    try {
+      await this.loadScript();
+      this.init();
+    } catch (e) {
+      console.warn('kycDAO Sentry loading/initialization failed', e);
+    }
+  }
 }

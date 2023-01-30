@@ -143,6 +143,28 @@ export async function poll<T>(
   return new Promise(executePoll);
 }
 
+export async function waitForDomElement<T>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  selector: (window: any) => T,
+  maxRetries = 100,
+  interval = 300,
+): Promise<T> {
+  const check = async (): Promise<T | undefined> => {
+    return selector(window);
+  };
+
+  const elem = await poll(check, interval, maxRetries, {
+    useExponentialBackoff: false,
+    resolvePredicate: (result) => result != null,
+  });
+
+  if (elem) {
+    return elem;
+  }
+
+  throw new Error('NOT FOUND');
+}
+
 export function getChainExplorerUrlForTransaction(
   txHash: string,
   blockchainNetwork: BlockchainNetwork,
