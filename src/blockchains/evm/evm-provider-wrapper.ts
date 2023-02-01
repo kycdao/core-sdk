@@ -14,7 +14,7 @@ import {
 } from './utils';
 import BN from 'bn.js';
 import { poll, TimeOutError } from '../../utils';
-import { ConfigurationError, InternalError, TransactionError } from 'src/errors';
+import { InternalError, TransactionError } from '../../errors';
 
 export class EvmProviderWrapper {
   private provider: EvmProvider;
@@ -35,7 +35,7 @@ export class EvmProviderWrapper {
     if (this.provider.isWalletConnect) {
       return await this.provider.enable();
     } else {
-      throw new ConfigurationError('Provider is not WalletConnect');
+      throw new InternalError('Provider is not WalletConnect');
     }
   }
 
@@ -43,7 +43,7 @@ export class EvmProviderWrapper {
     if (this.provider.isWalletConnect) {
       return await this.provider.disconnect();
     } else {
-      throw new ConfigurationError('Provider is not WalletConnect');
+      throw new InternalError('Provider is not WalletConnect');
     }
   }
 

@@ -1,4 +1,4 @@
-import { InternalError, UnreachableCaseError } from 'src/errors';
+import { InternalError, UnreachableCaseError } from '../errors';
 import { Blockchain } from '../types';
 import { EvmJsonRpcProvider } from './evm/evm-json-rpc-provider';
 import { NearJsonRpcProvider } from './near/near-json-rpc-provider';

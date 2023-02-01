@@ -1,6 +1,6 @@
 import { JsonRpcProvider } from 'near-api-js/lib/providers';
 import { CodeResult } from 'near-api-js/lib/providers/provider';
-import { InternalError } from 'src/errors';
+import { InternalError } from '../../errors';
 import { IKycDaoJsonRpcProvider } from '../kycdao-json-rpc-provider';
 
 export class NearJsonRpcProvider implements IKycDaoJsonRpcProvider {

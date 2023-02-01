@@ -18,12 +18,12 @@ export const StatusErrors = ensureType<Record<string, string>>()({
   UserNotLoggedIn: 'User is not logged in',
   /** The provided email address is invalid */
   InvalidEmailAddress: 'Invalid email address',
-  /** The provided tax resideny was invalid */
+  /** The provided tax residency is invalid */
   InvalidTaxResidency: 'Invalid taxResidency. Please use the country list provided by the SDK.',
-  /** The called API function reqires the terms and condition to be accepted by the user */
+  /** The called API function requires the terms and conditions to be accepted by the user */
   TermsAndConditionsNotAccepted:
     'Terms and Conditions and Privacy Policy must be accepted to start verification.',
-  /** The called API function reqires the disclaimer to be accepted by the user */
+  /** The called API function requires the disclaimer to be accepted by the user */
   DisclaimerNotAccepted: 'Disclaimer must be accepted.',
   /** The called API function requires a wallet to be connected */
   WalletNotConnected: 'Wallet connection required.',
@@ -33,7 +33,7 @@ export const StatusErrors = ensureType<Record<string, string>>()({
   UserAlreadyVerified: 'User already verified',
   /** The selected network is not supported by the SDK */
   NetworkNotSupported: 'Selected network is not supported',
-  /** The selected network is supported by the SDK but not enabled by the site */
+  /** The selected network is supported by the SDK but wasn't enabled in the SDK */
   NetworkNotEnabled: 'Selected network is not enabled',
   /** Automatic network switching failed */
   NetworkSwitchingFailed: 'Network switching failed',
@@ -44,9 +44,9 @@ export const StatusErrors = ensureType<Record<string, string>>()({
  * @enum {string}
  */
 export const WalletErrors = ensureType<Record<string, string>>()({
-  /** The user is not connected to chain. It can happen because of network connecr*/
+  /** The user is not connected to chain. It can happen because of network connection problems. */
   UserNotConnected: 'User is not connected to a wallet',
-  /** The SDK is trying to do a wallet asction, but the account provided by the wallet was not authorized before.  */
+  /** The SDK is trying to do a wallet action, but the account provided by the wallet was not authorized before. */
   AccountUnauthorized: 'Account is not authorized',
   /** The wallet action initiated by the SDK was cancelled by the user */
   RejectedByUser: 'User cancelled the transaction',
@@ -61,7 +61,7 @@ export const WalletErrors = ensureType<Record<string, string>>()({
 export const TransactionErrors = ensureType<Record<string, string>>()({
   /** The transaction was not found on the chain in time. */
   TransactionNotFound: 'Transaction not found',
-  /** The transaction was found on the chain but its in a failed state. */
+  /** The transaction was found on the chain but it's in a failed state. */
   TransactionFailed: 'Transaction failed',
   /** The transaction was rejected by the contract. */
   TransactionRejected: 'Transaction rejected by the contract',
@@ -128,7 +128,7 @@ export abstract class KycDaoSDKError extends Error {
  * This error class represents the errors that can occur when the SDK evaluates its configuration.
  *
  * These errors intend to guide you to fix configuration problems while integrating the SDK. They should not occur in normal circumstances.
- * The {@link errorCode} property is always undefined for these error, the message property contains the error description.
+ * The {@link errorCode} property is always undefined for these errors, the message property contains the error description.
  *
  * @class ConfigurationError
  * @typedef {ConfigurationError}
@@ -169,7 +169,7 @@ export class StatusError extends KycDaoSDKError {
 }
 
 /**
- * This error class represents the various errors that can occur when the SDK is doing some wallet action.
+ * This error class represents the various errors that can occur when the SDK is interacting with a wallet.
  *
  * The {@link errorCode} property can be used to identify the specific error. See {@link WalletErrors} for the list of possible problems.
  * @class WalletError
@@ -268,7 +268,7 @@ export class UnknownError extends KycDaoSDKError {
  * It catches all unhandled errors, wraps them in a KycDaoSDKError and throws that instead.
  *
  * @internal
- * @param {Error} error
+ * @param {unknown} error
  */
 function publicErrorHandler(error: unknown): void {
   let err: KycDaoSDKError | undefined;

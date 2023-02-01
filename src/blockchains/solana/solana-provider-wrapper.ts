@@ -7,7 +7,7 @@ import {
 } from '@solana/wallet-adapter-base';
 import { clusterApiUrl, Connection, Transaction } from '@solana/web3.js';
 import bs58 from 'bs58';
-import { InternalError } from 'src/errors';
+import { InternalError } from '../../errors';
 import {
   SolanaBlockchainNetwork,
   Transaction as SdkTransaction,

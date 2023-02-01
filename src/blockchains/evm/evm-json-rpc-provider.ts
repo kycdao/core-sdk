@@ -1,4 +1,4 @@
-import { InternalError } from 'src/errors';
+import { InternalError } from '../../errors';
 import { IKycDaoJsonRpcProvider } from '../kycdao-json-rpc-provider';
 import { EvmRequestArguments } from './types';
 

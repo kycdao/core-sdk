@@ -715,7 +715,7 @@ export class KycDao extends ApiBase {
 
   private initNear(blockchainNetwork: NearBlockchainNetwork): void {
     if (!blockchainNetwork.startsWith('Near')) {
-      throw new ConfigurationError(`Not a  Near network: ${blockchainNetwork}`);
+      throw new InternalError(`Not a  Near network: ${blockchainNetwork}`);
     }
 
     // TODO remove this step and saving contract address to this.near when we want NEAR support for other verification types
