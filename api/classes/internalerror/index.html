@@ -10,24 +10,24 @@
     <meta name="generator" content="Retype 2.4.0">
 
     <!-- Primary Meta Tags -->
-    <title>SdkStatus</title>
-    <meta name="title" content="SdkStatus">
-    <meta name="description" content="@kycdao/kycdao-sdk - v0.6.0/ SdkStatus" />
+    <title>InternalError</title>
+    <meta name="title" content="InternalError">
+    <meta name="description" content="@kycdao/kycdao-sdk - v0.6.0/ InternalError" />
 
     <!-- Canonical -->
-    <link rel="canonical" href="https://kycdao.github.io/kycdao-js-sdk/api/interfaces/sdkstatus/" />
+    <link rel="canonical" href="https://kycdao.github.io/kycdao-js-sdk/api/classes/internalerror/" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://kycdao.github.io/kycdao-js-sdk/api/interfaces/sdkstatus/">
-    <meta property="og:title" content="SdkStatus">
-    <meta property="og:description" content="@kycdao/kycdao-sdk - v0.6.0/ SdkStatus">
+    <meta property="og:url" content="https://kycdao.github.io/kycdao-js-sdk/api/classes/internalerror/">
+    <meta property="og:title" content="InternalError">
+    <meta property="og:description" content="@kycdao/kycdao-sdk - v0.6.0/ InternalError">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://kycdao.github.io/kycdao-js-sdk/api/interfaces/sdkstatus/">
-    <meta property="twitter:title" content="SdkStatus">
-    <meta property="twitter:description" content="@kycdao/kycdao-sdk - v0.6.0/ SdkStatus">
+    <meta property="twitter:url" content="https://kycdao.github.io/kycdao-js-sdk/api/classes/internalerror/">
+    <meta property="twitter:title" content="InternalError">
+    <meta property="twitter:description" content="@kycdao/kycdao-sdk - v0.6.0/ InternalError">
 
     <script>(function () { var el = document.documentElement, m = localStorage.getItem("/kycdao-js-sdk/doc_theme"), wm = window.matchMedia; if (m === "dark" || (!m && wm && wm("(prefers-color-scheme: dark)").matches)) { el.classList.add("dark") } else { el.classList.remove("dark") } })();</script>
 
@@ -156,22 +156,41 @@
                                 <div id="docs-sidebar-right-toggle"></div>
                 
                                 <!-- Page content  -->
-<doc-anchor-target id="sdkstatus" class="break-words">
+<doc-anchor-target id="internalerror" class="break-words">
     <h1>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#sdkstatus">#</doc-anchor-trigger>
-        <span>SdkStatus</span>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#internalerror">#</doc-anchor-trigger>
+        <span>InternalError</span>
     </h1>
 </doc-anchor-target>
-<p><a href="../../">@kycdao/kycdao-sdk - v0.6.0</a> / SdkStatus</p>
-<p>The current status of the SDK.</p>
-<p><strong><code v-pre>Interface</code></strong></p>
-<p>SdkStatus</p>
+<p><a href="../../">@kycdao/kycdao-sdk - v0.6.0</a> / InternalError</p>
+<p>This error class represents errors that can occur independently from the SDK state. They can be caused by network issues, unstable RPC endpoints, errors in the SDK, etc.</p>
+<p>The <doc-anchor-trigger to="#errorcode">errorCode</doc-anchor-trigger> property is always undefined for these error, the message property contains the error description.*</p>
+<doc-anchor-target id="hierarchy">
+    <h2>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#hierarchy">#</doc-anchor-trigger>
+        <span>Hierarchy</span>
+    </h2>
+</doc-anchor-target>
+<ul>
+<li><p><a href="../kycdaosdkerror/"><code v-pre>KycDaoSDKError</code></a></p>
+<p>↳ <strong><code v-pre>InternalError</code></strong></p>
+</li>
+</ul>
 <doc-anchor-target id="table-of-contents">
     <h2>
         <doc-anchor-trigger class="header-anchor-trigger" to="#table-of-contents">#</doc-anchor-trigger>
         <span>Table of contents</span>
     </h2>
 </doc-anchor-target>
+<doc-anchor-target id="constructors">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#constructors">#</doc-anchor-trigger>
+        <span>Constructors</span>
+    </h3>
+</doc-anchor-target>
+<ul>
+<li><doc-anchor-trigger to="#constructor">constructor</doc-anchor-trigger></li>
+</ul>
 <doc-anchor-target id="properties">
     <h3>
         <doc-anchor-trigger class="header-anchor-trigger" to="#properties">#</doc-anchor-trigger>
@@ -179,133 +198,176 @@
     </h3>
 </doc-anchor-target>
 <ul>
-<li><doc-anchor-trigger to="#availableblockchainnetworks">availableBlockchainNetworks</doc-anchor-trigger></li>
-<li><doc-anchor-trigger to="#availableverificationtypes">availableVerificationTypes</doc-anchor-trigger></li>
-<li><doc-anchor-trigger to="#baseurl">baseUrl</doc-anchor-trigger></li>
-<li><doc-anchor-trigger to="#demomode">demoMode</doc-anchor-trigger></li>
-<li><doc-anchor-trigger to="#evmproviderconfigured">evmProviderConfigured</doc-anchor-trigger></li>
-<li><doc-anchor-trigger to="#nearnetworkconnected">nearNetworkConnected</doc-anchor-trigger></li>
-<li><doc-anchor-trigger to="#solananetworkconnected">solanaNetworkConnected</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#referenceid">referenceId</doc-anchor-trigger></li>
 </ul>
-<doc-anchor-target id="properties-1">
-    <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#properties-1">#</doc-anchor-trigger>
-        <span>Properties</span>
-    </h2>
-</doc-anchor-target>
-<doc-anchor-target id="availableblockchainnetworks">
+<doc-anchor-target id="accessors">
     <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#availableblockchainnetworks">#</doc-anchor-trigger>
-        <span>availableBlockchainNetworks</span>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#accessors">#</doc-anchor-trigger>
+        <span>Accessors</span>
     </h3>
 </doc-anchor-target>
-<p>• <strong>availableBlockchainNetworks</strong>: (<code v-pre>&quot;CeloAlfajores&quot;</code> | <code v-pre>&quot;CeloMainnet&quot;</code> | <code v-pre>&quot;EthereumGoerli&quot;</code> | <code v-pre>&quot;EthereumMainnet&quot;</code> | <code v-pre>&quot;PolygonMainnet&quot;</code> | <code v-pre>&quot;PolygonMumbai&quot;</code> | <code v-pre>&quot;NearMainnet&quot;</code> | <code v-pre>&quot;NearTestnet&quot;</code> | <code v-pre>&quot;SolanaDevnet&quot;</code> | <code v-pre>&quot;SolanaMainnet&quot;</code> | <code v-pre>&quot;SolanaTestnet&quot;</code>)[]</p>
-<p>List of <a href="../../enums/blockchainnetworks/">BlockchainNetworks</a> currently available to use. See <a href="../sdkconfiguration/#enabledblockchainnetworks">enabledBlockchainNetworks</a>.</p>
+<ul>
+<li><doc-anchor-trigger to="#errorcode">errorCode</doc-anchor-trigger></li>
+</ul>
+<doc-anchor-target id="methods">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#methods">#</doc-anchor-trigger>
+        <span>Methods</span>
+    </h3>
+</doc-anchor-target>
+<ul>
+<li><doc-anchor-trigger to="#tostring">toString</doc-anchor-trigger></li>
+</ul>
+<doc-anchor-target id="constructors-1">
+    <h2>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#constructors-1">#</doc-anchor-trigger>
+        <span>Constructors</span>
+    </h2>
+</doc-anchor-target>
+<doc-anchor-target id="constructor">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#constructor">#</doc-anchor-trigger>
+        <span>constructor</span>
+    </h3>
+</doc-anchor-target>
+<p>• <strong>new InternalError</strong>(<code v-pre>message</code>, <code v-pre>referenceId?</code>)</p>
+<doc-anchor-target id="parameters">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#parameters">#</doc-anchor-trigger>
+        <span>Parameters</span>
+    </h4>
+</doc-anchor-target>
+<div class="table-wrapper scrollbar overflow-hidden">
+<table class="comfortable">
+<thead>
+<tr>
+<th style="text-align: left;">Name</th>
+<th style="text-align: left;">Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code v-pre>message</code></td>
+<td style="text-align: left;"><code v-pre>string</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code v-pre>referenceId?</code></td>
+<td style="text-align: left;"><code v-pre>string</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<doc-anchor-target id="overrides">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#overrides">#</doc-anchor-trigger>
+        <span>Overrides</span>
+    </h4>
+</doc-anchor-target>
+<p><a href="../kycdaosdkerror/">KycDaoSDKError</a>.<a href="../kycdaosdkerror/#constructor">constructor</a></p>
 <doc-anchor-target id="defined-in">
     <h4>
         <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/types.ts#L249">types.ts:249</a></p>
-<hr />
-<doc-anchor-target id="availableverificationtypes">
+<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/errors.ts#L227">errors.ts:227</a></p>
+<doc-anchor-target id="properties-1">
+    <h2>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#properties-1">#</doc-anchor-trigger>
+        <span>Properties</span>
+    </h2>
+</doc-anchor-target>
+<doc-anchor-target id="referenceid">
     <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#availableverificationtypes">#</doc-anchor-trigger>
-        <span>availableVerificationTypes</span>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#referenceid">#</doc-anchor-trigger>
+        <span>referenceId</span>
     </h3>
 </doc-anchor-target>
-<p>• <strong>availableVerificationTypes</strong>: (<code v-pre>&quot;AccreditedInvestor&quot;</code> | <code v-pre>&quot;KYC&quot;</code>)[]</p>
-<p>List of <a href="../../enums/verificationtypes/">VerificationTypes</a> currently available to use. See <a href="../sdkconfiguration/#enabledverificationtypes">enabledVerificationTypes</a>.</p>
+<p>• <strong>referenceId</strong>: <code v-pre>string</code></p>
+<p>This is a unique reference to the error that can help us identify and solve the issue.</p>
+<doc-anchor-target id="inherited-from">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#inherited-from">#</doc-anchor-trigger>
+        <span>Inherited from</span>
+    </h4>
+</doc-anchor-target>
+<p><a href="../kycdaosdkerror/">KycDaoSDKError</a>.<a href="../kycdaosdkerror/#referenceid">referenceId</a></p>
 <doc-anchor-target id="defined-in-1">
     <h4>
         <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-1">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/types.ts#L255">types.ts:255</a></p>
-<hr />
-<doc-anchor-target id="baseurl">
+<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/errors.ts#L104">errors.ts:104</a></p>
+<doc-anchor-target id="accessors-1">
+    <h2>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#accessors-1">#</doc-anchor-trigger>
+        <span>Accessors</span>
+    </h2>
+</doc-anchor-target>
+<doc-anchor-target id="errorcode">
     <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#baseurl">#</doc-anchor-trigger>
-        <span>baseUrl</span>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#errorcode">#</doc-anchor-trigger>
+        <span>errorCode</span>
     </h3>
 </doc-anchor-target>
-<p>• <strong>baseUrl</strong>: <code v-pre>string</code></p>
-<p>The base API URL of the kycDAO server currently used by the SDK.</p>
+<p>• <code v-pre>get</code> <strong>errorCode</strong>(): <code v-pre>undefined</code></p>
+<p>Error code is always undefined for this subclass</p>
+<doc-anchor-target id="returns">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#returns">#</doc-anchor-trigger>
+        <span>Returns</span>
+    </h4>
+</doc-anchor-target>
+<p><code v-pre>undefined</code></p>
+<doc-anchor-target id="overrides-1">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#overrides-1">#</doc-anchor-trigger>
+        <span>Overrides</span>
+    </h4>
+</doc-anchor-target>
+<p>KycDaoSDKError.errorCode</p>
 <doc-anchor-target id="defined-in-2">
     <h4>
         <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-2">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/types.ts#L237">types.ts:237</a></p>
-<hr />
-<doc-anchor-target id="demomode">
+<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/errors.ts#L233">errors.ts:233</a></p>
+<doc-anchor-target id="methods-1">
+    <h2>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#methods-1">#</doc-anchor-trigger>
+        <span>Methods</span>
+    </h2>
+</doc-anchor-target>
+<doc-anchor-target id="tostring">
     <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#demomode">#</doc-anchor-trigger>
-        <span>demoMode</span>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#tostring">#</doc-anchor-trigger>
+        <span>toString</span>
     </h3>
 </doc-anchor-target>
-<p>• <strong>demoMode</strong>: <code v-pre>boolean</code></p>
-<p>A flag indicating if demo mode is turned on or not. See <a href="../sdkconfiguration/#demomode">demoMode</a>.</p>
+<p>▸ <strong>toString</strong>(): <code v-pre>string</code></p>
+<doc-anchor-target id="returns-1">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#returns-1">#</doc-anchor-trigger>
+        <span>Returns</span>
+    </h4>
+</doc-anchor-target>
+<p><code v-pre>string</code></p>
+<doc-anchor-target id="inherited-from-1">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#inherited-from-1">#</doc-anchor-trigger>
+        <span>Inherited from</span>
+    </h4>
+</doc-anchor-target>
+<p><a href="../kycdaosdkerror/">KycDaoSDKError</a>.<a href="../kycdaosdkerror/#tostring">toString</a></p>
 <doc-anchor-target id="defined-in-3">
     <h4>
         <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-3">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/types.ts#L243">types.ts:243</a></p>
-<hr />
-<doc-anchor-target id="evmproviderconfigured">
-    <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#evmproviderconfigured">#</doc-anchor-trigger>
-        <span>evmProviderConfigured</span>
-    </h3>
-</doc-anchor-target>
-<p>• <strong>evmProviderConfigured</strong>: <code v-pre>boolean</code></p>
-<p>A flag indicating if an EVM provider is configured and ready to use or not. See <a href="../sdkconfiguration/#evmprovider">evmProvider</a>.</p>
-<doc-anchor-target id="defined-in-4">
-    <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-4">#</doc-anchor-trigger>
-        <span>Defined in</span>
-    </h4>
-</doc-anchor-target>
-<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/types.ts#L261">types.ts:261</a></p>
-<hr />
-<doc-anchor-target id="nearnetworkconnected">
-    <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#nearnetworkconnected">#</doc-anchor-trigger>
-        <span>nearNetworkConnected</span>
-    </h3>
-</doc-anchor-target>
-<p>• <strong>nearNetworkConnected</strong>: <code v-pre>null</code> | <code v-pre>&quot;NearMainnet&quot;</code> | <code v-pre>&quot;NearTestnet&quot;</code></p>
-<p>The NEAR blockchain network currently used by the SDK, <code v-pre>null</code> if there is none.<br />
-This value will depend on the <a href="../sdkconfiguration/">SdkConfiguration</a> provided and the available networks on the connected kycDAO server.</p>
-<doc-anchor-target id="defined-in-5">
-    <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-5">#</doc-anchor-trigger>
-        <span>Defined in</span>
-    </h4>
-</doc-anchor-target>
-<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/types.ts#L268">types.ts:268</a></p>
-<hr />
-<doc-anchor-target id="solananetworkconnected">
-    <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#solananetworkconnected">#</doc-anchor-trigger>
-        <span>solanaNetworkConnected</span>
-    </h3>
-</doc-anchor-target>
-<p>• <strong>solanaNetworkConnected</strong>: <code v-pre>null</code> | <code v-pre>&quot;SolanaDevnet&quot;</code> | <code v-pre>&quot;SolanaMainnet&quot;</code> | <code v-pre>&quot;SolanaTestnet&quot;</code></p>
-<p>The Solana blockchain network currently used by the SDK, <code v-pre>null</code> if there is none.<br />
-This value will depend on the <a href="../sdkconfiguration/">SdkConfiguration</a> provided and the available networks on the connected kycDAO server.</p>
-<doc-anchor-target id="defined-in-6">
-    <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-6">#</doc-anchor-trigger>
-        <span>Defined in</span>
-    </h4>
-</doc-anchor-target>
-<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/types.ts#L275">types.ts:275</a></p>
+<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/errors.ts#L115">errors.ts:115</a></p>
 
                                 
                                 <!-- Required only on API pages -->
@@ -315,20 +377,20 @@ This value will depend on the <a href="../sdkconfiguration/">SdkConfiguration</a
                             
                                 <nav class="flex mt-14">
                                     <div class="w-1/2">
-                                        <a class="px-5 py-4 h-full flex items-center break-normal font-medium text-blue-500 dark:text-blue-400 border border-gray-300 hover:border-gray-400 dark:border-dark-650 dark:hover:border-dark-450 rounded-l-lg transition-colors duration-150 relative hover:z-5" href="../../../api/interfaces/sdkconfiguration/">
+                                        <a class="px-5 py-4 h-full flex items-center break-normal font-medium text-blue-500 dark:text-blue-400 border border-gray-300 hover:border-gray-400 dark:border-dark-650 dark:hover:border-dark-450 rounded-l-lg transition-colors duration-150 relative hover:z-5" href="../../../api/classes/configurationerror/">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="mr-3" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" overflow="visible"><path d="M19 11H7.41l5.29-5.29a.996.996 0 10-1.41-1.41l-7 7a1 1 0 000 1.42l7 7a1.024 1.024 0 001.42-.01.996.996 0 000-1.41L7.41 13H19c.55 0 1-.45 1-1s-.45-1-1-1z" /><path fill="none" d="M0 0h24v24H0z" /></svg>
                                             <span>
                                                 <span class="block text-xs font-normal text-gray-400 dark:text-dark-400">Previous</span>
-                                                <span class="block mt-1">Sdk​Configuration</span>
+                                                <span class="block mt-1">Configuration​Error</span>
                                             </span>
                                         </a>
                                     </div>
                             
                                     <div class="w-1/2">
-                                        <a class="px-5 py-4 -mx-px h-full flex items-center justify-end break-normal font-medium text-blue-500 dark:text-blue-400 border border-gray-300 hover:border-gray-400 dark:border-dark-650 dark:hover:border-dark-450 rounded-r-lg transition-colors duration-150 relative hover:z-5" href="../../../api/interfaces/sentryconfiguration/">
+                                        <a class="px-5 py-4 -mx-px h-full flex items-center justify-end break-normal font-medium text-blue-500 dark:text-blue-400 border border-gray-300 hover:border-gray-400 dark:border-dark-650 dark:hover:border-dark-450 rounded-r-lg transition-colors duration-150 relative hover:z-5" href="../../../api/classes/kycdao/">
                                             <span>
                                                 <span class="block text-xs font-normal text-right text-gray-400 dark:text-dark-400">Next</span>
-                                                <span class="block mt-1">Sentry​Configuration</span>
+                                                <span class="block mt-1">Kyc​Dao</span>
                                             </span>
                                             <svg xmlns="http://www.w3.org/2000/svg" class="ml-3" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" overflow="visible"><path d="M19.92 12.38a1 1 0 00-.22-1.09l-7-7a.996.996 0 10-1.41 1.41l5.3 5.3H5c-.55 0-1 .45-1 1s.45 1 1 1h11.59l-5.29 5.29a.996.996 0 000 1.41c.19.2.44.3.7.3s.51-.1.71-.29l7-7c.09-.09.16-.21.21-.33z" /><path fill="none" d="M0 0h24v24H0z" /></svg>
                                         </a>
@@ -372,6 +434,6 @@ This value will depend on the <a href="../sdkconfiguration/">SdkConfiguration</a
 
     <div id="docs-overlay-target"></div>
 
-    <script>window.__DOCS__ = { "title": "SdkStatus", level: 3, icon: "file", hasPrism: false, hasMermaid: false, hasMath: false }</script>
+    <script>window.__DOCS__ = { "title": "InternalError", level: 3, icon: "file", hasPrism: false, hasMermaid: false, hasMath: false }</script>
 </body>
 </html>

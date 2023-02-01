@@ -10,24 +10,24 @@
     <meta name="generator" content="Retype 2.4.0">
 
     <!-- Primary Meta Tags -->
-    <title>SdkStatus</title>
-    <meta name="title" content="SdkStatus">
-    <meta name="description" content="@kycdao/kycdao-sdk - v0.6.0/ SdkStatus" />
+    <title>StatusErrors</title>
+    <meta name="title" content="StatusErrors">
+    <meta name="description" content="@kycdao/kycdao-sdk - v0.6.0/ StatusErrors" />
 
     <!-- Canonical -->
-    <link rel="canonical" href="https://kycdao.github.io/kycdao-js-sdk/api/interfaces/sdkstatus/" />
+    <link rel="canonical" href="https://kycdao.github.io/kycdao-js-sdk/api/enums/statuserrors/" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://kycdao.github.io/kycdao-js-sdk/api/interfaces/sdkstatus/">
-    <meta property="og:title" content="SdkStatus">
-    <meta property="og:description" content="@kycdao/kycdao-sdk - v0.6.0/ SdkStatus">
+    <meta property="og:url" content="https://kycdao.github.io/kycdao-js-sdk/api/enums/statuserrors/">
+    <meta property="og:title" content="StatusErrors">
+    <meta property="og:description" content="@kycdao/kycdao-sdk - v0.6.0/ StatusErrors">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://kycdao.github.io/kycdao-js-sdk/api/interfaces/sdkstatus/">
-    <meta property="twitter:title" content="SdkStatus">
-    <meta property="twitter:description" content="@kycdao/kycdao-sdk - v0.6.0/ SdkStatus">
+    <meta property="twitter:url" content="https://kycdao.github.io/kycdao-js-sdk/api/enums/statuserrors/">
+    <meta property="twitter:title" content="StatusErrors">
+    <meta property="twitter:description" content="@kycdao/kycdao-sdk - v0.6.0/ StatusErrors">
 
     <script>(function () { var el = document.documentElement, m = localStorage.getItem("/kycdao-js-sdk/doc_theme"), wm = window.matchMedia; if (m === "dark" || (!m && wm && wm("(prefers-color-scheme: dark)").matches)) { el.classList.add("dark") } else { el.classList.remove("dark") } })();</script>
 
@@ -156,156 +156,220 @@
                                 <div id="docs-sidebar-right-toggle"></div>
                 
                                 <!-- Page content  -->
-<doc-anchor-target id="sdkstatus" class="break-words">
+<doc-anchor-target id="statuserrors" class="break-words">
     <h1>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#sdkstatus">#</doc-anchor-trigger>
-        <span>SdkStatus</span>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#statuserrors">#</doc-anchor-trigger>
+        <span>StatusErrors</span>
     </h1>
 </doc-anchor-target>
-<p><a href="../../">@kycdao/kycdao-sdk - v0.6.0</a> / SdkStatus</p>
-<p>The current status of the SDK.</p>
-<p><strong><code v-pre>Interface</code></strong></p>
-<p>SdkStatus</p>
+<p><a href="../../">@kycdao/kycdao-sdk - v0.6.0</a> / StatusErrors</p>
+<p>Error codes for the <a href="../../classes/statuserror/">StatusError</a> class</p>
 <doc-anchor-target id="table-of-contents">
     <h2>
         <doc-anchor-trigger class="header-anchor-trigger" to="#table-of-contents">#</doc-anchor-trigger>
         <span>Table of contents</span>
     </h2>
 </doc-anchor-target>
-<doc-anchor-target id="properties">
+<doc-anchor-target id="enumeration-members">
     <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#properties">#</doc-anchor-trigger>
-        <span>Properties</span>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#enumeration-members">#</doc-anchor-trigger>
+        <span>Enumeration Members</span>
     </h3>
 </doc-anchor-target>
 <ul>
-<li><doc-anchor-trigger to="#availableblockchainnetworks">availableBlockchainNetworks</doc-anchor-trigger></li>
-<li><doc-anchor-trigger to="#availableverificationtypes">availableVerificationTypes</doc-anchor-trigger></li>
-<li><doc-anchor-trigger to="#baseurl">baseUrl</doc-anchor-trigger></li>
-<li><doc-anchor-trigger to="#demomode">demoMode</doc-anchor-trigger></li>
-<li><doc-anchor-trigger to="#evmproviderconfigured">evmProviderConfigured</doc-anchor-trigger></li>
-<li><doc-anchor-trigger to="#nearnetworkconnected">nearNetworkConnected</doc-anchor-trigger></li>
-<li><doc-anchor-trigger to="#solananetworkconnected">solanaNetworkConnected</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#disclaimernotaccepted">DisclaimerNotAccepted</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#invalidemailaddress">InvalidEmailAddress</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#invalidtaxresidency">InvalidTaxResidency</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#networknotenabled">NetworkNotEnabled</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#networknotsupported">NetworkNotSupported</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#networkswitchingfailed">NetworkSwitchingFailed</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#termsandconditionsnotaccepted">TermsAndConditionsNotAccepted</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#useralreadyverified">UserAlreadyVerified</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#usernotloggedin">UserNotLoggedIn</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#usernotverified">UserNotVerified</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#walletnotconnected">WalletNotConnected</doc-anchor-trigger></li>
 </ul>
-<doc-anchor-target id="properties-1">
+<doc-anchor-target id="enumeration-members-1">
     <h2>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#properties-1">#</doc-anchor-trigger>
-        <span>Properties</span>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#enumeration-members-1">#</doc-anchor-trigger>
+        <span>Enumeration Members</span>
     </h2>
 </doc-anchor-target>
-<doc-anchor-target id="availableblockchainnetworks">
+<doc-anchor-target id="disclaimernotaccepted">
     <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#availableblockchainnetworks">#</doc-anchor-trigger>
-        <span>availableBlockchainNetworks</span>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#disclaimernotaccepted">#</doc-anchor-trigger>
+        <span>DisclaimerNotAccepted</span>
     </h3>
 </doc-anchor-target>
-<p>• <strong>availableBlockchainNetworks</strong>: (<code v-pre>&quot;CeloAlfajores&quot;</code> | <code v-pre>&quot;CeloMainnet&quot;</code> | <code v-pre>&quot;EthereumGoerli&quot;</code> | <code v-pre>&quot;EthereumMainnet&quot;</code> | <code v-pre>&quot;PolygonMainnet&quot;</code> | <code v-pre>&quot;PolygonMumbai&quot;</code> | <code v-pre>&quot;NearMainnet&quot;</code> | <code v-pre>&quot;NearTestnet&quot;</code> | <code v-pre>&quot;SolanaDevnet&quot;</code> | <code v-pre>&quot;SolanaMainnet&quot;</code> | <code v-pre>&quot;SolanaTestnet&quot;</code>)[]</p>
-<p>List of <a href="../../enums/blockchainnetworks/">BlockchainNetworks</a> currently available to use. See <a href="../sdkconfiguration/#enabledblockchainnetworks">enabledBlockchainNetworks</a>.</p>
+<p>• <strong>DisclaimerNotAccepted</strong> = <code v-pre>string</code></p>
+<p>The called API function requires the disclaimer to be accepted by the user</p>
 <doc-anchor-target id="defined-in">
     <h4>
         <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/types.ts#L249">types.ts:249</a></p>
+<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/errors.ts#L27">errors.ts:27</a></p>
 <hr />
-<doc-anchor-target id="availableverificationtypes">
+<doc-anchor-target id="invalidemailaddress">
     <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#availableverificationtypes">#</doc-anchor-trigger>
-        <span>availableVerificationTypes</span>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#invalidemailaddress">#</doc-anchor-trigger>
+        <span>InvalidEmailAddress</span>
     </h3>
 </doc-anchor-target>
-<p>• <strong>availableVerificationTypes</strong>: (<code v-pre>&quot;AccreditedInvestor&quot;</code> | <code v-pre>&quot;KYC&quot;</code>)[]</p>
-<p>List of <a href="../../enums/verificationtypes/">VerificationTypes</a> currently available to use. See <a href="../sdkconfiguration/#enabledverificationtypes">enabledVerificationTypes</a>.</p>
+<p>• <strong>InvalidEmailAddress</strong> = <code v-pre>string</code></p>
+<p>The provided email address is invalid</p>
 <doc-anchor-target id="defined-in-1">
     <h4>
         <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-1">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/types.ts#L255">types.ts:255</a></p>
+<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/errors.ts#L20">errors.ts:20</a></p>
 <hr />
-<doc-anchor-target id="baseurl">
+<doc-anchor-target id="invalidtaxresidency">
     <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#baseurl">#</doc-anchor-trigger>
-        <span>baseUrl</span>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#invalidtaxresidency">#</doc-anchor-trigger>
+        <span>InvalidTaxResidency</span>
     </h3>
 </doc-anchor-target>
-<p>• <strong>baseUrl</strong>: <code v-pre>string</code></p>
-<p>The base API URL of the kycDAO server currently used by the SDK.</p>
+<p>• <strong>InvalidTaxResidency</strong> = <code v-pre>string</code></p>
+<p>The provided tax residency is invalid</p>
 <doc-anchor-target id="defined-in-2">
     <h4>
         <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-2">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/types.ts#L237">types.ts:237</a></p>
+<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/errors.ts#L22">errors.ts:22</a></p>
 <hr />
-<doc-anchor-target id="demomode">
+<doc-anchor-target id="networknotenabled">
     <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#demomode">#</doc-anchor-trigger>
-        <span>demoMode</span>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#networknotenabled">#</doc-anchor-trigger>
+        <span>NetworkNotEnabled</span>
     </h3>
 </doc-anchor-target>
-<p>• <strong>demoMode</strong>: <code v-pre>boolean</code></p>
-<p>A flag indicating if demo mode is turned on or not. See <a href="../sdkconfiguration/#demomode">demoMode</a>.</p>
+<p>• <strong>NetworkNotEnabled</strong> = <code v-pre>string</code></p>
+<p>The selected network is supported by the SDK but wasn&#x27;t enabled in the SDK</p>
 <doc-anchor-target id="defined-in-3">
     <h4>
         <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-3">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/types.ts#L243">types.ts:243</a></p>
+<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/errors.ts#L37">errors.ts:37</a></p>
 <hr />
-<doc-anchor-target id="evmproviderconfigured">
+<doc-anchor-target id="networknotsupported">
     <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#evmproviderconfigured">#</doc-anchor-trigger>
-        <span>evmProviderConfigured</span>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#networknotsupported">#</doc-anchor-trigger>
+        <span>NetworkNotSupported</span>
     </h3>
 </doc-anchor-target>
-<p>• <strong>evmProviderConfigured</strong>: <code v-pre>boolean</code></p>
-<p>A flag indicating if an EVM provider is configured and ready to use or not. See <a href="../sdkconfiguration/#evmprovider">evmProvider</a>.</p>
+<p>• <strong>NetworkNotSupported</strong> = <code v-pre>string</code></p>
+<p>The selected network is not supported by the SDK</p>
 <doc-anchor-target id="defined-in-4">
     <h4>
         <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-4">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/types.ts#L261">types.ts:261</a></p>
+<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/errors.ts#L35">errors.ts:35</a></p>
 <hr />
-<doc-anchor-target id="nearnetworkconnected">
+<doc-anchor-target id="networkswitchingfailed">
     <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#nearnetworkconnected">#</doc-anchor-trigger>
-        <span>nearNetworkConnected</span>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#networkswitchingfailed">#</doc-anchor-trigger>
+        <span>NetworkSwitchingFailed</span>
     </h3>
 </doc-anchor-target>
-<p>• <strong>nearNetworkConnected</strong>: <code v-pre>null</code> | <code v-pre>&quot;NearMainnet&quot;</code> | <code v-pre>&quot;NearTestnet&quot;</code></p>
-<p>The NEAR blockchain network currently used by the SDK, <code v-pre>null</code> if there is none.<br />
-This value will depend on the <a href="../sdkconfiguration/">SdkConfiguration</a> provided and the available networks on the connected kycDAO server.</p>
+<p>• <strong>NetworkSwitchingFailed</strong> = <code v-pre>string</code></p>
+<p>Automatic network switching failed</p>
 <doc-anchor-target id="defined-in-5">
     <h4>
         <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-5">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/types.ts#L268">types.ts:268</a></p>
+<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/errors.ts#L39">errors.ts:39</a></p>
 <hr />
-<doc-anchor-target id="solananetworkconnected">
+<doc-anchor-target id="termsandconditionsnotaccepted">
     <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#solananetworkconnected">#</doc-anchor-trigger>
-        <span>solanaNetworkConnected</span>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#termsandconditionsnotaccepted">#</doc-anchor-trigger>
+        <span>TermsAndConditionsNotAccepted</span>
     </h3>
 </doc-anchor-target>
-<p>• <strong>solanaNetworkConnected</strong>: <code v-pre>null</code> | <code v-pre>&quot;SolanaDevnet&quot;</code> | <code v-pre>&quot;SolanaMainnet&quot;</code> | <code v-pre>&quot;SolanaTestnet&quot;</code></p>
-<p>The Solana blockchain network currently used by the SDK, <code v-pre>null</code> if there is none.<br />
-This value will depend on the <a href="../sdkconfiguration/">SdkConfiguration</a> provided and the available networks on the connected kycDAO server.</p>
+<p>• <strong>TermsAndConditionsNotAccepted</strong> = <code v-pre>string</code></p>
+<p>The called API function requires the terms and conditions to be accepted by the user</p>
 <doc-anchor-target id="defined-in-6">
     <h4>
         <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-6">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/types.ts#L275">types.ts:275</a></p>
+<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/errors.ts#L24">errors.ts:24</a></p>
+<hr />
+<doc-anchor-target id="useralreadyverified">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#useralreadyverified">#</doc-anchor-trigger>
+        <span>UserAlreadyVerified</span>
+    </h3>
+</doc-anchor-target>
+<p>• <strong>UserAlreadyVerified</strong> = <code v-pre>string</code></p>
+<p>The user has an active verification while requesting a new verification</p>
+<doc-anchor-target id="defined-in-7">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-7">#</doc-anchor-trigger>
+        <span>Defined in</span>
+    </h4>
+</doc-anchor-target>
+<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/errors.ts#L33">errors.ts:33</a></p>
+<hr />
+<doc-anchor-target id="usernotloggedin">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#usernotloggedin">#</doc-anchor-trigger>
+        <span>UserNotLoggedIn</span>
+    </h3>
+</doc-anchor-target>
+<p>• <strong>UserNotLoggedIn</strong> = <code v-pre>string</code></p>
+<p>The called API function requires an active logged in user</p>
+<doc-anchor-target id="defined-in-8">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-8">#</doc-anchor-trigger>
+        <span>Defined in</span>
+    </h4>
+</doc-anchor-target>
+<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/errors.ts#L18">errors.ts:18</a></p>
+<hr />
+<doc-anchor-target id="usernotverified">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#usernotverified">#</doc-anchor-trigger>
+        <span>UserNotVerified</span>
+    </h3>
+</doc-anchor-target>
+<p>• <strong>UserNotVerified</strong> = <code v-pre>string</code></p>
+<p>The called API function requires the user to be verified</p>
+<doc-anchor-target id="defined-in-9">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-9">#</doc-anchor-trigger>
+        <span>Defined in</span>
+    </h4>
+</doc-anchor-target>
+<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/errors.ts#L31">errors.ts:31</a></p>
+<hr />
+<doc-anchor-target id="walletnotconnected">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#walletnotconnected">#</doc-anchor-trigger>
+        <span>WalletNotConnected</span>
+    </h3>
+</doc-anchor-target>
+<p>• <strong>WalletNotConnected</strong> = <code v-pre>string</code></p>
+<p>The called API function requires a wallet to be connected</p>
+<doc-anchor-target id="defined-in-10">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-10">#</doc-anchor-trigger>
+        <span>Defined in</span>
+    </h4>
+</doc-anchor-target>
+<p><a href="https://github.com/kycdao/core-sdk/blob/ee636ac/src/errors.ts#L29">errors.ts:29</a></p>
 
                                 
                                 <!-- Required only on API pages -->
@@ -315,20 +379,20 @@ This value will depend on the <a href="../sdkconfiguration/">SdkConfiguration</a
                             
                                 <nav class="flex mt-14">
                                     <div class="w-1/2">
-                                        <a class="px-5 py-4 h-full flex items-center break-normal font-medium text-blue-500 dark:text-blue-400 border border-gray-300 hover:border-gray-400 dark:border-dark-650 dark:hover:border-dark-450 rounded-l-lg transition-colors duration-150 relative hover:z-5" href="../../../api/interfaces/sdkconfiguration/">
+                                        <a class="px-5 py-4 h-full flex items-center break-normal font-medium text-blue-500 dark:text-blue-400 border border-gray-300 hover:border-gray-400 dark:border-dark-650 dark:hover:border-dark-450 rounded-l-lg transition-colors duration-150 relative hover:z-5" href="../../../api/enums/solanablockchainnetworks/">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="mr-3" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" overflow="visible"><path d="M19 11H7.41l5.29-5.29a.996.996 0 10-1.41-1.41l-7 7a1 1 0 000 1.42l7 7a1.024 1.024 0 001.42-.01.996.996 0 000-1.41L7.41 13H19c.55 0 1-.45 1-1s-.45-1-1-1z" /><path fill="none" d="M0 0h24v24H0z" /></svg>
                                             <span>
                                                 <span class="block text-xs font-normal text-gray-400 dark:text-dark-400">Previous</span>
-                                                <span class="block mt-1">Sdk​Configuration</span>
+                                                <span class="block mt-1">Solana​Blockchain​Networks</span>
                                             </span>
                                         </a>
                                     </div>
                             
                                     <div class="w-1/2">
-                                        <a class="px-5 py-4 -mx-px h-full flex items-center justify-end break-normal font-medium text-blue-500 dark:text-blue-400 border border-gray-300 hover:border-gray-400 dark:border-dark-650 dark:hover:border-dark-450 rounded-r-lg transition-colors duration-150 relative hover:z-5" href="../../../api/interfaces/sentryconfiguration/">
+                                        <a class="px-5 py-4 -mx-px h-full flex items-center justify-end break-normal font-medium text-blue-500 dark:text-blue-400 border border-gray-300 hover:border-gray-400 dark:border-dark-650 dark:hover:border-dark-450 rounded-r-lg transition-colors duration-150 relative hover:z-5" href="../../../api/enums/transactionerrors/">
                                             <span>
                                                 <span class="block text-xs font-normal text-right text-gray-400 dark:text-dark-400">Next</span>
-                                                <span class="block mt-1">Sentry​Configuration</span>
+                                                <span class="block mt-1">Transaction​Errors</span>
                                             </span>
                                             <svg xmlns="http://www.w3.org/2000/svg" class="ml-3" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" overflow="visible"><path d="M19.92 12.38a1 1 0 00-.22-1.09l-7-7a.996.996 0 10-1.41 1.41l5.3 5.3H5c-.55 0-1 .45-1 1s.45 1 1 1h11.59l-5.29 5.29a.996.996 0 000 1.41c.19.2.44.3.7.3s.51-.1.71-.29l7-7c.09-.09.16-.21.21-.33z" /><path fill="none" d="M0 0h24v24H0z" /></svg>
                                         </a>
@@ -372,6 +436,6 @@ This value will depend on the <a href="../sdkconfiguration/">SdkConfiguration</a
 
     <div id="docs-overlay-target"></div>
 
-    <script>window.__DOCS__ = { "title": "SdkStatus", level: 3, icon: "file", hasPrism: false, hasMermaid: false, hasMath: false }</script>
+    <script>window.__DOCS__ = { "title": "StatusErrors", level: 3, icon: "file", hasPrism: false, hasMermaid: false, hasMath: false }</script>
 </body>
 </html>
