@@ -98,6 +98,15 @@ export interface PollingOptions<T> {
   retryOnErrorPredicate?: (error: unknown) => boolean;
 }
 
+export class TimeOutError extends Error {
+  public wrappedError;
+  constructor(message: string, originalError?: Error) {
+    super(message);
+    this.name = 'TimeOutError';
+    this.wrappedError = originalError;
+  }
+}
+
 export async function poll<T>(
   asyncFunction: () => PromiseLike<T>,
   initialTimeout: number,
@@ -114,9 +123,9 @@ export async function poll<T>(
       timeout = 2 ** retries * initialTimeout;
     }
 
-    const timeoutOrRetry = () => {
+    const timeoutOrRetry = (error?: Error) => {
       if (retries >= maxRetries) {
-        reject(new Error('TIMEOUT'));
+        reject(new TimeOutError('TIMEOUT', error));
       } else {
         setTimeout(executePoll, timeout, resolve, reject);
       }
@@ -132,7 +141,7 @@ export async function poll<T>(
       })
       .catch((error) => {
         if (retryOnErrorPredicate && retryOnErrorPredicate(error)) {
-          timeoutOrRetry();
+          timeoutOrRetry(error);
         } else {
           reject(error);
         }

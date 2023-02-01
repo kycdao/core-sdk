@@ -1,3 +1,4 @@
+import { InternalError, UnreachableCaseError } from '../errors';
 import { Blockchain } from '../types';
 import { EvmJsonRpcProvider } from './evm/evm-json-rpc-provider';
 import { NearJsonRpcProvider } from './near/near-json-rpc-provider';
@@ -22,8 +23,12 @@ export class KycDaoJsonRpcProvider {
         this.provider = new NearJsonRpcProvider(this.url);
         break;
       }
+      case 'Solana': {
+        throw new InternalError('Solana is not supported yet');
+        break;
+      }
       default:
-        throw new Error(`Unsupported blockchain: ${blockchain}.`);
+        throw new UnreachableCaseError(blockchain);
     }
   }
 

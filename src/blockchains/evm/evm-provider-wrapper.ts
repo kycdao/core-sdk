@@ -13,7 +13,8 @@ import {
   removeHexPrefix,
 } from './utils';
 import BN from 'bn.js';
-import { poll } from '../../utils';
+import { poll, TimeOutError } from '../../utils';
+import { InternalError, TransactionError } from '../../errors';
 
 export class EvmProviderWrapper {
   private provider: EvmProvider;
@@ -34,7 +35,7 @@ export class EvmProviderWrapper {
     if (this.provider.isWalletConnect) {
       return await this.provider.enable();
     } else {
-      throw new Error('Provider is not WalletConnect');
+      throw new InternalError('Provider is not WalletConnect');
     }
   }
 
@@ -42,7 +43,7 @@ export class EvmProviderWrapper {
     if (this.provider.isWalletConnect) {
       return await this.provider.disconnect();
     } else {
-      throw new Error('Provider is not WalletConnect');
+      throw new InternalError('Provider is not WalletConnect');
     }
   }
 
@@ -109,7 +110,7 @@ export class EvmProviderWrapper {
       case 'getRequiredMintCostForCode(uint32,address)':
         return '0xf82bacf04f8cc3e49b7c065af00ec174710a0d8d0514c21a7c4cdffb661ce0f2';
       default:
-        throw new Error('Unknown input');
+        throw new InternalError('Unknown input.');
     }
   }
 
@@ -120,7 +121,6 @@ export class EvmProviderWrapper {
       data?: { code: number; message: string };
     };
     if (!err.code || !err.message) {
-      console.log(`Unknown error: ${err}`);
       return false;
     }
     let code = err.code;
@@ -206,26 +206,36 @@ export class EvmProviderWrapper {
     const sighash = await this.getSighash('getRequiredMintCostForCode(uint32,address)');
     const data = sighash + authCodeEncoded + addressEncoded;
 
-    const mintCostRaw = await poll(
-      () =>
-        this.provider.request<string>({
-          method: 'eth_call',
-          params: [
-            {
-              data: data,
-              to: toAddress,
-            },
-            'latest',
-          ],
-        }),
-      2000,
-      15,
-      {
-        retryOnErrorPredicate: (e) => this.isRepeatableError(e),
-        useExponentialBackoff: false,
-      },
-    );
-    return mintCostRaw;
+    try {
+      return await poll(
+        () =>
+          this.provider.request<string>({
+            method: 'eth_call',
+            params: [
+              {
+                data: data,
+                to: toAddress,
+              },
+              'latest',
+            ],
+          }),
+        2000,
+        15,
+        {
+          retryOnErrorPredicate: (e) => this.isRepeatableError(e),
+          useExponentialBackoff: false,
+        },
+      );
+    } catch (e) {
+      if (e instanceof TimeOutError) {
+        throw new TransactionError(
+          'MintingCostCalculationError',
+          'Timeout while calculating minting costs: ' + e.wrappedError?.message,
+        );
+      } else {
+        throw e;
+      }
+    }
   }
 
   public async mint(
@@ -245,15 +255,28 @@ export class EvmProviderWrapper {
     const sighash = await this.getSighash('mintWithCode(uint32)');
     const data = sighash + authCodeEncoded;
 
-    const gasLimitHex = await poll(
-      () => this.estimateGas(data, toAddress, fromAddress, mintCostWithSlippageHex),
-      2000,
-      15,
-      {
-        retryOnErrorPredicate: (e) => this.isRepeatableError(e),
-        useExponentialBackoff: false,
-      },
-    );
+    let gasLimitHex = null;
+
+    try {
+      gasLimitHex = await poll(
+        () => this.estimateGas(data, toAddress, fromAddress, mintCostWithSlippageHex),
+        2000,
+        15,
+        {
+          retryOnErrorPredicate: (e) => this.isRepeatableError(e),
+          useExponentialBackoff: false,
+        },
+      );
+    } catch (e) {
+      if (e instanceof TimeOutError) {
+        throw new TransactionError(
+          'GasEstimationError',
+          'Timeout while estimating gas' + e.wrappedError?.message,
+        );
+      } else {
+        throw e;
+      }
+    }
 
     const providerGasPriceHex = await this.getGasPrice();
     const providerGasPriceDec = parseInt(providerGasPriceHex, 16);

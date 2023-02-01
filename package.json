@@ -1,6 +1,6 @@
 {
   "name": "@kycdao/kycdao-sdk",
-  "version": "0.5.5",
+  "version": "0.6.0",
   "description": "kycDAO SDK for TypeScript and JavaScript",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -9,6 +9,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "start": "webpack serve --progress --no-hot --config ./webpack.config.development.js",
+    "dev": "webpack serve --progress  --config ./webpack.config.development.js",
     "bundle": "webpack --config ./webpack.config.production.js",
     "build": "tsc --build",
     "clean": "tsc --build --clean",

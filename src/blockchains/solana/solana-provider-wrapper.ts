@@ -7,6 +7,7 @@ import {
 } from '@solana/wallet-adapter-base';
 import { clusterApiUrl, Connection, Transaction } from '@solana/web3.js';
 import bs58 from 'bs58';
+import { InternalError } from '../../errors';
 import {
   SolanaBlockchainNetwork,
   Transaction as SdkTransaction,
@@ -76,11 +77,11 @@ export class SolanaProviderWrapper {
 
   public async signMessage(message: string): Promise<string> {
     if (!isLike<MessageSignerWalletAdapter>(this._adapter)) {
-      throw new Error('Solana wallet adapter not initialized');
+      throw new InternalError('Solana wallet adapter not initialized');
     }
 
     if (!(typeof this._adapter.signMessage === 'function')) {
-      throw new Error('Initialized wallet provider is unable to sign messages');
+      throw new InternalError('Initialized wallet provider is unable to sign messages');
     }
 
     const signature = await this._adapter.signMessage(Buffer.from(message, 'utf-8'));
@@ -89,7 +90,7 @@ export class SolanaProviderWrapper {
 
   public async mint(toAddress: string, mintTransaction: Transaction): Promise<string> {
     if (!this._adapter) {
-      throw new Error('Solana wallet adapter not initialized');
+      throw new InternalError('Solana wallet adapter not initialized');
     }
 
     if (toAddress.startsWith('0x')) {
@@ -107,7 +108,7 @@ export class SolanaProviderWrapper {
       });
 
       if (receipt === null) {
-        throw new Error(`Transaction ${txHash} doesn't exist`);
+        throw new InternalError(`Transaction ${txHash} doesn't exist`);
       } else {
         const postTokenBalances = receipt.meta?.postTokenBalances;
         const status: SdkTransactionStatus = receipt.meta?.err === null ? 'Success' : 'Unknown'; // TODO Should this be failure? I'm not sure how this works.
@@ -131,7 +132,7 @@ export class SolanaProviderWrapper {
         }
       }
     } catch (e) {
-      throw new Error(`Unexpected error while checking Solana transaction: ${e}`);
+      throw new InternalError(`Unexpected error while checking Solana transaction: ${e}`);
     }
   }
 }
