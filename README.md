@@ -6,7 +6,7 @@ kycDAO JS/TS SDK canonical URL: https://github.com/kycdao/kycdao-js-sdk
 
 ## Documentation
 
-You can find the documentation at https://kycdao.github.io/kycdao-js-sdk
+You can find the documentation at https://docs.kycdao.xyz/coresdk/getting_started/
 
 ## Integration example
 
