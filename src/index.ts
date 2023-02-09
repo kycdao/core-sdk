@@ -1169,43 +1169,49 @@ export class KycDao extends ApiBase {
           (network) => Number(networkDetails[network].chainId) === Number(chainId),
         );
 
-        // selected network is not supported
-        if (!blockchainNetwork) {
-          throw new StatusError('NetworkNotSupported');
-        }
-
         // selected network is not enabled
-        if (!this.blockchainNetworks.includes(blockchainNetwork)) {
+        if (!blockchainNetwork || !this.blockchainNetworks.includes(blockchainNetwork)) {
           // automatic network switching is enabled and there is only one enabled network
           if (autoSwitch && this.blockchainNetworks.length === 1) {
             const enabledNetwork = this.blockchainNetworks[0];
             const enabledNetworkDetails = networkDetails[enabledNetwork];
 
-            // the enabled network has the same chain as the selected one and it has a chain ID
-            if (
-              enabledNetworkDetails.blockchain === networkDetails[blockchainNetwork].blockchain &&
-              enabledNetworkDetails.chainId
-            ) {
+            // the enabled network has 'Ethereum' chain and it has a chain ID
+            if (enabledNetworkDetails.blockchain === 'Ethereum' && enabledNetworkDetails.chainId) {
               const newChainId = enabledNetworkDetails.chainId;
               try {
                 await this.evmProvider.switchNetwork(newChainId);
 
                 const updatedChainId = await this.evmProvider.getChainId();
                 if (updatedChainId !== newChainId) {
-                  throw new InternalError('ChainId expected to be changed.');
+                  throw new StatusError(
+                    'NetworkSwitchingFailed',
+                    'Automatic EVM network switching failed: chain ID did not change.',
+                  );
                 }
               } catch {
-                throw new InternalError(
-                  'Automatic network switching failed, selected EVM network is not enabled.',
+                throw new StatusError(
+                  'NetworkSwitchingFailed',
+                  'Automatic EVM network switching failed: feature not supported by the wallet.',
                 );
               }
 
               blockchainNetwork = enabledNetwork;
             } else {
-              throw new InternalError('Unexpected SDK error.');
+              throw new InternalError('Network configuration error.');
             }
           } else {
-            throw new StatusError('NetworkNotEnabled', 'Selected EVM network is not enabled.');
+            if (!blockchainNetwork) {
+              throw new StatusError(
+                'NetworkNotSupported',
+                'Selected EVM network in wallet is not supported by the SDK.',
+              );
+            } else {
+              throw new StatusError(
+                'NetworkNotEnabled',
+                'Selected EVM network in wallet is not enabled in the SDK.',
+              );
+            }
           }
         }
 
@@ -1269,13 +1275,16 @@ export class KycDao extends ApiBase {
     }
 
     if (!this.blockchainNetworks.includes(blockchainNetwork)) {
-      throw new StatusError('NetworkNotEnabled', 'Blockchain network not enabled.');
+      throw new StatusError('NetworkNotEnabled');
     }
 
     const networkDetails = this.blockchainNetworkDetails[blockchainNetwork];
 
     if (this._chainAndAddress.blockchain !== networkDetails.blockchain) {
-      throw new StatusError('NetworkNotSupported');
+      throw new StatusError(
+        'NetworkSwitchingFailed',
+        'Selected network has a different blockchain than the currently connected wallet.',
+      );
     }
 
     const blockchain = networkDetails.blockchain;
@@ -1290,7 +1299,7 @@ export class KycDao extends ApiBase {
         const newChainId = networkDetails.chainId;
 
         if (!newChainId) {
-          throw new InternalError('ChainId not found.');
+          throw new InternalError('Network configuration error.');
         }
 
         try {
@@ -1300,11 +1309,17 @@ export class KycDao extends ApiBase {
 
             const updatedChainId = await this.evmProvider.getChainId();
             if (updatedChainId !== newChainId) {
-              throw new InternalError('ChainId expected to be changed.');
+              throw new StatusError(
+                'NetworkSwitchingFailed',
+                'EVM network switching failed: chain ID did not change.',
+              );
             }
           }
         } catch {
-          throw new StatusError('NetworkSwitchingFailed', 'Network switching failed.');
+          throw new StatusError(
+            'NetworkSwitchingFailed',
+            'EVM network switching failed: feature not supported by the wallet.',
+          );
         }
         break;
       }

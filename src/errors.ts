@@ -35,8 +35,8 @@ export const StatusErrors = ensureType<Record<string, string>>()({
   NetworkNotSupported: 'Selected network is not supported',
   /** The selected network is supported by the SDK but wasn't enabled in the SDK */
   NetworkNotEnabled: 'Selected network is not enabled',
-  /** Automatic network switching failed */
-  NetworkSwitchingFailed: 'Network switching failed',
+  /** Network switching failed */
+  NetworkSwitchingFailed: 'Network switching failed.',
 });
 
 /**
