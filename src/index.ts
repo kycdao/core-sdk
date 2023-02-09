@@ -916,8 +916,8 @@ export class KycDao extends ApiBase {
       void sentry.lazyLoad(); // don't wait for it to load, if it's configured properly and the CDN is available it should be quick
     }
 
-    // TODO handle and return specific error
     kycDao.apiStatus = await kycDao.get<ApiStatus>('status');
+    // kycDao.blockchainNetworkDetails = await kycDao.get<NetworkMetadata[]>('networks');
 
     // update blockchain network details with values from the incoming config
     const networkConf = config.blockchainNetworkConfiguration;

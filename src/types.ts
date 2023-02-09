@@ -833,3 +833,28 @@ export interface TokenMetadata {
   description: string;
   image: string;
 }
+
+export interface CurrencyData {
+  name: string;
+  symbol: string;
+  decimals: number;
+}
+
+export interface ExplorerData {
+  name: string;
+  url: string;
+  transaction_path: string;
+}
+
+export interface NetworkMetadata {
+  id: BlockchainNetwork;
+  blockchain: Blockchain;
+  // Human readable name
+  name: string;
+  // CAIP-2 Network ID
+  caip2id: string;
+  // Chain ID - only applicable for EVM compatible chains
+  chain_id?: number;
+  native_currency: CurrencyData;
+  explorer: ExplorerData;
+}
