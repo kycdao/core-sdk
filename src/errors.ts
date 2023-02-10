@@ -22,20 +22,20 @@ export const StatusErrors = ensureType<Record<string, string>>()({
   InvalidTaxResidency: 'Invalid taxResidency. Please use the country list provided by the SDK.',
   /** The called API function requires the terms and conditions to be accepted by the user */
   TermsAndConditionsNotAccepted:
-    'Terms and Conditions and Privacy Policy must be accepted to start verification.',
+    'Terms and Conditions and Privacy Policy must be accepted to start verification',
   /** The called API function requires the disclaimer to be accepted by the user */
-  DisclaimerNotAccepted: 'Disclaimer must be accepted.',
+  DisclaimerNotAccepted: 'Disclaimer must be accepted',
   /** The called API function requires a wallet to be connected */
-  WalletNotConnected: 'Wallet connection required.',
+  WalletNotConnected: 'Wallet connection required',
   /** The called API function requires the user to be verified */
-  UserNotVerified: 'User must be verified to be able to mint an NFT.',
+  UserNotVerified: 'User must be verified to be able to mint an NFT',
   /** The user has an active verification while requesting a new verification */
   UserAlreadyVerified: 'User already verified',
   /** The selected network is not supported by the SDK */
   NetworkNotSupported: 'Selected network is not supported',
   /** The selected network is supported by the SDK but wasn't enabled in the SDK */
   NetworkNotEnabled: 'Selected network is not enabled',
-  /** Automatic network switching failed */
+  /** Network switching failed */
   NetworkSwitchingFailed: 'Network switching failed',
 });
 
