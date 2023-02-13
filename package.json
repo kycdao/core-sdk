@@ -30,7 +30,7 @@
     "eslint": "^8.32.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-prettier": "^4.2.1",
-    "near-api-js": "^0.44.2",
+    "near-api-js": "^1.1.0",
     "persona": "^4.6.0",
     "prettier": "^2.6.2",
     "react": "^18.1.0",
@@ -47,7 +47,7 @@
     "webpack-dev-server": "^4.11.1"
   },
   "peerDependencies": {
-    "near-api-js": "^0.44.2",
+    "near-api-js": "^1.1.0",
     "persona": "^4.6.0",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",

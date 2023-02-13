@@ -506,7 +506,7 @@ __metadata:
     eslint: "npm:^8.32.0"
     eslint-config-prettier: "npm:^8.6.0"
     eslint-plugin-prettier: "npm:^4.2.1"
-    near-api-js: "npm:^0.44.2"
+    near-api-js: "npm:^1.1.0"
     persona: "npm:^4.6.0"
     prettier: "npm:^2.6.2"
     react: "npm:^18.1.0"
@@ -522,7 +522,7 @@ __metadata:
     webpack-cli: "npm:^4.10.0"
     webpack-dev-server: "npm:^4.11.1"
   peerDependencies:
-    near-api-js: ^0.44.2
+    near-api-js: ^1.1.0
     persona: ^4.6.0
     react: ^18.1.0
     react-dom: ^18.1.0
@@ -3007,10 +3007,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bn.js@npm:5.2.0":
-  version: 5.2.0
-  resolution: "bn.js@npm:5.2.0"
-  checksum: c8fa6d82639b787651f9b744b8ca6b2b773a01a2a9938e5836a7811f1afcb666b8ffc042b37049b1960fcc4c5d18f7b94f7084880a16f1c9bcff38398c40bc49
+"bn.js@npm:5.2.1, bn.js@npm:^5.0.0, bn.js@npm:^5.1.1, bn.js@npm:^5.1.2, bn.js@npm:^5.2.0, bn.js@npm:^5.2.1":
+  version: 5.2.1
+  resolution: "bn.js@npm:5.2.1"
+  checksum: 0c272b6eeda35a4d2a3bcf5f0cae54080eb876f5aa10789f67322ad891a27dc99f179b4362e1b5fc2e42c408fd8e0014afed4fdf30e4f346561302ea588fd095
   languageName: node
   linkType: hard
 
@@ -3018,13 +3018,6 @@ __metadata:
   version: 4.12.0
   resolution: "bn.js@npm:4.12.0"
   checksum: bfb4590775a29dad10c8d42da5ba7fca9d4f796f6d278cb27f53c6a6272df5e58a3ca58d879487c9584db9e7a8f73ac843117183bebea2d627c1f0db95848ec8
-  languageName: node
-  linkType: hard
-
-"bn.js@npm:^5.0.0, bn.js@npm:^5.1.1, bn.js@npm:^5.1.2, bn.js@npm:^5.2.0, bn.js@npm:^5.2.1":
-  version: 5.2.1
-  resolution: "bn.js@npm:5.2.1"
-  checksum: 0c272b6eeda35a4d2a3bcf5f0cae54080eb876f5aa10789f67322ad891a27dc99f179b4362e1b5fc2e42c408fd8e0014afed4fdf30e4f346561302ea588fd095
   languageName: node
   linkType: hard
 
@@ -3057,17 +3050,6 @@ __metadata:
     fast-deep-equal: "npm:^3.1.3"
     multicast-dns: "npm:^7.2.5"
   checksum: a8b9182f2edb4c5b8f975f2ed78bd877ab14df3609748ec38284ee4da7922fcf16ec73993ca7115b1be6306f87a85019c8e48c663f6e3d315329a4ecf8d020e4
-  languageName: node
-  linkType: hard
-
-"borsh@npm:^0.6.0":
-  version: 0.6.0
-  resolution: "borsh@npm:0.6.0"
-  dependencies:
-    bn.js: "npm:^5.2.0"
-    bs58: "npm:^4.0.0"
-    text-encoding-utf-8: "npm:^1.0.2"
-  checksum: c76f451dc1063019d3bc23e70807243d4522576465821f37aa05b240ae983f0cd6e2f47a79fa8fc3ff0c998093f38f3e69d9fbe480922d5bc8944a16a85a680e
   languageName: node
   linkType: hard
 
@@ -6351,12 +6333,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"near-api-js@npm:^0.44.2":
-  version: 0.44.2
-  resolution: "near-api-js@npm:0.44.2"
+"near-api-js@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "near-api-js@npm:1.1.0"
   dependencies:
-    bn.js: "npm:5.2.0"
-    borsh: "npm:^0.6.0"
+    bn.js: "npm:5.2.1"
+    borsh: "npm:^0.7.0"
     bs58: "npm:^4.0.0"
     depd: "npm:^2.0.0"
     error-polyfill: "npm:^0.1.3"
@@ -6366,7 +6348,7 @@ __metadata:
     node-fetch: "npm:^2.6.1"
     text-encoding-utf-8: "npm:^1.0.2"
     tweetnacl: "npm:^1.0.1"
-  checksum: 1dd326ee50f823dff32995a2022ebae641ae7da83cafbe946dfbb9edfe818177e49c040766fd69968cd160d043cc4b67afa06f2ab448a0bc62c869b6736d3a05
+  checksum: 7a21ebedb01c6efe30403bf9ba1bf148804b8b31c28ea6313bc61c6d65a27d874047281666cffaf6a7108b5712c3903ab0e699b19c7709a3490f1458c0b644cd
   languageName: node
   linkType: hard
 
