@@ -78,6 +78,7 @@ import {
   StatusError,
   TransactionError,
   UnreachableCaseError,
+  WalletError,
 } from './errors';
 
 export { ApiBase, KycDaoApiError } from './api-base';
@@ -1148,6 +1149,26 @@ export class KycDao extends ApiBase {
     return fulfilled.map((fulfilled) => fulfilled.value);
   }
 
+  @Catch()
+  private async switchNetworkChecked(newChainId: string) {
+    if (!this.evmProvider) {
+      throw new InternalError('EVM provider not found.');
+    }
+
+    await this.evmProvider.switchNetwork(newChainId);
+
+    const updatedChainId = await this.evmProvider.getChainId();
+    if (updatedChainId !== newChainId) {
+      throw new InternalError(
+        `Automatic EVM network switching failed: switchNetwork call did not throw an error, but wallet returns wrong chainId (${updatedChainId}), expected ${newChainId}.`,
+      );
+    }
+  }
+
+  private isUserRejectError(e: unknown): boolean {
+    return e instanceof WalletError && e.errorCode === 'RejectedByUser';
+  }
+
   // TODO split this up and move parts to provider wrappers
   private async ensureValidProviderNetwork(
     blockchain: Blockchain,
@@ -1180,21 +1201,18 @@ export class KycDao extends ApiBase {
             if (enabledNetworkDetails.blockchain === 'Ethereum' && enabledNetworkDetails.chainId) {
               const newChainId = enabledNetworkDetails.chainId;
               try {
-                await this.evmProvider.switchNetwork(newChainId);
-
-                const updatedChainId = await this.evmProvider.getChainId();
-                if (updatedChainId !== newChainId) {
-                  throw new InternalError(
-                    `Automatic EVM network switching failed: switchNetwork call did not throw an error, but wallet returns wrong chainId (${updatedChainId}), expected ${newChainId}.`,
+                await this.switchNetworkChecked(newChainId);
+              } catch (e) {
+                if (this.isUserRejectError(e)) {
+                  throw e;
+                } else {
+                  console.log('Automatic EVM network switching failed:', e);
+                  throw new StatusError(
+                    'NetworkSwitchingFailed',
+                    'Automatic EVM network switching failed: feature not supported by the wallet.',
                   );
                 }
-              } catch {
-                throw new StatusError(
-                  'NetworkSwitchingFailed',
-                  'Automatic EVM network switching failed: feature not supported by the wallet.',
-                );
               }
-
               blockchainNetwork = enabledNetwork;
             } else {
               throw new InternalError('Network configuration error.');
@@ -1301,23 +1319,21 @@ export class KycDao extends ApiBase {
           throw new InternalError('Network configuration error.');
         }
 
-        try {
-          const currentChainId = await this.evmProvider.getChainId();
-          if (currentChainId !== newChainId) {
-            await this.evmProvider.switchNetwork(newChainId);
-
-            const updatedChainId = await this.evmProvider.getChainId();
-            if (updatedChainId !== newChainId) {
-              throw new InternalError(
-                `EVM network switching failed: switchNetwork call did not throw an error, but wallet returns wrong chainId (${updatedChainId}), expected ${newChainId}.`,
+        const currentChainId = await this.evmProvider.getChainId();
+        if (currentChainId !== newChainId) {
+          try {
+            await this.switchNetworkChecked(newChainId);
+          } catch (e) {
+            if (this.isUserRejectError(e)) {
+              throw e;
+            } else {
+              console.log('Automatic EVM network switching failed:', e);
+              throw new StatusError(
+                'NetworkSwitchingFailed',
+                'Automatic EVM network switching failed: feature not supported by the wallet.',
               );
             }
           }
-        } catch {
-          throw new StatusError(
-            'NetworkSwitchingFailed',
-            'EVM network switching failed: feature not supported by the wallet.',
-          );
         }
         break;
       }
