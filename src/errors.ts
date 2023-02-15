@@ -52,6 +52,8 @@ export const WalletErrors = ensureType<Record<string, string>>()({
   RejectedByUser: 'User cancelled the transaction',
   /** An internal wallet error occured */
   InternalWalletError: 'Internal wallet error',
+  /** The chain does not exist in the user's wallet */
+  ChainMissing: 'Chain missing error',  
 });
 
 /**
@@ -332,6 +334,8 @@ function transformWalletErrorCode(code: number, msg: string) {
     case 4900: // user not connected
     case 4901: // user not connected to the right chain
       return new WalletError('UserNotConnected', msg, code);
+    case 4902: // chain does not exist in wallet
+      return new WalletError('ChainMissing', msg, code);
     case 4200: // method not implemented
     case -32700: // parse error
     case -32600: // invalid request
@@ -349,7 +353,7 @@ function transformWalletErrorCode(code: number, msg: string) {
   return;
 }
 
-function transformEVMErrors(error: unknown): KycDaoSDKError | undefined {
+export function transformEVMErrors(error: unknown): KycDaoSDKError | undefined {
   const err = error as {
     code: number;
     message: string;

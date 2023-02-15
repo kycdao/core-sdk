@@ -6,6 +6,9 @@ import {
   EvmTransactionReceiptResponse,
 } from './types';
 import {
+  BlockchainNetworkInfo,
+} from '../../types';
+import {
   hexEncodeAddress,
   hexEncodeString,
   hexEncodeUint,
@@ -14,7 +17,8 @@ import {
 } from './utils';
 import BN from 'bn.js';
 import { poll, TimeOutError } from '../../utils';
-import { InternalError, TransactionError } from '../../errors';
+import { InternalError, TransactionError, transformEVMErrors, WalletErrors } from '../../errors';
+import { WalletError } from '@solana/wallet-adapter-base';
 
 export class EvmProviderWrapper {
   private provider: EvmProvider;
@@ -85,6 +89,38 @@ export class EvmProviderWrapper {
     return this.provider.request({
       method: 'wallet_switchEthereumChain',
       params: [{ chainId }],
+    });
+  }
+
+  public async switchOrAddNetwork(networkDetails: BlockchainNetworkInfo): Promise<void> {
+    try {
+      await this.switchNetwork(networkDetails.chainId || '');
+    } catch (error) {
+      const kycError = transformEVMErrors(error);
+      //TODO: We should use the WalletError.ChainMissing code here
+      if (kycError?.errorCode === 'ChainMissing') {
+        await this.addNetwork(networkDetails);
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  public async addNetwork(networkDetails: BlockchainNetworkInfo): Promise<void> {
+    return this.provider.request({
+      method: 'wallet_addEthereumChain',
+      params: [{
+        chainId: networkDetails.chainId, //string;
+        // blockExplorerUrls: [], //?string[];
+        chainName: 'BLAH', //?string;
+        // iconUrls: [], //?string[];
+        // nativeCurrency: { //?{
+        //   name: '', //string;
+        //   symbol: '', ///string;
+        //   decimals: 0 //number;
+        // },
+        rpcUrls: [networkDetails.rpcUrl] //?string[];
+      }],
     });
   }
 

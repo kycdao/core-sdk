@@ -1180,7 +1180,8 @@ export class KycDao extends ApiBase {
             if (enabledNetworkDetails.blockchain === 'Ethereum' && enabledNetworkDetails.chainId) {
               const newChainId = enabledNetworkDetails.chainId;
               try {
-                await this.evmProvider.switchNetwork(newChainId);
+                console.log('Switching to network', enabledNetworkDetails)
+                await this.evmProvider.switchOrAddNetwork(enabledNetworkDetails);
 
                 const updatedChainId = await this.evmProvider.getChainId();
                 if (updatedChainId !== newChainId) {
