@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="turbo-root" content="/kycdao-js-sdk">
-    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="2.4.0.729627177329">
+    <meta name="turbo-cache-control" content="no-cache" data-turbo-track="reload" data-track-token="2.4.0.729787663352">
 
     <!-- See retype.com -->
     <meta name="generator" content="Retype 2.4.0">
@@ -12,7 +12,7 @@
     <!-- Primary Meta Tags -->
     <title>WalletErrors</title>
     <meta name="title" content="WalletErrors">
-    <meta name="description" content="@kycdao/kycdao-sdk - v0.6.1/ WalletErrors" />
+    <meta name="description" content="@kycdao/kycdao-sdk - v0.6.2/ WalletErrors" />
 
     <!-- Canonical -->
     <link rel="canonical" href="https://kycdao.github.io/kycdao-js-sdk/api/enums/walleterrors/" />
@@ -21,21 +21,21 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://kycdao.github.io/kycdao-js-sdk/api/enums/walleterrors/">
     <meta property="og:title" content="WalletErrors">
-    <meta property="og:description" content="@kycdao/kycdao-sdk - v0.6.1/ WalletErrors">
+    <meta property="og:description" content="@kycdao/kycdao-sdk - v0.6.2/ WalletErrors">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://kycdao.github.io/kycdao-js-sdk/api/enums/walleterrors/">
     <meta property="twitter:title" content="WalletErrors">
-    <meta property="twitter:description" content="@kycdao/kycdao-sdk - v0.6.1/ WalletErrors">
+    <meta property="twitter:description" content="@kycdao/kycdao-sdk - v0.6.2/ WalletErrors">
 
     <script>(function () { var el = document.documentElement, m = localStorage.getItem("/kycdao-js-sdk/doc_theme"), wm = window.matchMedia; if (m === "dark" || (!m && wm && wm("(prefers-color-scheme: dark)").matches)) { el.classList.add("dark") } else { el.classList.remove("dark") } })();</script>
 
-    <link href="../../../resources/css/retype.css?v=2.4.0.729627177329" rel="stylesheet" />
+    <link href="../../../resources/css/retype.css?v=2.4.0.729787663352" rel="stylesheet" />
 
-    <script type="text/javascript" src="../../../resources/js/config.js?v=2.4.0.729627177329" data-turbo-eval="false" defer></script>
+    <script type="text/javascript" src="../../../resources/js/config.js?v=2.4.0.729787663352" data-turbo-eval="false" defer></script>
     <script type="text/javascript" src="../../../resources/js/retype.js?v=2.4.0" data-turbo-eval="false" defer></script>
-    <script id="lunr-js" type="text/javascript" src="../../../resources/js/lunr.js?v=2.4.0.729627177329" data-turbo-eval="false" defer></script>
+    <script id="lunr-js" type="text/javascript" src="../../../resources/js/lunr.js?v=2.4.0.729787663352" data-turbo-eval="false" defer></script>
 </head>
 <body>
     <div id="docs-app" class="relative text-base antialiased text-gray-700 bg-white font-body dark:bg-dark-850 dark:text-dark-300">
@@ -162,7 +162,7 @@
         <span>WalletErrors</span>
     </h1>
 </doc-anchor-target>
-<p><a href="../../">@kycdao/kycdao-sdk - v0.6.1</a> / WalletErrors</p>
+<p><a href="../../">@kycdao/kycdao-sdk - v0.6.2</a> / WalletErrors</p>
 <p>Error codes for the <a href="../../classes/walleterror/">WalletError</a> class</p>
 <doc-anchor-target id="table-of-contents">
     <h2>
@@ -178,6 +178,7 @@
 </doc-anchor-target>
 <ul>
 <li><doc-anchor-trigger to="#accountunauthorized">AccountUnauthorized</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#insufficientfunds">InsufficientFunds</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#internalwalleterror">InternalWalletError</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#rejectedbyuser">RejectedByUser</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#usernotconnected">UserNotConnected</doc-anchor-trigger></li>
@@ -202,7 +203,23 @@
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/core-sdk/blob/d6eb1b4/src/errors.ts#L50">errors.ts:50</a></p>
+<p><a href="https://github.com/kycdao/core-sdk/blob/0b9e11f/src/errors.ts#L50">errors.ts:50</a></p>
+<hr />
+<doc-anchor-target id="insufficientfunds">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#insufficientfunds">#</doc-anchor-trigger>
+        <span>InsufficientFunds</span>
+    </h3>
+</doc-anchor-target>
+<p>• <strong>InsufficientFunds</strong> = <code v-pre>string</code></p>
+<p>The account does not have enough funds to complete the transaction.</p>
+<doc-anchor-target id="defined-in-1">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-1">#</doc-anchor-trigger>
+        <span>Defined in</span>
+    </h4>
+</doc-anchor-target>
+<p><a href="https://github.com/kycdao/core-sdk/blob/0b9e11f/src/errors.ts#L54">errors.ts:54</a></p>
 <hr />
 <doc-anchor-target id="internalwalleterror">
     <h3>
@@ -211,14 +228,14 @@
     </h3>
 </doc-anchor-target>
 <p>• <strong>InternalWalletError</strong> = <code v-pre>string</code></p>
-<p>An internal wallet error occured</p>
-<doc-anchor-target id="defined-in-1">
+<p>An internal wallet error occured.</p>
+<doc-anchor-target id="defined-in-2">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-1">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-2">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/core-sdk/blob/d6eb1b4/src/errors.ts#L54">errors.ts:54</a></p>
+<p><a href="https://github.com/kycdao/core-sdk/blob/0b9e11f/src/errors.ts#L56">errors.ts:56</a></p>
 <hr />
 <doc-anchor-target id="rejectedbyuser">
     <h3>
@@ -227,14 +244,14 @@
     </h3>
 </doc-anchor-target>
 <p>• <strong>RejectedByUser</strong> = <code v-pre>string</code></p>
-<p>The wallet action initiated by the SDK was cancelled by the user</p>
-<doc-anchor-target id="defined-in-2">
+<p>The wallet action initiated by the SDK was cancelled by the user.</p>
+<doc-anchor-target id="defined-in-3">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-2">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-3">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/core-sdk/blob/d6eb1b4/src/errors.ts#L52">errors.ts:52</a></p>
+<p><a href="https://github.com/kycdao/core-sdk/blob/0b9e11f/src/errors.ts#L52">errors.ts:52</a></p>
 <hr />
 <doc-anchor-target id="usernotconnected">
     <h3>
@@ -244,13 +261,13 @@
 </doc-anchor-target>
 <p>• <strong>UserNotConnected</strong> = <code v-pre>string</code></p>
 <p>The user is not connected to chain. It can happen because of network connection problems.</p>
-<doc-anchor-target id="defined-in-3">
+<doc-anchor-target id="defined-in-4">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-3">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-4">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/core-sdk/blob/d6eb1b4/src/errors.ts#L48">errors.ts:48</a></p>
+<p><a href="https://github.com/kycdao/core-sdk/blob/0b9e11f/src/errors.ts#L48">errors.ts:48</a></p>
 
                                 
                                 <!-- Required only on API pages -->
