@@ -48,9 +48,11 @@ export const WalletErrors = ensureType<Record<string, string>>()({
   UserNotConnected: 'User is not connected to a wallet',
   /** The SDK is trying to do a wallet action, but the account provided by the wallet was not authorized before. */
   AccountUnauthorized: 'Account is not authorized',
-  /** The wallet action initiated by the SDK was cancelled by the user */
+  /** The wallet action initiated by the SDK was cancelled by the user. */
   RejectedByUser: 'User cancelled the transaction',
-  /** An internal wallet error occured */
+  /** The account does not have enough funds to complete the transaction. */
+  InsufficientFunds: 'Insufficient funds',
+  /** An internal wallet error occured. */
   InternalWalletError: 'Internal wallet error',
 });
 
@@ -332,13 +334,18 @@ function transformWalletErrorCode(code: number, msg: string) {
     case 4900: // user not connected
     case 4901: // user not connected to the right chain
       return new WalletError('UserNotConnected', msg, code);
+    case -32000: // invalid input
+      if (msg.indexOf('insufficient funds') !== -1) {
+        return new WalletError('InsufficientFunds', msg, code);
+      } else {
+        return new WalletError('InternalWalletError', msg, code);
+      }
     case 4200: // method not implemented
     case -32700: // parse error
     case -32600: // invalid request
     case -32601: // method not found
     case -32602: // invalid params
     case -32603: // internal error, TODO: is it always unwrapped by metamask?
-    case -32000: // invalid input
     case -32001: // resource doesnt exists
     case -32002: // resource unavailable
     case -32004: // method not supported
