@@ -382,6 +382,45 @@ export interface BlockchainNetworkInfo {
    * @type {boolean}
    */
   isMainnet: boolean;
+  /**
+   * The block explorer URL for the network.
+   *
+   * @type {?string}
+   */
+  blockExplorerUrl?: string;
+  /**
+   * The name of the chain.
+   *
+   * @type {?string}
+   */
+  chainName?: string;
+  /**
+   * The name of the chain.
+   *
+   * @type {?BlockchainNativeCurrency}
+   */
+  nativeCurrency?: BlockchainNativeCurrency;      
+}
+
+export interface BlockchainNativeCurrency {
+  /**
+   * The name of the currency.
+   *
+   * @type {string}
+   */  
+  name: string;
+  /**
+   * The symbol of the currency.
+   *
+   * @type {string}
+   */  
+  symbol: string;
+  /**
+   * The number of decimals of the currency.
+   *
+   * @type {number}
+   */  
+  decimals: number;
 }
 
 export interface Country {
