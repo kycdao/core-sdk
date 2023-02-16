@@ -13,10 +13,10 @@
     "bundle": "webpack --config ./webpack.config.production.js",
     "build": "tsc --build",
     "clean": "tsc --build --clean",
-    "lint": "eslint ./src/**/*.ts --fix",
-    "lint:nofix": "eslint ./src/**/*.ts",
-    "format": "prettier ./src/**/*.ts --write",
-    "format:check": "prettier ./src/**/*.ts --check"
+    "lint": "eslint './src/**/*.ts' --fix",
+    "lint:nofix": "eslint './src/**/*.ts'",
+    "format": "prettier './src/**/*.ts' --write",
+    "format:check": "prettier './src/**/*.ts' --check"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.1",
