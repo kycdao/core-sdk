@@ -20,6 +20,7 @@ import {
   Blockchain,
   BlockchainAccountDetails,
   BlockchainNetwork,
+  BlockchainNetworkInfo,
   ChainAndAddress,
   Country,
   EmailData,
@@ -1150,17 +1151,17 @@ export class KycDao extends ApiBase {
   }
 
   @Catch()
-  private async switchNetworkChecked(newChainId: string) {
+  private async switchOrAddNetworkChecked(newChainDetails: BlockchainNetworkInfo) {
     if (!this.evmProvider) {
       throw new InternalError('EVM provider not found.');
     }
 
-    await this.evmProvider.switchNetwork(newChainId);
+    await this.evmProvider.switchOrAddNetwork(newChainDetails);
 
     const updatedChainId = await this.evmProvider.getChainId();
-    if (updatedChainId !== newChainId) {
+    if (updatedChainId !== newChainDetails.chainId) {
       throw new InternalError(
-        `EVM network switching failed: switchNetwork call did not throw an error, but wallet returns wrong chainId (${updatedChainId}), expected ${newChainId}.`,
+        `EVM network switching failed: switchNetwork call did not throw an error, but wallet returns wrong chainId (${updatedChainId}), expected ${newChainDetails.chainId}.`,
       );
     }
   }
@@ -1199,9 +1200,8 @@ export class KycDao extends ApiBase {
 
             // the enabled network has 'Ethereum' chain and it has a chain ID
             if (enabledNetworkDetails.blockchain === 'Ethereum' && enabledNetworkDetails.chainId) {
-              const newChainId = enabledNetworkDetails.chainId;
               try {
-                await this.switchNetworkChecked(newChainId);
+                await this.switchOrAddNetworkChecked(enabledNetworkDetails);
               } catch (e) {
                 if (this.isUserRejectError(e)) {
                   throw e;
@@ -1322,7 +1322,7 @@ export class KycDao extends ApiBase {
         const currentChainId = await this.evmProvider.getChainId();
         if (currentChainId !== newChainId) {
           try {
-            await this.switchNetworkChecked(newChainId);
+            await this.switchOrAddNetworkChecked(networkDetails);
           } catch (e) {
             if (this.isUserRejectError(e)) {
               throw e;

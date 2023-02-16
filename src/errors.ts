@@ -54,6 +54,8 @@ export const WalletErrors = ensureType<Record<string, string>>()({
   InsufficientFunds: 'Insufficient funds',
   /** An internal wallet error occured. */
   InternalWalletError: 'Internal wallet error',
+  /** The chain does not exist in the user's wallet */
+  ChainMissing: 'Chain missing error',
 });
 
 /**
@@ -334,6 +336,8 @@ function transformWalletErrorCode(code: number, msg: string) {
     case 4900: // user not connected
     case 4901: // user not connected to the right chain
       return new WalletError('UserNotConnected', msg, code);
+    case 4902: // chain does not exist in wallet
+      return new WalletError('ChainMissing', msg, code);
     case -32000: // invalid input
       if (msg.indexOf('insufficient funds') !== -1) {
         return new WalletError('InsufficientFunds', msg, code);

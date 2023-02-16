@@ -5,6 +5,7 @@ import {
   EvmTransactionReceipt,
   EvmTransactionReceiptResponse,
 } from './types';
+import { BlockchainNetworkInfo } from '../../types';
 import {
   hexEncodeAddress,
   hexEncodeString,
@@ -14,7 +15,7 @@ import {
 } from './utils';
 import BN from 'bn.js';
 import { poll, TimeOutError } from '../../utils';
-import { InternalError, TransactionError } from '../../errors';
+import { InternalError, TransactionError, WalletError, Catch } from '../../errors';
 
 export class EvmProviderWrapper {
   private provider: EvmProvider;
@@ -81,10 +82,47 @@ export class EvmProviderWrapper {
     });
   }
 
+  @Catch()
   public async switchNetwork(chainId: string): Promise<void> {
     return this.provider.request({
       method: 'wallet_switchEthereumChain',
       params: [{ chainId }],
+    });
+  }
+
+  public async switchOrAddNetwork(networkDetails: BlockchainNetworkInfo): Promise<void> {
+    // throw error if chainId is not provided
+    if (!networkDetails.chainId) {
+      throw new InternalError('switchOrAddNetwork error: ChainId for enabled network is null');
+    }
+    try {
+      await this.switchNetwork(networkDetails.chainId);
+    } catch (error) {
+      if (this.isChainMissingError(error)) {
+        await this.addNetwork(networkDetails);
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  private isChainMissingError(e: unknown): boolean {
+    return e instanceof WalletError && e.errorCode === 'ChainMissing';
+  }
+
+  public async addNetwork(networkDetails: BlockchainNetworkInfo): Promise<void> {
+    return this.provider.request({
+      method: 'wallet_addEthereumChain',
+      params: [
+        {
+          chainId: networkDetails.chainId,
+          blockExplorerUrls: [networkDetails.blockExplorerUrl],
+          chainName: networkDetails.chainName,
+          // iconUrls: [], //?string[];
+          nativeCurrency: networkDetails.nativeCurrency,
+          rpcUrls: [networkDetails.rpcUrl],
+        },
+      ],
     });
   }
 
