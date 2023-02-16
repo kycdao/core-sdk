@@ -55,7 +55,7 @@ export const WalletErrors = ensureType<Record<string, string>>()({
   /** An internal wallet error occured. */
   InternalWalletError: 'Internal wallet error',
   /** The chain does not exist in the user's wallet */
-  ChainMissing: 'Chain missing error',  
+  ChainMissing: 'Chain missing error',
 });
 
 /**

@@ -1200,7 +1200,6 @@ export class KycDao extends ApiBase {
 
             // the enabled network has 'Ethereum' chain and it has a chain ID
             if (enabledNetworkDetails.blockchain === 'Ethereum' && enabledNetworkDetails.chainId) {
-              const newChainId = enabledNetworkDetails.chainId;
               try {
                 await this.switchOrAddNetworkChecked(enabledNetworkDetails);
               } catch (e) {

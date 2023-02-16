@@ -5,9 +5,7 @@ import {
   EvmTransactionReceipt,
   EvmTransactionReceiptResponse,
 } from './types';
-import {
-  BlockchainNetworkInfo,
-} from '../../types';
+import { BlockchainNetworkInfo } from '../../types';
 import {
   hexEncodeAddress,
   hexEncodeString,
@@ -115,14 +113,16 @@ export class EvmProviderWrapper {
   public async addNetwork(networkDetails: BlockchainNetworkInfo): Promise<void> {
     return this.provider.request({
       method: 'wallet_addEthereumChain',
-      params: [{
-        chainId: networkDetails.chainId,
-        blockExplorerUrls: [networkDetails.blockExplorerUrl],
-        chainName: networkDetails.chainName,
-        // iconUrls: [], //?string[];
-        nativeCurrency: networkDetails.nativeCurrency,
-        rpcUrls: [networkDetails.rpcUrl]
-      }],
+      params: [
+        {
+          chainId: networkDetails.chainId,
+          blockExplorerUrls: [networkDetails.blockExplorerUrl],
+          chainName: networkDetails.chainName,
+          // iconUrls: [], //?string[];
+          nativeCurrency: networkDetails.nativeCurrency,
+          rpcUrls: [networkDetails.rpcUrl],
+        },
+      ],
     });
   }
 

@@ -399,7 +399,7 @@ export interface BlockchainNetworkInfo {
    *
    * @type {?BlockchainNativeCurrency}
    */
-  nativeCurrency?: BlockchainNativeCurrency;      
+  nativeCurrency?: BlockchainNativeCurrency;
 }
 
 export interface BlockchainNativeCurrency {
@@ -407,19 +407,19 @@ export interface BlockchainNativeCurrency {
    * The name of the currency.
    *
    * @type {string}
-   */  
+   */
   name: string;
   /**
    * The symbol of the currency.
    *
    * @type {string}
-   */  
+   */
   symbol: string;
   /**
    * The number of decimals of the currency.
    *
    * @type {number}
-   */  
+   */
   decimals: number;
 }
 
