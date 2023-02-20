@@ -1,30 +1,28 @@
 import { InternalError, UnreachableCaseError } from '../errors';
-import { Blockchain } from '../types';
+import { Blockchain, NetworkAndAddress, NftCheckResponse } from '../types';
 import { EvmJsonRpcProvider } from './evm/evm-json-rpc-provider';
 import { NearJsonRpcProvider } from './near/near-json-rpc-provider';
 
 export interface IKycDaoJsonRpcProvider {
-  hasValidToken(contractAddress: string, targetAddress: string): Promise<boolean>;
+  hasValidNft(targetAddress: string): Promise<boolean>;
+  getValidNfts(targetAddress: NetworkAndAddress): Promise<NftCheckResponse>;
 }
 
-export class KycDaoJsonRpcProvider {
-  private url: string;
+export class KycDaoJsonRpcProvider implements IKycDaoJsonRpcProvider {
   private provider: IKycDaoJsonRpcProvider;
 
-  constructor(blockchain: Blockchain, url: string) {
-    this.url = url;
-
+  constructor(blockchain: Blockchain, contractAddress: string, url: string) {
     switch (blockchain) {
       case 'Ethereum': {
-        this.provider = new EvmJsonRpcProvider(this.url);
+        this.provider = new EvmJsonRpcProvider(contractAddress, url);
         break;
       }
       case 'Near': {
-        this.provider = new NearJsonRpcProvider(this.url);
+        this.provider = new NearJsonRpcProvider(contractAddress, url);
         break;
       }
       case 'Solana': {
-        throw new InternalError('Solana is not supported yet');
+        throw new InternalError('Solana is not supported yet.');
         break;
       }
       default:
@@ -32,7 +30,11 @@ export class KycDaoJsonRpcProvider {
     }
   }
 
-  public async hasValidToken(contractAddress: string, targetAddress: string): Promise<boolean> {
-    return this.provider.hasValidToken(contractAddress, targetAddress);
+  public async hasValidNft(targetAddress: string): Promise<boolean> {
+    return this.provider.hasValidNft(targetAddress);
+  }
+
+  public async getValidNfts(targetAddress: NetworkAndAddress): Promise<NftCheckResponse> {
+    return this.provider.getValidNfts(targetAddress);
   }
 }

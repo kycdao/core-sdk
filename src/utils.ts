@@ -209,3 +209,7 @@ export function getMintingResult(
     imageUrl: tokenDetails.image_url,
   };
 }
+
+export function ipfsToHttps(input: string): string {
+  return input.replace('ipfs://', 'https://kycdao.infura-ipfs.io/ipfs/');
+}

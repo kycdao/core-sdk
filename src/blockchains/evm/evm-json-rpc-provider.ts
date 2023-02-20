@@ -1,15 +1,26 @@
-import { InternalError } from '../../errors';
+import { InternalError, KycDaoSDKError, sentryCaptureSDKError } from '../../errors';
 import { IKycDaoJsonRpcProvider } from '../kycdao-json-rpc-provider';
+import { NetworkAndAddress, NftCheckResponse } from '../../types';
+import { ipfsToHttps } from '../../utils';
 import { EvmRequestArguments } from './types';
+import { hexDecodeToString, hexEncodeAddress, hexEncodeUint } from './utils';
+
+interface EVMTokenMetadata {
+  name: string;
+  description: string;
+  image: string;
+}
 
 export class EvmJsonRpcProvider implements IKycDaoJsonRpcProvider {
+  private contractAddress: string;
   private url: string;
 
-  constructor(url: string) {
+  constructor(contractAddress: string, url: string) {
+    this.contractAddress = contractAddress;
     this.url = url;
   }
 
-  public async fetchJsonRpc<T>(args: EvmRequestArguments): Promise<T> {
+  private async fetchJsonRpc<T>(args: EvmRequestArguments): Promise<T> {
     const payload = {
       jsonrpc: '2.0',
       id: 0,
@@ -31,40 +42,135 @@ export class EvmJsonRpcProvider implements IKycDaoJsonRpcProvider {
       const isJson = response.headers.get('content-type')?.includes('application/json');
 
       if (!isJson) {
-        console.error(response);
-        throw new InternalError('EVM RPC response is not JSON');
+        throw new InternalError(
+          `EVM RPC response is not JSON; url: ${this.url}; request: ${JSON.stringify(
+            request,
+          )}; response: ${response}`,
+        );
       }
 
       const data = await response.json();
 
       if (data.error) {
-        console.error(data.error);
-        throw new InternalError('EVM RPC response error');
+        throw new InternalError(
+          `EVM RPC response error; url: ${this.url}; request: ${JSON.stringify(
+            request,
+          )}; error: ${JSON.stringify(data.error)}`,
+        );
       }
 
       return data.result;
-    } catch (_) {
-      throw new InternalError('EVM RPC fetch error');
+    } catch (e) {
+      throw new InternalError(
+        `EVM RPC fetch error; url: ${this.url}; request: ${JSON.stringify(request)}; error: ${e}`,
+      );
     }
   }
 
-  public async hasValidToken(contractAddress: string, targetAddress: string): Promise<boolean> {
+  private ethCall(data: string): Promise<string> {
+    const to = this.contractAddress;
+    return this.fetchJsonRpc<string>({
+      method: 'eth_call',
+      params: [{ to, data }, 'latest'],
+    });
+  }
+
+  public async hasValidNft(targetAddress: string): Promise<boolean> {
     // signature hash of 'hasValidToken(address)' contract method signature (first 4 bytes of the keccak256 hash of the signature, prefixed with 0x)
     const sigHash = '0x9d267630';
 
     // as per the Solidity contract ABI specification, the hexadecimal address, without the 0x prefix, padded to 32 bytes with zeros
-    const addressPart = (
-      targetAddress.startsWith('0x') ? targetAddress.slice(2) : targetAddress
-    ).padStart(64, '0');
+    const addressPart = hexEncodeAddress(targetAddress, { padToBytes: 32 });
 
     // the method signature hash followed by the encoded parameter values, concatenated into a single string
     const data = sigHash + addressPart;
 
-    const result = await this.fetchJsonRpc<string>({
-      method: 'eth_call',
-      params: [{ to: contractAddress, data }, 'latest'],
-    });
+    const result = await this.ethCall(data);
 
     return !!parseInt(result, 16);
+  }
+
+  private async tokenOfOwnerByIndex(targetAddress: string, index: number): Promise<number> {
+    // signature hash of 'tokenOfOwnerByIndex(address,uint256)' contract method signature (first 4 bytes of the keccak256 hash of the signature, prefixed with 0x)
+    const sigHash = '0x2f745c59';
+
+    const addressPart = hexEncodeAddress(targetAddress, { padToBytes: 32 });
+    const indexPart = hexEncodeUint(index, { padToBytes: 32 });
+
+    // the method signature hash followed by the encoded parameter values, concatenated into a single string
+    const data = sigHash + addressPart + indexPart;
+
+    const result = await this.ethCall(data);
+
+    return parseInt(result, 16);
+  }
+
+  private async tokenUri(tokenId: number): Promise<string> {
+    // signature hash of 'tokenURI(uint256)' contract method signature (first 4 bytes of the keccak256 hash of the signature, prefixed with 0x)
+    const sigHash = '0xc87b56dd';
+
+    const idPart = hexEncodeUint(tokenId, { padToBytes: 32 });
+
+    // the method signature hash followed by the encoded parameter values, concatenated into a single string
+    const data = sigHash + idPart;
+
+    const result = await this.ethCall(data);
+
+    return hexDecodeToString(result);
+  }
+
+  public async getValidNfts(targetAddress: NetworkAndAddress): Promise<NftCheckResponse> {
+    try {
+      const hasValidNft = await this.hasValidNft(targetAddress.address);
+
+      if (hasValidNft) {
+        // get the ID of the first token of the user
+        const tokenId = await this.tokenOfOwnerByIndex(targetAddress.address, 0);
+        // get the URI pointing to the metadata of the token
+        const tokenUri = await this.tokenUri(tokenId);
+        // fetch the metadata
+        const response = await fetch(ipfsToHttps(tokenUri));
+        const isJson = response.headers.get('content-type')?.includes('application/json');
+
+        if (!isJson) {
+          console.error(response);
+          throw new InternalError('EVM token metadata is not JSON');
+        }
+
+        const data: EVMTokenMetadata = await response.json();
+        // convert the image URL to HTTPS in case it's IPFS
+        data.image = ipfsToHttps(data.image);
+
+        return {
+          networkAndAddress: targetAddress,
+          hasValidNft: true,
+          tokens: [data],
+        };
+      } else {
+        return {
+          networkAndAddress: targetAddress,
+          hasValidNft: false,
+        };
+      }
+    } catch (e) {
+      // Fater: I added this here for now because otherwise these errors would not get reported to Sentry.
+      // We can probably do this with the modification of the Catch decorator that can return values insted of throwing and using that more universally.
+      let error;
+
+      if (e instanceof KycDaoSDKError) {
+        error = e;
+      } else {
+        error = new InternalError(String(e));
+      }
+
+      console.error(error);
+      sentryCaptureSDKError(error);
+      const errorMessage = error.toString();
+
+      return {
+        networkAndAddress: targetAddress,
+        error: errorMessage,
+      };
+    }
   }
 }

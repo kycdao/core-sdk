@@ -9,6 +9,25 @@ function ensureType<T>() {
   return <Actual extends T>(a: Actual) => a;
 }
 
+export interface SentryTags {
+  errorCode?: ErrorCode;
+  referenceId?: string;
+  errorCodeFromWallet?: number;
+}
+
+export function sentryCaptureSDKError(error: KycDaoSDKError, tags?: SentryTags) {
+  const sentry = (window as any).Sentry as any;
+  if (sentry != null) {
+    sentry.captureException(error, {
+      tags: {
+        ...tags,
+        errorCode: error.errorCode,
+        referenceId: error.referenceId,
+      },
+    });
+  }
+}
+
 /**
  * Error codes for the {@link StatusError} class
  * @enum {string}
@@ -311,16 +330,7 @@ function publicErrorHandler(error: unknown): void {
   }
 
   // report to sentry
-  const sentry = (window as any).Sentry as any;
-  if (sentry != null) {
-    sentry.captureException(err, {
-      tags: {
-        errorCode: err.errorCode,
-        referenceId: err.referenceId,
-        errorCodeFromWallet,
-      },
-    });
-  }
+  sentryCaptureSDKError(err, { errorCodeFromWallet });
 
   // TODO only log UnexpectedErrors?
   console.error(err);
