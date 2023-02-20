@@ -795,13 +795,16 @@ __metadata:
   linkType: hard
 
 "@solana/wallet-adapter-base@npm:^0.9.17, @solana/wallet-adapter-base@npm:^0.9.18":
-  version: 0.9.18
-  resolution: "@solana/wallet-adapter-base@npm:0.9.18"
+  version: 0.9.21
+  resolution: "@solana/wallet-adapter-base@npm:0.9.21"
   dependencies:
+    "@solana/wallet-standard-features": "npm:^1.0.0"
+    "@wallet-standard/base": "npm:^1.0.1"
+    "@wallet-standard/features": "npm:^1.0.1"
     eventemitter3: "npm:^4.0.0"
   peerDependencies:
-    "@solana/web3.js": ^1.61.0
-  checksum: d0e3f343e93c2f45c6fdeedd865e97377ea686ff0a921e9ab8cbf27aab35b83361e8de4543e924df3dda38433c0039870b9a94ab76cda14822b84f00e4b487b2
+    "@solana/web3.js": ^1.58.0
+  checksum: 6a95deb7bab5a7b2be4b13d9282973e2d473c09cf89b0e106e328630e8005dd085076d7fbe4504dac628152b43ad143f93b5beccc5e25b7ff1fddc16e8c3d0e2
   languageName: node
   linkType: hard
 
@@ -1327,6 +1330,16 @@ __metadata:
   peerDependencies:
     "@solana/web3.js": ^1.61.0
   checksum: 560818de98b1c3c951624ddfcfaea92649faf34eaf4563cc8d4b3cf47fd8a5458985b7dffc6b76d4c476ae461e456d18a5ef6fe9ba379bdf3fc7805c89998cb1
+  languageName: node
+  linkType: hard
+
+"@solana/wallet-standard-features@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@solana/wallet-standard-features@npm:1.0.0"
+  dependencies:
+    "@wallet-standard/base": "npm:^1.0.0"
+    "@wallet-standard/features": "npm:^1.0.0"
+  checksum: 5de77f80ac2c3b2964c18772bef7ccad05216edbe569e3e27a305f1300c1545b558fab9ffb0d34d323a398b74c1d1b206152a2a44dfa24a9eddf1100e371b13b
   languageName: node
   linkType: hard
 
@@ -2122,6 +2135,22 @@ __metadata:
     "@typescript-eslint/types": "npm:5.51.0"
     eslint-visitor-keys: "npm:^3.3.0"
   checksum: 29ab53ea571f1a02284935cf7852e56695dfdbde28db89613ebd8da40f183e507708a2c990629c5c088675cdf297b6bbb89a3f3fd9064c7097a76eebc0f9de85
+  languageName: node
+  linkType: hard
+
+"@wallet-standard/base@npm:^1.0.0, @wallet-standard/base@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "@wallet-standard/base@npm:1.0.1"
+  checksum: 5fdedb830089a188931b731c56be591124e0f22716db527f61798b6d9d471632305ff9cfdfbe16687130fbfda30648a04193087c0d89257f4734e8a5cc13cc9d
+  languageName: node
+  linkType: hard
+
+"@wallet-standard/features@npm:^1.0.0, @wallet-standard/features@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "@wallet-standard/features@npm:1.0.1"
+  dependencies:
+    "@wallet-standard/base": "npm:^1.0.1"
+  checksum: 4941454e2619920481af7745fd130db57f350a93c22d7e51d239bfc413bcd88df78534b247518c2989149d9bb326ddca7aa0afd162ee9fa5f7700a27a3cdfea8
   languageName: node
   linkType: hard
 
