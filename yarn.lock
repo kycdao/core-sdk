@@ -8124,8 +8124,8 @@ __metadata:
   linkType: hard
 
 "styled-components@npm:^5.3.5":
-  version: 5.3.5
-  resolution: "styled-components@npm:5.3.5"
+  version: 5.3.6
+  resolution: "styled-components@npm:5.3.6"
   dependencies:
     "@babel/helper-module-imports": "npm:^7.0.0"
     "@babel/traverse": "npm:^7.4.5"
@@ -8141,7 +8141,7 @@ __metadata:
     react: ">= 16.8.0"
     react-dom: ">= 16.8.0"
     react-is: ">= 16.8.0"
-  checksum: f74a33b2597ad9ddd6233ca2afccc9462a74daa8cb16a44b5e9ca2628e0966587be2f94a1376ef75d75db717faf5e8d042e1a0b2e2b6b7ce10116c26050342f5
+  checksum: bdbeb8f491267f8dca6ad01bdbb604b7a6b81e0da0f7cd30d03e4aa3f9a0b1958ec083bb783027756fcfe3ae51286ddf105867c70909930050bb7d23a01bc586
   languageName: node
   linkType: hard
 
