@@ -10,24 +10,24 @@
     <meta name="generator" content="Retype 2.4.0">
 
     <!-- Primary Meta Tags -->
-    <title>Country</title>
-    <meta name="title" content="Country">
-    <meta name="description" content="@kycdao/kycdao-sdk - v0.6.4/ Country" />
+    <title>TokenMetadata</title>
+    <meta name="title" content="TokenMetadata">
+    <meta name="description" content="@kycdao/kycdao-sdk - v0.6.4/ TokenMetadata" />
 
     <!-- Canonical -->
-    <link rel="canonical" href="https://kycdao.github.io/kycdao-js-sdk/api/interfaces/country/" />
+    <link rel="canonical" href="https://kycdao.github.io/kycdao-js-sdk/api/interfaces/tokenmetadata/" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://kycdao.github.io/kycdao-js-sdk/api/interfaces/country/">
-    <meta property="og:title" content="Country">
-    <meta property="og:description" content="@kycdao/kycdao-sdk - v0.6.4/ Country">
+    <meta property="og:url" content="https://kycdao.github.io/kycdao-js-sdk/api/interfaces/tokenmetadata/">
+    <meta property="og:title" content="TokenMetadata">
+    <meta property="og:description" content="@kycdao/kycdao-sdk - v0.6.4/ TokenMetadata">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://kycdao.github.io/kycdao-js-sdk/api/interfaces/country/">
-    <meta property="twitter:title" content="Country">
-    <meta property="twitter:description" content="@kycdao/kycdao-sdk - v0.6.4/ Country">
+    <meta property="twitter:url" content="https://kycdao.github.io/kycdao-js-sdk/api/interfaces/tokenmetadata/">
+    <meta property="twitter:title" content="TokenMetadata">
+    <meta property="twitter:description" content="@kycdao/kycdao-sdk - v0.6.4/ TokenMetadata">
 
     <script>(function () { var el = document.documentElement, m = localStorage.getItem("/kycdao-js-sdk/doc_theme"), wm = window.matchMedia; if (m === "dark" || (!m && wm && wm("(prefers-color-scheme: dark)").matches)) { el.classList.add("dark") } else { el.classList.remove("dark") } })();</script>
 
@@ -156,13 +156,16 @@
                                 <div id="docs-sidebar-right-toggle"></div>
                 
                                 <!-- Page content  -->
-<doc-anchor-target id="country" class="break-words">
+<doc-anchor-target id="tokenmetadata" class="break-words">
     <h1>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#country">#</doc-anchor-trigger>
-        <span>Country</span>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#tokenmetadata">#</doc-anchor-trigger>
+        <span>TokenMetadata</span>
     </h1>
 </doc-anchor-target>
-<p><a href="../../">@kycdao/kycdao-sdk - v0.6.4</a> / Country</p>
+<p><a href="../../">@kycdao/kycdao-sdk - v0.6.4</a> / TokenMetadata</p>
+<p>Metadata of a kycDAO NFT.</p>
+<p><strong><code v-pre>Interface</code></strong></p>
+<p>TokenMetadata</p>
 <doc-anchor-target id="table-of-contents">
     <h2>
         <doc-anchor-trigger class="header-anchor-trigger" to="#table-of-contents">#</doc-anchor-trigger>
@@ -176,7 +179,8 @@
     </h3>
 </doc-anchor-target>
 <ul>
-<li><doc-anchor-trigger to="#iso_cca2">iso_cca2</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#description">description</doc-anchor-trigger></li>
+<li><doc-anchor-trigger to="#image">image</doc-anchor-trigger></li>
 <li><doc-anchor-trigger to="#name">name</doc-anchor-trigger></li>
 </ul>
 <doc-anchor-target id="properties-1">
@@ -185,21 +189,37 @@
         <span>Properties</span>
     </h2>
 </doc-anchor-target>
-<doc-anchor-target id="iso_cca2">
+<doc-anchor-target id="description">
     <h3>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#iso_cca2">#</doc-anchor-trigger>
-        <span>iso_cca2</span>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#description">#</doc-anchor-trigger>
+        <span>description</span>
     </h3>
 </doc-anchor-target>
-<p>• <strong>iso_cca2</strong>: <code v-pre>string</code></p>
-<p>Alphanumeric, 2 character ISO code of the country.</p>
+<p>• <strong>description</strong>: <code v-pre>string</code></p>
+<p>The description of the token.</p>
 <doc-anchor-target id="defined-in">
     <h4>
         <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/core-sdk/blob/8de5018/src/types.ts#L438">types.ts:438</a></p>
+<p><a href="https://github.com/kycdao/core-sdk/blob/8de5018/src/types.ts#L482">types.ts:482</a></p>
+<hr />
+<doc-anchor-target id="image">
+    <h3>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#image">#</doc-anchor-trigger>
+        <span>image</span>
+    </h3>
+</doc-anchor-target>
+<p>• <strong>image</strong>: <code v-pre>string</code></p>
+<p>The URI of the image associated with the token.</p>
+<doc-anchor-target id="defined-in-1">
+    <h4>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-1">#</doc-anchor-trigger>
+        <span>Defined in</span>
+    </h4>
+</doc-anchor-target>
+<p><a href="https://github.com/kycdao/core-sdk/blob/8de5018/src/types.ts#L488">types.ts:488</a></p>
 <hr />
 <doc-anchor-target id="name">
     <h3>
@@ -208,14 +228,14 @@
     </h3>
 </doc-anchor-target>
 <p>• <strong>name</strong>: <code v-pre>string</code></p>
-<p>English name of the country.</p>
-<doc-anchor-target id="defined-in-1">
+<p>The name of the token.</p>
+<doc-anchor-target id="defined-in-2">
     <h4>
-        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-1">#</doc-anchor-trigger>
+        <doc-anchor-trigger class="header-anchor-trigger" to="#defined-in-2">#</doc-anchor-trigger>
         <span>Defined in</span>
     </h4>
 </doc-anchor-target>
-<p><a href="https://github.com/kycdao/core-sdk/blob/8de5018/src/types.ts#L432">types.ts:432</a></p>
+<p><a href="https://github.com/kycdao/core-sdk/blob/8de5018/src/types.ts#L476">types.ts:476</a></p>
 
                                 
                                 <!-- Required only on API pages -->
@@ -225,20 +245,20 @@
                             
                                 <nav class="flex mt-14">
                                     <div class="w-1/2">
-                                        <a class="px-5 py-4 h-full flex items-center break-normal font-medium text-blue-500 dark:text-blue-400 border border-gray-300 hover:border-gray-400 dark:border-dark-650 dark:hover:border-dark-450 rounded-l-lg transition-colors duration-150 relative hover:z-5" href="../../../api/interfaces/chainandaddress/">
+                                        <a class="px-5 py-4 h-full flex items-center break-normal font-medium text-blue-500 dark:text-blue-400 border border-gray-300 hover:border-gray-400 dark:border-dark-650 dark:hover:border-dark-450 rounded-l-lg transition-colors duration-150 relative hover:z-5" href="../../../api/interfaces/serverstatus/">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="mr-3" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" overflow="visible"><path d="M19 11H7.41l5.29-5.29a.996.996 0 10-1.41-1.41l-7 7a1 1 0 000 1.42l7 7a1.024 1.024 0 001.42-.01.996.996 0 000-1.41L7.41 13H19c.55 0 1-.45 1-1s-.45-1-1-1z" /><path fill="none" d="M0 0h24v24H0z" /></svg>
                                             <span>
                                                 <span class="block text-xs font-normal text-gray-400 dark:text-dark-400">Previous</span>
-                                                <span class="block mt-1">Chain​And​Address</span>
+                                                <span class="block mt-1">Server​Status</span>
                                             </span>
                                         </a>
                                     </div>
                             
                                     <div class="w-1/2">
-                                        <a class="px-5 py-4 -mx-px h-full flex items-center justify-end break-normal font-medium text-blue-500 dark:text-blue-400 border border-gray-300 hover:border-gray-400 dark:border-dark-650 dark:hover:border-dark-450 rounded-r-lg transition-colors duration-150 relative hover:z-5" href="../../../api/interfaces/emaildata/">
+                                        <a class="px-5 py-4 -mx-px h-full flex items-center justify-end break-normal font-medium text-blue-500 dark:text-blue-400 border border-gray-300 hover:border-gray-400 dark:border-dark-650 dark:hover:border-dark-450 rounded-r-lg transition-colors duration-150 relative hover:z-5" href="../../../api/interfaces/verificationdata/">
                                             <span>
                                                 <span class="block text-xs font-normal text-right text-gray-400 dark:text-dark-400">Next</span>
-                                                <span class="block mt-1">Email​Data</span>
+                                                <span class="block mt-1">Verification​Data</span>
                                             </span>
                                             <svg xmlns="http://www.w3.org/2000/svg" class="ml-3" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" overflow="visible"><path d="M19.92 12.38a1 1 0 00-.22-1.09l-7-7a.996.996 0 10-1.41 1.41l5.3 5.3H5c-.55 0-1 .45-1 1s.45 1 1 1h11.59l-5.29 5.29a.996.996 0 000 1.41c.19.2.44.3.7.3s.51-.1.71-.29l7-7c.09-.09.16-.21.21-.33z" /><path fill="none" d="M0 0h24v24H0z" /></svg>
                                         </a>
@@ -282,6 +302,6 @@
 
     <div id="docs-overlay-target"></div>
 
-    <script>window.__DOCS__ = { "title": "Country", level: 3, icon: "file", hasPrism: false, hasMermaid: false, hasMath: false }</script>
+    <script>window.__DOCS__ = { "title": "TokenMetadata", level: 3, icon: "file", hasPrism: false, hasMermaid: false, hasMath: false }</script>
 </body>
 </html>
