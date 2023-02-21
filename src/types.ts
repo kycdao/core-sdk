@@ -439,7 +439,7 @@ export interface Country {
 }
 
 /**
- * Options for the {@link KycDao.hasValidNft} method.
+ * Options for the valid NFT checker and getter methods (e.g. {@link KycDao.hasValidNft} and {@link KycDao.getValidNfts}).
  *
  * @interface NftCheckOptions
  * @typedef {NftCheckOptions}
@@ -459,6 +459,33 @@ export interface NftCheckOptions {
    * @type {string}
    */
   rpcUrl?: string;
+}
+
+/**
+ * Metadata of a kycDAO NFT.
+ *
+ * @interface TokenMetadata
+ * @typedef {TokenMetadata}
+ */
+export interface TokenMetadata {
+  /**
+   * The name of the token.
+   *
+   * @type {string}
+   */
+  name: string;
+  /**
+   * The description of the token.
+   *
+   * @type {string}
+   */
+  description: string;
+  /**
+   * The URI of the image associated with the token.
+   *
+   * @type {string}
+   */
+  image: string;
 }
 
 /**
@@ -488,6 +515,13 @@ export interface NftCheckResponse {
    * @type {?string}
    */
   error?: string;
+  /**
+   * List of tokens that match the check request.\
+   * It will be defined only if {@link hasValidNft} is `true` and the request involved querying the NFT data (e.g. {@link KycDao.getValidNfts}). It will be undefined otherwise.
+   *
+   * @type {?TokenMetadata[]}
+   */
+  tokens?: TokenMetadata[];
 }
 
 /**
@@ -865,10 +899,4 @@ export interface MintingAuthorizationResponse {
   token: TokenDetails;
   metadata_url?: string;
   transaction?: string;
-}
-
-export interface TokenMetadata {
-  name: string;
-  description: string;
-  image: string;
 }

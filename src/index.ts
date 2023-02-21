@@ -113,6 +113,7 @@ export {
   SentryConfiguration,
   ServerStatus,
   SolanaBlockchainNetwork,
+  TokenMetadata,
   VerificationData,
   VerificationProvider,
   VerificationProviderOptions,
@@ -1050,11 +1051,11 @@ export class KycDao extends ApiBase {
     return chainAndAddress;
   }
 
-  private async checkValidNft(
+  private getRpcProviderForWallet(
     verificationType: VerificationType,
     chainAndAddress: ChainAndAddress,
-  ): Promise<boolean> {
-    const { address, blockchain, blockchainNetwork } = chainAndAddress;
+  ): KycDaoJsonRpcProvider {
+    const { blockchain, blockchainNetwork } = chainAndAddress;
 
     // TODO - Maybe we should start using multiple RPC endpoints and retry with a different one after a fail?
     const rpcUrl = BlockchainNetworkDetails[blockchainNetwork].rpcUrl;
@@ -1066,9 +1067,16 @@ export class KycDao extends ApiBase {
       throw new InternalError('Smart contract address not found.');
     }
 
-    const rpcProvider = new KycDaoJsonRpcProvider(blockchain, rpcUrl);
+    return new KycDaoJsonRpcProvider(blockchain, contractAddress, rpcUrl);
+  }
 
-    return await rpcProvider.hasValidToken(contractAddress, address);
+  private async checkValidNft(
+    verificationType: VerificationType,
+    chainAndAddress: ChainAndAddress,
+  ): Promise<boolean> {
+    const provider = this.getRpcProviderForWallet(verificationType, chainAndAddress);
+
+    return provider.hasValidNft(chainAndAddress.address);
   }
 
   /**
@@ -1080,6 +1088,8 @@ export class KycDao extends ApiBase {
    * For maximum security add the verification check directly to your smart contract or use server side verification.
    * @public
    * @async
+   * @param {VerificationType} verificationType
+   * @param {?NftCheckOptions} [options]
    * @returns {Promise<boolean>}
    */
   @Catch()
@@ -1090,6 +1100,30 @@ export class KycDao extends ApiBase {
     const chainAndAddress = this.getChainAndAddressForNftCheck(options);
 
     return await this.checkValidNft(verificationType, chainAndAddress);
+  }
+
+  /**
+   * Queries the valid tokens of the provided (or the currently connected) wallet.
+   *
+   * @remarks
+   * **Security note:**\
+   * The result of this request is prone to client side manipulation.\
+   * For maximum security add the verification check directly to your smart contract or use server side verification.
+   * @public
+   * @async
+   * @param {VerificationType} verificationType
+   * @param {?NftCheckOptions} [options]
+   * @returns {Promise<NftCheckResponse>}
+   */
+  @Catch()
+  public async getValidNfts(
+    verificationType: VerificationType,
+    options?: NftCheckOptions,
+  ): Promise<NftCheckResponse> {
+    const chainAndAddress = this.getChainAndAddressForNftCheck(options);
+    const provider = this.getRpcProviderForWallet(verificationType, chainAndAddress);
+
+    return await provider.getValidNfts(chainAndAddress);
   }
 
   /**
@@ -1139,6 +1173,7 @@ export class KycDao extends ApiBase {
             resolve({ networkAndAddress, hasValidNft });
           })
           .catch((reason) => {
+            // TODO these errors are not reported, should be handled better. See EvmJsonRpcProvider.getValidNfts.
             resolve({ networkAndAddress, error: String(reason) });
           });
       });
