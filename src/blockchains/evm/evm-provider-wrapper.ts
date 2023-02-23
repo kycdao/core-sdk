@@ -257,8 +257,8 @@ export class EvmProviderWrapper {
               'latest',
             ],
           }),
-        2000,
-        15,
+        5000,
+        16,
         {
           retryOnErrorPredicate: (e) => this.isRepeatableError(e),
           useExponentialBackoff: false,
@@ -298,8 +298,8 @@ export class EvmProviderWrapper {
     try {
       gasLimitHex = await poll(
         () => this.estimateGas(data, toAddress, fromAddress, mintCostWithSlippageHex),
-        2000,
-        15,
+        5000,
+        8,
         {
           retryOnErrorPredicate: (e) => this.isRepeatableError(e),
           useExponentialBackoff: false,
@@ -319,7 +319,7 @@ export class EvmProviderWrapper {
     const providerGasPriceHex = await this.getGasPrice();
     const providerGasPriceDec = parseInt(providerGasPriceHex, 16);
     const minGasPriceDec = parseUnits(50, 'gwei');
-    const gasPriceDec = Math.max(providerGasPriceDec, minGasPriceDec);
+    const gasPriceDec = Math.max(Math.round(providerGasPriceDec * 1.2), minGasPriceDec);
     const gasPriceHex = hexEncodeUint(gasPriceDec, {
       addPrefix: true,
     });

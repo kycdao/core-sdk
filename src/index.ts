@@ -426,8 +426,8 @@ export class KycDao extends ApiBase {
     txHash: string,
   ): Promise<Transaction> {
     try {
-      // poll with exponential backoff, 10 queries total, last is about 128 seconds after the first
-      return await poll(() => this.getTx(chainAndAddress, txHash), 250, 9, {
+      // poll every 5 seconds for 3 minutes
+      return await poll(() => this.getTx(chainAndAddress, txHash), 5000, 12 * 3, {
         resolvePredicate: (r) => {
           return r.status === 'Success' || r.status === 'Failure';
         },
@@ -439,7 +439,7 @@ export class KycDao extends ApiBase {
             return false;
           }
         },
-        useExponentialBackoff: true,
+        useExponentialBackoff: false,
       });
     } catch (e) {
       if (e instanceof Error && e.message === 'TIMEOUT') {
