@@ -518,7 +518,7 @@ export class KycDao extends ApiBase {
 
     if (!finalBlockchainNetworks.length) {
       throw new ConfigurationError(
-        `No available networks were found in configuration. Available networks are: ${allBlockchainNetworks.join(
+        `No available networks were found in configuration. Available networks are: ${availableBlockchainNetworks.join(
           ', ',
         )}.`,
       );
