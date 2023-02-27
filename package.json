@@ -59,7 +59,8 @@
     "@solana/wallet-adapter-wallets": "^0.19.15",
     "@solana/web3.js": "^1.73.3",
     "bn.js": "^5.2.1",
-    "bs58": "^5.0.0"
+    "bs58": "^5.0.0",
+    "persona": "^4.7"
   },
   "files": [
     "dist"
