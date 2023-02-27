@@ -12,7 +12,7 @@ export class NearJsonRpcProvider implements IKycDaoJsonRpcProvider {
   constructor(contractAddress: string, url: string) {
     this.contractAddress = contractAddress;
     this.url = url;
-    this.provider = new JsonRpcProvider(this.url);
+    this.provider = new JsonRpcProvider({ url });
   }
 
   public async hasValidNft(targetAddress: string): Promise<boolean> {

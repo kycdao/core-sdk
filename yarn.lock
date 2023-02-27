@@ -497,8 +497,7 @@ __metadata:
     eslint: "npm:^8.35.0"
     eslint-config-prettier: "npm:^8.6.0"
     eslint-plugin-prettier: "npm:^4.2.1"
-    near-api-js: "npm:^0.45.1"
-    persona: "npm:^4.7.2"
+    near-api-js: "npm:^1.1.0"
     prettier: "npm:^2.8.4"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
@@ -514,7 +513,7 @@ __metadata:
     webpack-cli: "npm:^5.0.1"
     webpack-dev-server: "npm:^4.11.1"
   peerDependencies:
-    near-api-js: ^0.45
+    near-api-js: ^1
     persona: ^4
     react: ^18
     react-dom: ^18
@@ -3781,13 +3780,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"core-js@npm:^3.28.0":
-  version: 3.29.0
-  resolution: "core-js@npm:3.29.0"
-  checksum: d210b9d49b0f79a2dcef0679e5728fee3c7923d5cfe4e3c7da12313aa16f0ad0cb4e261aa0f14adfe66958bbe011f03da8b636c4f44b3578c5e454d34c41fc83
-  languageName: node
-  linkType: hard
-
 "core-util-is@npm:~1.0.0":
   version: 1.0.3
   resolution: "core-util-is@npm:1.0.3"
@@ -6463,11 +6455,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"near-api-js@npm:^0.45.1":
-  version: 0.45.1
-  resolution: "near-api-js@npm:0.45.1"
+"near-api-js@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "near-api-js@npm:1.1.0"
   dependencies:
-    bn.js: "npm:5.2.0"
+    bn.js: "npm:5.2.1"
     borsh: "npm:^0.7.0"
     bs58: "npm:^4.0.0"
     depd: "npm:^2.0.0"
@@ -6478,7 +6470,7 @@ __metadata:
     node-fetch: "npm:^2.6.1"
     text-encoding-utf-8: "npm:^1.0.2"
     tweetnacl: "npm:^1.0.1"
-  checksum: dca526238d51056ea53cb27adc5ef164ccc86483e9347252e0236df362d0b15e8f8f46721780b1407012502df2aa6472fdce41a7aac80fdc7d1776c7b3afaaec
+  checksum: 7a21ebedb01c6efe30403bf9ba1bf148804b8b31c28ea6313bc61c6d65a27d874047281666cffaf6a7108b5712c3903ab0e699b19c7709a3490f1458c0b644cd
   languageName: node
   linkType: hard
 
@@ -6901,21 +6893,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"persona@npm:^4.7.2":
-  version: 4.7.2
-  resolution: "persona@npm:4.7.2"
-  dependencies:
-    core-js: "npm:^3.0.0"
-    lodash: "npm:^4.17.21"
-    qs: "npm:^6.7.0"
-  peerDependencies:
-    react: ">= 16"
-    react-dom: ">= 16"
-    styled-components: ">= 4"
-  checksum: 1c35ebbf38bf53ac7c5eb7b332aa87982dc8a762cbcaf94e2718ffaa1f000231b9a936996317edf18ceaac65803a8927481fc81747f9817b8b4ac693ae726632
-  languageName: node
-  linkType: hard
-
 "picocolors@npm:^1.0.0":
   version: 1.0.0
   resolution: "picocolors@npm:1.0.0"
@@ -7150,7 +7127,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"qs@npm:6.11.0, qs@npm:^6.7.0":
+"qs@npm:6.11.0":
   version: 6.11.0
   resolution: "qs@npm:6.11.0"
   dependencies:
