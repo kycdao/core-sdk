@@ -2,7 +2,9 @@ const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
 const webpack = require('webpack');
 
-module.exports = {
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+
+const webpackConfig = {
   mode: 'production',
   entry: './src/browser-init.ts',
   module: {
@@ -53,3 +55,9 @@ module.exports = {
     ],
   },
 };
+
+if (process.env.ANALIZE) {
+  webpackConfig.plugins.push(new BundleAnalyzerPlugin());
+}
+
+module.exports = webpackConfig;

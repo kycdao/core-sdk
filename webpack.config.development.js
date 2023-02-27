@@ -1,7 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 
-module.exports = {
+const webpackConfig = {
   mode: 'development',
   entry: './src/browser-init.ts',
   target: 'web',
@@ -51,3 +51,9 @@ module.exports = {
     },
   },
 };
+
+if (process.env.ANALIZE) {
+  webpackConfig.plugins.push(new BundleAnalyzerPlugin());
+}
+
+module.exports = webpackConfig;

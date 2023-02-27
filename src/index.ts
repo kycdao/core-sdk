@@ -351,7 +351,7 @@ export class KycDao extends ApiBase {
           throw new ConfigurationError('Near SDK not initialized.');
         }
 
-        const provider = new JsonRpcProvider(this.near.archival);
+        const provider = new JsonRpcProvider({ url: this.near.archival });
         try {
           const outcome = await provider.txStatus(txHash, this.near.contractName);
 
@@ -1429,7 +1429,7 @@ export class KycDao extends ApiBase {
 
         if (!this.near.wallet.isSignedIn()) {
           // redirects to the wallet
-          await this.near.wallet.requestSignIn(this.near.contractName, 'kycDAO');
+          await this.near.wallet.requestSignIn({ contractId: this.near.contractName });
           // the redirect is non-blocking, so we return a promise that never resolves
           // to stop code executing until the redirect happens
           return new Promise(() => {
