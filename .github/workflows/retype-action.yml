@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up Node and Yarn packages with caching
-        uses: ./.github/actions/install-and-cache-node-and-yarn
+        uses: ./.github/actions/install-and-cache-node-and-pnpm
 
       - name: Run TypeDoc to generate API reference
         run: yarn typedoc
