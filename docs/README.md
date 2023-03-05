@@ -6,7 +6,7 @@ order: 0
 
 This SDK is designed to enable web3 projects to integrate kycDAO verification flow into their website with the maximum flexibility around UI/UX.
 
-kycDAO JS/TS SDK canonical URL: https://github.com/kycdao/kycdao-js-sdk
+kycDAO JS/TS SDK canonical URL: https://github.com/kycdao/core-sdk
 
 ## Integration steps
 
