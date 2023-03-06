@@ -19,7 +19,7 @@ jobs:
         uses: ./.github/actions/install-and-cache-node-and-pnpm
 
       - name: Run TypeDoc to generate API reference
-        run: yarn typedoc
+        run: pnpm typedoc
 
       - uses: retypeapp/action-build@latest
 
