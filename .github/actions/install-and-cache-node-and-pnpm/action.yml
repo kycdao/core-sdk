@@ -4,6 +4,10 @@ description: Set up Node and PNPM packages with caching
 runs:
   using: "composite"
   steps:
+    - uses: pnpm/action-setup@v2
+      with:
+        version: 7
+        
     - name: Setup Node
       uses: actions/setup-node@v3
       with:
