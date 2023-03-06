@@ -10,14 +10,14 @@ env:
 
 jobs:
   setup:
-    name: Set up Node and Yarn packages
+    name: Set up Node and PNPM packages
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Node and Yarn packages with caching
-        uses: ./.github/actions/install-and-cache-node-and-yarn
+      - name: Set up Node and PNPM packages with caching
+        uses: ./.github/actions/install-and-cache-node-and-pnpm
 
   lint:
     name: Run linter check
@@ -27,11 +27,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Node and Yarn packages with caching
-        uses: ./.github/actions/install-and-cache-node-and-yarn
+      - name: Set up Node and PNPM packages with caching
+        uses: ./.github/actions/install-and-cache-node-and-pnpm
 
       - name: Run linter check
-        run: yarn lint:nofix
+        run: pnpm lint:nofix
 
   prettier:
     name: Run prettier check
@@ -41,11 +41,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Node and Yarn packages with caching
-        uses: ./.github/actions/install-and-cache-node-and-yarn
+      - name: Set up Node and PNPM packages with caching
+        uses: ./.github/actions/install-and-cache-node-and-pnpm
 
       - name: Run prettier check
-        run: yarn format:check
+        run: pnpm format:check
 
   build:
     name: Build, bundle and cache package
@@ -57,11 +57,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Node and Yarn packages with caching
-        uses: ./.github/actions/install-and-cache-node-and-yarn
+      - name: Set up Node and PNPM packages with caching
+        uses: ./.github/actions/install-and-cache-node-and-pnpm
 
       - name: Build package
-        run: yarn build && yarn bundle
+        run: pnpm build && pnpm bundle
 
       - name: Cache package
         if: env.PUBLISH == 'true'
