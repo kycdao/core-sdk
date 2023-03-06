@@ -1,4 +1,4 @@
-import { InternalError, KycDaoSDKError, sentryCaptureSDKError } from '../../errors';
+import { Catch, InternalError, KycDaoSDKError } from '../../errors';
 import { IKycDaoJsonRpcProvider } from '../kycdao-json-rpc-provider';
 import { NetworkAndAddress, NftCheckResponse } from '../../types';
 import { ipfsToHttps } from '../../utils';
@@ -119,42 +119,45 @@ export class EvmJsonRpcProvider implements IKycDaoJsonRpcProvider {
     return hexDecodeToString(result);
   }
 
+  @Catch()
+  private async getValidNftsCore(targetAddress: NetworkAndAddress): Promise<NftCheckResponse> {
+    const hasValidNft = await this.hasValidNft(targetAddress.address);
+
+    if (hasValidNft) {
+      // get the ID of the first token of the user
+      const tokenId = await this.tokenOfOwnerByIndex(targetAddress.address, 0);
+      // get the URI pointing to the metadata of the token
+      const tokenUri = await this.tokenUri(tokenId);
+      // fetch the metadata
+      const response = await fetch(ipfsToHttps(tokenUri));
+      const isJson = response.headers.get('content-type')?.includes('application/json');
+
+      if (!isJson) {
+        console.error(response);
+        throw new InternalError('EVM token metadata is not JSON');
+      }
+
+      const data: EVMTokenMetadata = await response.json();
+      // convert the image URL to HTTPS in case it's IPFS
+      data.image = ipfsToHttps(data.image);
+
+      return {
+        networkAndAddress: targetAddress,
+        hasValidNft: true,
+        tokens: [data],
+      };
+    } else {
+      return {
+        networkAndAddress: targetAddress,
+        hasValidNft: false,
+      };
+    }
+  }
+
   public async getValidNfts(targetAddress: NetworkAndAddress): Promise<NftCheckResponse> {
     try {
-      const hasValidNft = await this.hasValidNft(targetAddress.address);
-
-      if (hasValidNft) {
-        // get the ID of the first token of the user
-        const tokenId = await this.tokenOfOwnerByIndex(targetAddress.address, 0);
-        // get the URI pointing to the metadata of the token
-        const tokenUri = await this.tokenUri(tokenId);
-        // fetch the metadata
-        const response = await fetch(ipfsToHttps(tokenUri));
-        const isJson = response.headers.get('content-type')?.includes('application/json');
-
-        if (!isJson) {
-          console.error(response);
-          throw new InternalError('EVM token metadata is not JSON');
-        }
-
-        const data: EVMTokenMetadata = await response.json();
-        // convert the image URL to HTTPS in case it's IPFS
-        data.image = ipfsToHttps(data.image);
-
-        return {
-          networkAndAddress: targetAddress,
-          hasValidNft: true,
-          tokens: [data],
-        };
-      } else {
-        return {
-          networkAndAddress: targetAddress,
-          hasValidNft: false,
-        };
-      }
+      return this.getValidNftsCore(targetAddress);
     } catch (e) {
-      // Fater: I added this here for now because otherwise these errors would not get reported to Sentry.
-      // We can probably do this with the modification of the Catch decorator that can return values insted of throwing and using that more universally.
       let error;
 
       if (e instanceof KycDaoSDKError) {
@@ -162,9 +165,6 @@ export class EvmJsonRpcProvider implements IKycDaoJsonRpcProvider {
       } else {
         error = new InternalError(String(e));
       }
-
-      console.error(error);
-      sentryCaptureSDKError(error);
       const errorMessage = error.toString();
 
       return {
