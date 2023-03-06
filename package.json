@@ -55,6 +55,7 @@
     "styled-components": "^5"
   },
   "dependencies": {
+    "@solana/buffer-layout": "^4.0.1",
     "@solana/wallet-adapter-base": "^0.9.22",
     "@solana/wallet-adapter-wallets": "^0.19.15",
     "@solana/web3.js": "^1.73.3",

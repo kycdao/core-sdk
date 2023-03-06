@@ -6,6 +6,7 @@ overrides:
   tar: ^6.1.13
 
 specifiers:
+  '@solana/buffer-layout': ^4.0.1
   '@solana/wallet-adapter-base': ^0.9.22
   '@solana/wallet-adapter-wallets': ^0.19.15
   '@solana/web3.js': ^1.73.3
@@ -40,6 +41,7 @@ specifiers:
   webpack-dev-server: ^4.11.1
 
 dependencies:
+  '@solana/buffer-layout': 4.0.1
   '@solana/wallet-adapter-base': 0.9.22_@solana+web3.js@1.73.3
   '@solana/wallet-adapter-wallets': 0.19.15_bdvkyrejymdypjcf7tsuw4bzte
   '@solana/web3.js': 1.73.3
