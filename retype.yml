@@ -1,6 +1,6 @@
 input: "./docs"
 output: .retype
-url: https://kycdao.github.io/kycdao-js-sdk
+url: https://kycdao.github.io/core-sdk
 branding:
   logo: static/kycdao_logo.png
   label: JS SDK

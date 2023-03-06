@@ -6,7 +6,7 @@ order: 0
 
 This SDK is designed to enable web3 projects to integrate kycDAO verification flow into their website with the maximum flexibility around UI/UX.
 
-kycDAO JS/TS SDK canonical URL: https://github.com/kycdao/kycdao-js-sdk
+kycDAO JS/TS SDK canonical URL: https://github.com/kycdao/core-sdk
 
 ## Integration steps
 
@@ -31,13 +31,13 @@ yarn add near-api-js persona react react-dom styled-components @kycdao/kycdao-sd
 +++ HTML
 ```html
 <script
-  src="https://cdn.jsdelivr.net/npm/@kycdao/kycdao-sdk@0.4.2/dist/kycdao-sdk.min.js"
-  integrity="sha256-mbKIQDqxeJTz0v6eSxcayZclL46J+43By6VVrVUWLSY="
+  src="https://cdn.jsdelivr.net/npm/@kycdao/kycdao-sdk@0.6.7/dist/kycdao-sdk.min.js"
+  integrity="sha384-zPwCj06ZagOJl5iSjguJoFBgVRVg2stzb5DaAXl8ROibaAOERnajuYc4JV9yZ2+b"
   crossorigin="anonymous">
 <script>
 ```
 
-You can always find all versions and generate script tags for them at https://www.jsdelivr.com/package/npm/@kycdao/kycdao-sdk. We encourage using a specific version and checking for updates reqularly rather then defaulting to the latest version, to avoid potential compatibility issues.
+You can always find all versions and generate script tags for them at [jsDelivr](https://www.jsdelivr.com/package/npm/@kycdao/kycdao-sdk) or at [unpkg](https://unpkg.com/@kycdao/kycdao-sdk@latest/dist/kycdao-sdk.min.js?meta). We encourage using a specific version and checking for updates reqularly (eg. using [dependabot](https://github.com/dependabot) or [renovate](https://github.com/renovatebot/renovate)) rather then defaulting to the latest version, to avoid potential compatibility issues.
 +++
 
 [!badge variant="contrast" size="l" text="Step 2" corners="pill"] Initialization
@@ -85,4 +85,4 @@ window.kycDao = kycDaoInitResult.kycDao;
 
 ## Integration example
 
-An example repository using the embedded method: https://github.com/kycdao/sdk-example
+An example repository using the embedded method in this [example](https://github.com/kycdao/sdk-example/tree/main/core-sdk-example/docs).
