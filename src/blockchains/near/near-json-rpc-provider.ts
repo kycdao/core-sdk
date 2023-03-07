@@ -1,8 +1,8 @@
 import { JsonRpcProvider } from 'near-api-js/lib/providers';
 import { CodeResult } from 'near-api-js/lib/providers/provider';
-import { ipfsToHttps } from 'src/utils';
 import { Catch, InternalError, KycDaoSDKError } from '../../errors';
 import { NetworkAndAddress, NftCheckResponse, TokenMetadata } from '../../types';
+import { ipfsToHttps } from '../../utils';
 import { IKycDaoJsonRpcProvider } from '../kycdao-json-rpc-provider';
 
 interface HasValidTokenArgs {
