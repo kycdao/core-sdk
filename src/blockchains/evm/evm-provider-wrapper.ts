@@ -5,7 +5,6 @@ import {
   EvmTransactionReceipt,
   EvmTransactionReceiptResponse,
 } from './types';
-import { BlockchainNetworkInfo } from '../../types';
 import {
   hexEncodeAddress,
   hexEncodeString,
@@ -13,9 +12,17 @@ import {
   parseUnits,
   removeHexPrefix,
 } from './utils';
-import BN from 'bn.js';
+import {
+  Catch,
+  EVMError,
+  InternalError,
+  TransactionError,
+  WalletError,
+  unwrapEVMError,
+} from '../../errors';
+import { BlockchainNetworkInfo } from '../../types';
 import { poll, TimeOutError } from '../../utils';
-import { InternalError, TransactionError, WalletError, Catch } from '../../errors';
+import BN from 'bn.js';
 
 export class EvmProviderWrapper {
   private provider: EvmProvider;
@@ -152,32 +159,29 @@ export class EvmProviderWrapper {
     }
   }
 
-  private isRepeatableError(error: unknown) {
-    const err = error as {
-      code: number;
-      message: string;
-      data?: { code: number; message: string };
-    };
-    if (!err.code || !err.message) {
+  private isRepeatableError(error: unknown): boolean {
+    const err = unwrapEVMError(error);
+
+    if (!err) {
       return false;
     }
-    let code = err.code;
-    let msg = err.message;
 
-    // in case of metamask the error is wrapped into an outer JSON-RPC error
-    if (code === -32603 && err.data) {
-      code = err.data.code;
-      msg = err.data.message;
-    }
+    const { code, message } = err;
 
-    if (code === 3) {
-      if (msg.indexOf('Unauthorized code') >= 0) {
-        console.log(`Repeatable error: ${msg} (code: ${code})`);
+    const repeatableErrors: EVMError[] = [
+      { code: 3, message: 'Unauthorized code' },
+      { code: -32000, message: 'header not found' },
+      { code: -32005, message: 'Try again after some time' },
+    ];
+
+    for (const err of repeatableErrors) {
+      if (code === err.code && message.includes(err.message)) {
+        console.log(`Repeatable error: ${message} (code: ${code})`);
         return true;
       }
     }
 
-    console.log(`Non-repeatable error: ${msg} (code: ${code})`);
+    console.log(`Non-repeatable error: ${message} (code: ${code})`);
     return false;
   }
 

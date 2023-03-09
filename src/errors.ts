@@ -370,31 +370,53 @@ function transformWalletErrorCode(code: number, msg: string) {
   return;
 }
 
-function transformEVMErrors(error: unknown): KycDaoSDKError | undefined {
-  const err = error as {
-    code: number;
-    message: string;
-    data?: { code: number; message: string };
-  };
+interface WrappedEVMError {
+  code: number;
+  message: string;
+  data?: { code: number; message?: string; details?: string };
+}
+
+export interface EVMError {
+  code: number;
+  message: string;
+}
+
+export function unwrapEVMError(error: unknown): EVMError | undefined {
+  const err = error as WrappedEVMError;
 
   if (!err.code || !err.message) {
     return;
   }
 
-  let code = err.code;
-  let msg = err.message;
+  let { code, message } = err;
+  const data = err.data;
 
   // in case of metamask the error is wrapped into an outer JSON-RPC error
-  if (code === -32603 && err.data) {
-    code = err.data.code;
-    msg = err.data.message;
+  if (code === -32603 && data?.code && (data.message || data.details)) {
+    code = data.code;
+    message = data.message || data.details || '';
   }
+
+  return {
+    code,
+    message,
+  };
+}
+
+function transformEVMErrors(error: unknown): KycDaoSDKError | undefined {
+  const err = unwrapEVMError(error);
+
+  if (!err) {
+    return;
+  }
+
+  const { code, message } = err;
 
   if (code === 3) {
-    return new TransactionError('TransactionRejected', msg);
+    return new TransactionError('TransactionRejected', message);
   }
 
-  return transformWalletErrorCode(code, msg);
+  return transformWalletErrorCode(code, message);
 }
 
 // https://docs.phantom.app/solana/integrating-phantom/errors
