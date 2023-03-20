@@ -1,4 +1,4 @@
-import { BlockchainNetwork, MintingResult, TokenDetails } from './types';
+import { BlockchainNetwork, MintingResult, NetworkMetadata, TokenDetails } from './types';
 
 export const AlphanumericChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
@@ -174,34 +174,40 @@ export async function waitForDomElement<T>(
   throw new Error('NOT FOUND');
 }
 
+// TODO KYC-1028 - update after backend changes
 export function getChainExplorerUrlForTransaction(
   txHash: string,
-  blockchainNetwork: BlockchainNetwork,
+  networkDetails: NetworkMetadata,
 ): string {
-  const urlMapping: Record<BlockchainNetwork, string> = {
-    CeloAlfajores: `https://explorer.celo.org/alfajores/tx/${txHash}`,
-    CeloMainnet: `https://explorer.celo.org/mainnet/tx/${txHash}`,
-    NearMainnet: `https://explorer.near.org/transactions/${txHash}`,
-    NearTestnet: `https://explorer.testnet.near.org/transactions/${txHash}`,
-    EthereumGoerli: `https://goerli.etherscan.io/tx/${txHash}`,
-    EthereumMainnet: `https://etherscan.io/tx/${txHash}`,
-    PolygonMainnet: `https://polygonscan.com/tx/${txHash}`,
-    PolygonMumbai: `https://mumbai.polygonscan.com/tx/${txHash}`,
-    SolanaDevnet: `https://explorer.solana.com/tx/${txHash}?cluster=devnet`,
-    SolanaMainnet: `https://explorer.solana.com/tx/${txHash}`,
-    SolanaTestnet: `https://explorer.solana.com/tx/${txHash}?cluster=testnet`,
+  // TODO remove this mapping when backend gives back a string that enables us to just insert the tx hash into it
+  const queryMapping: Record<BlockchainNetwork, string> = {
+    CeloAlfajores: '',
+    CeloMainnet: '',
+    NearMainnet: '',
+    NearTestnet: '',
+    EthereumGoerli: '',
+    EthereumMainnet: '',
+    PolygonMainnet: '',
+    PolygonMumbai: '',
+    SolanaDevnet: '?cluster=devnet',
+    SolanaMainnet: '',
+    SolanaTestnet: '?cluster=testnet',
   };
 
-  return urlMapping[blockchainNetwork];
+  const { url, transaction_path } = networkDetails.explorer;
+
+  const result = url + transaction_path + txHash + queryMapping[networkDetails.id];
+
+  return result;
 }
 
 export function getMintingResult(
-  blockchainNetwork: BlockchainNetwork,
+  networkDetails: NetworkMetadata,
   txHash: string,
   tokenId: string,
   tokenDetails: TokenDetails,
 ): MintingResult {
-  const transactionUrl = getChainExplorerUrlForTransaction(txHash, blockchainNetwork);
+  const transactionUrl = getChainExplorerUrlForTransaction(txHash, networkDetails);
 
   return {
     transactionUrl,

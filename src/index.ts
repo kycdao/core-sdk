@@ -6,7 +6,6 @@ import { InquiryOptions } from 'persona/dist/lib/interfaces';
 import { ApiBase, KycDaoApiError } from './api-base';
 import { BN } from 'bn.js';
 import {
-  BlockchainNetworkDetails,
   BlockchainNetworks,
   EvmBlockchainNetworks,
   NEAR_MAINNET_ARCHIVAL,
@@ -20,7 +19,6 @@ import {
   Blockchain,
   BlockchainAccountDetails,
   BlockchainNetwork,
-  BlockchainNetworkInfo,
   ChainAndAddress,
   Country,
   EmailData,
@@ -33,6 +31,7 @@ import {
   NearBlockchainNetwork,
   NearSdk,
   NetworkAndAddress,
+  NetworkMetadata,
   NftCheckOptions,
   NftCheckResponse,
   PersonaOptions,
@@ -199,7 +198,18 @@ export class KycDao extends ApiBase {
   private demoMode: boolean;
   private verificationTypes: VerificationType[];
   private blockchainNetworks: BlockchainNetwork[];
-  private blockchainNetworkDetails = BlockchainNetworkDetails;
+
+  private networkDetails: Partial<Record<BlockchainNetwork, NetworkMetadata>> = {};
+
+  private getNetworkDetails(network: BlockchainNetwork): NetworkMetadata {
+    const details = this.networkDetails[network];
+
+    if (!details) {
+      throw new InternalError(`Network details not found for ${network}`);
+    }
+
+    return details;
+  }
 
   private apiStatus?: ApiStatus;
 
@@ -450,7 +460,7 @@ export class KycDao extends ApiBase {
     }
   }
 
-  private static validateBlockchainNetworks(
+  private validateBlockchainNetworks(
     availableBlockchainNetworks: BlockchainNetwork[],
     enabledBlockchainNetworks: BlockchainNetwork[],
   ): BlockchainNetwork[] {
@@ -478,12 +488,24 @@ export class KycDao extends ApiBase {
       );
     }
 
+    const [finalBlockchainNetworks, unavailableBlockchainNetworks] = partition(
+      validBlockchainNetworks,
+      (network) => availableBlockchainNetworks.includes(network),
+    );
+
+    if (unavailableBlockchainNetworks.length > 0) {
+      console.warn(
+        `${errorPrefix} - The following configured networks are unavailable on the connected server: ${unavailableBlockchainNetworks.join(
+          ', ',
+        )}. Avaliable networks are: ${availableBlockchainNetworks.join(', ')}.`,
+      );
+    }
+
     const ensureSingleChain = (): boolean => {
       let currentChain: Blockchain | undefined;
-      let network: BlockchainNetwork;
 
-      for (network of validBlockchainNetworks) {
-        const chain = BlockchainNetworkDetails[network].blockchain;
+      for (const network of finalBlockchainNetworks) {
+        const chain = this.getNetworkDetails(network).blockchain;
 
         if (!currentChain) {
           currentChain = chain;
@@ -500,19 +522,6 @@ export class KycDao extends ApiBase {
     if (!ensureSingleChain()) {
       throw new ConfigurationError(
         'Only networks of a single chain type/protocol can be enabled at a time.',
-      );
-    }
-
-    const [finalBlockchainNetworks, unavailableBlockchainNetworks] = partition(
-      validBlockchainNetworks,
-      (network) => availableBlockchainNetworks.includes(network),
-    );
-
-    if (unavailableBlockchainNetworks.length > 0) {
-      console.warn(
-        `${errorPrefix} - The following configured networks are unavailable on the connected server: ${unavailableBlockchainNetworks.join(
-          ', ',
-        )}. Avaliable networks are: ${availableBlockchainNetworks.join(', ')}.`,
       );
     }
 
@@ -781,7 +790,9 @@ export class KycDao extends ApiBase {
         case 'NearMint': {
           const authCode = queryParams.get('authCode');
           if (authCode) {
-            const transaction = await this.getTx(this._chainAndAddress, detectedValue);
+            const chainAndAddress = Object.assign({}, this._chainAndAddress);
+
+            const transaction = await this.getTx(chainAndAddress, detectedValue);
 
             if (transaction.status !== 'Success') {
               throw new TransactionError('TransactionFailed');
@@ -805,8 +816,10 @@ export class KycDao extends ApiBase {
                 minting_tx_id: detectedValue,
               });
 
+              const networkDetails = this.getNetworkDetails(chainAndAddress.blockchainNetwork);
+
               mintingResult = getMintingResult(
-                this._chainAndAddress.blockchainNetwork,
+                networkDetails,
                 detectedValue,
                 tokenId,
                 tokenDetails,
@@ -922,19 +935,31 @@ export class KycDao extends ApiBase {
     // TODO handle and return specific error
     kycDao.apiStatus = await kycDao.get<ApiStatus>('status');
 
-    // update blockchain network details with values from the incoming config
+    // query the network metadata/details from the server
+    const networks = await kycDao.get<NetworkMetadata[]>('networks');
+
+    // create a record from the list returned by the server and save it
+    networks.forEach((network) => {
+      kycDao.networkDetails[network.id] = network;
+    });
+
+    // update network details with values from the incoming config
     const networkConf = config.blockchainNetworkConfiguration;
     if (networkConf) {
       let network: BlockchainNetwork;
       for (network in networkConf) {
-        kycDao.blockchainNetworkDetails[network] = {
-          ...kycDao.blockchainNetworkDetails[network],
-          ...networkConf[network],
+        const details = kycDao.getNetworkDetails(network);
+        const config = networkConf[network];
+        const rpcUrls = config?.rpcUrl ? [config.rpcUrl] : details.rpc_urls;
+
+        kycDao.networkDetails[network] = {
+          ...details,
+          rpc_urls: rpcUrls,
         };
       }
     }
 
-    kycDao.blockchainNetworks = KycDao.validateBlockchainNetworks(
+    kycDao.blockchainNetworks = kycDao.validateBlockchainNetworks(
       kycDao.apiStatus.enabled_networks,
       config.enabledBlockchainNetworks,
     );
@@ -948,9 +973,9 @@ export class KycDao extends ApiBase {
       );
     } else {
       evmProvider.on('chainChanged', (chainId: number) => {
-        const networkDetails = kycDao.blockchainNetworkDetails;
+        const networkDetails = kycDao.networkDetails;
         const blockchainNetwork = typedKeys(networkDetails).find(
-          (network) => Number(networkDetails[network].chainId) === Number(chainId),
+          (network) => kycDao.getNetworkDetails(network).chain_id === chainId,
         );
         const isSupportedAndEnabled =
           blockchainNetwork && kycDao.blockchainNetworks.includes(blockchainNetwork);
@@ -1031,7 +1056,7 @@ export class KycDao extends ApiBase {
     const chainAndAddress = networkAndAddress
       ? {
           ...networkAndAddress,
-          blockchain: BlockchainNetworkDetails[networkAndAddress.blockchainNetwork].blockchain,
+          blockchain: this.getNetworkDetails(networkAndAddress.blockchainNetwork).blockchain,
         }
       : this._chainAndAddress;
 
@@ -1058,7 +1083,7 @@ export class KycDao extends ApiBase {
     const { blockchain, blockchainNetwork } = chainAndAddress;
 
     // TODO - Maybe we should start using multiple RPC endpoints and retry with a different one after a fail?
-    const rpcUrl = BlockchainNetworkDetails[blockchainNetwork].rpcUrl;
+    const rpcUrl = this.getNetworkDetails(blockchainNetwork).rpc_urls[0];
 
     const contractAddress =
       this.apiStatus?.smart_contracts_info?.[blockchainNetwork]?.[verificationType]?.address;
@@ -1145,15 +1170,15 @@ export class KycDao extends ApiBase {
     options?: NftCheckOptions,
   ): Promise<NftCheckResponse[]> {
     const chainAndAddress = this.getChainAndAddressForNftCheck(options);
-    const selectedNetworkInfo = this.blockchainNetworkDetails[chainAndAddress.blockchainNetwork];
+    const selectedNetworkDetails = this.getNetworkDetails(chainAndAddress.blockchainNetwork);
 
-    const networksToCheck: BlockchainNetwork[] = typedKeys(this.blockchainNetworkDetails).filter(
+    const networksToCheck: BlockchainNetwork[] = typedKeys(this.networkDetails).filter(
       (blockchainNetwork) => {
-        const info = this.blockchainNetworkDetails[blockchainNetwork];
+        const details = this.getNetworkDetails(blockchainNetwork);
         return (
           this.blockchainNetworks.includes(blockchainNetwork) &&
-          info.blockchain === selectedNetworkInfo.blockchain &&
-          info.isMainnet === selectedNetworkInfo.isMainnet
+          details.blockchain === selectedNetworkDetails.blockchain &&
+          details.testnet === selectedNetworkDetails.testnet
         );
       },
     );
@@ -1186,17 +1211,18 @@ export class KycDao extends ApiBase {
   }
 
   @Catch()
-  private async switchOrAddNetworkChecked(newChainDetails: BlockchainNetworkInfo) {
+  private async switchOrAddNetworkChecked(newChainDetails: NetworkMetadata) {
     if (!this.evmProvider) {
       throw new InternalError('EVM provider not found.');
     }
 
     await this.evmProvider.switchOrAddNetwork(newChainDetails);
 
+    // Note: WalletConnect returns chainId as a number
     const updatedChainId = await this.evmProvider.getChainId();
-    if (updatedChainId !== newChainDetails.chainId) {
+    if (Number(updatedChainId) !== newChainDetails.chain_id) {
       throw new InternalError(
-        `EVM network switching failed: switchNetwork call did not throw an error, but wallet returns wrong chainId (${updatedChainId}), expected ${newChainDetails.chainId}.`,
+        `EVM network switching failed: switchNetwork call did not throw an error, but wallet returns wrong chainId (${updatedChainId}), expected ${newChainDetails.chain_id}.`,
       );
     }
   }
@@ -1210,7 +1236,7 @@ export class KycDao extends ApiBase {
     blockchain: Blockchain,
     autoSwitch = false,
   ): Promise<BlockchainNetwork> {
-    const networkDetails = this.blockchainNetworkDetails;
+    const networkDetails = this.networkDetails;
     let blockchainNetwork: BlockchainNetwork | undefined;
 
     switch (blockchain) {
@@ -1223,7 +1249,7 @@ export class KycDao extends ApiBase {
 
         blockchainNetwork = typedKeys(networkDetails).find(
           // Note: WalletConnect returns chainId as a number
-          (network) => Number(networkDetails[network].chainId) === Number(chainId),
+          (network) => this.getNetworkDetails(network).chain_id === Number(chainId),
         );
 
         // selected network is not enabled
@@ -1231,10 +1257,10 @@ export class KycDao extends ApiBase {
           // automatic network switching is enabled and there is only one enabled network
           if (autoSwitch && this.blockchainNetworks.length === 1) {
             const enabledNetwork = this.blockchainNetworks[0];
-            const enabledNetworkDetails = networkDetails[enabledNetwork];
+            const enabledNetworkDetails = this.getNetworkDetails(enabledNetwork);
 
             // the enabled network has 'Ethereum' chain and it has a chain ID
-            if (enabledNetworkDetails.blockchain === 'Ethereum' && enabledNetworkDetails.chainId) {
+            if (enabledNetworkDetails.blockchain === 'Ethereum' && enabledNetworkDetails.chain_id) {
               try {
                 await this.switchOrAddNetworkChecked(enabledNetworkDetails);
               } catch (e) {
@@ -1330,7 +1356,7 @@ export class KycDao extends ApiBase {
       throw new StatusError('NetworkNotEnabled');
     }
 
-    const networkDetails = this.blockchainNetworkDetails[blockchainNetwork];
+    const networkDetails = this.getNetworkDetails(blockchainNetwork);
 
     if (this._chainAndAddress.blockchain !== networkDetails.blockchain) {
       throw new StatusError(
@@ -1348,14 +1374,15 @@ export class KycDao extends ApiBase {
           throw new ConfigurationError('EVM provider not configured.');
         }
 
-        const newChainId = networkDetails.chainId;
+        const newChainId = networkDetails.chain_id;
 
         if (!newChainId) {
           throw new InternalError('Network configuration error.');
         }
 
+        // Note: WalletConnect returns chainId as a number
         const currentChainId = await this.evmProvider.getChainId();
-        if (currentChainId !== newChainId) {
+        if (Number(currentChainId) !== newChainId) {
           try {
             await this.switchOrAddNetworkChecked(networkDetails);
           } catch (e) {
@@ -2032,7 +2059,9 @@ export class KycDao extends ApiBase {
         minting_tx_id: txHash,
       });
 
-      return getMintingResult(chainAndAddress.blockchainNetwork, txHash, tokenId, tokenDetails);
+      const networkDetails = this.getNetworkDetails(chainAndAddress.blockchainNetwork);
+
+      return getMintingResult(networkDetails, txHash, tokenId, tokenDetails);
     }
 
     return;
