@@ -482,9 +482,9 @@ export class KycDao extends ApiBase {
 
     if (!validBlockchainNetworks.length) {
       throw new ConfigurationError(
-        `No valid network names were found in configuration. Valid values are: ${allBlockchainNetworks.join(
+        `No valid network names were found in configuration. Configured values: ${enabledBlockchainNetworks.join(
           ', ',
-        )}.`,
+        )}; Valid values are: ${allBlockchainNetworks.join(', ')}.`,
       );
     }
 
