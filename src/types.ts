@@ -351,78 +351,6 @@ export interface ChainAndAddress {
   address: string;
 }
 
-/**
- * Information associated with a {@link BlockchainNetwork}.
- *
- * @interface BlockchainNetworkInfo
- * @typedef {BlockchainNetworkInfo}
- */
-export interface BlockchainNetworkInfo {
-  /**
-   * The {@link Blockchain} protocol/platform that the {@link BlockchainNetwork} implements.
-   *
-   * @type {Blockchain}
-   */
-  blockchain: Blockchain;
-  /**
-   * The chain id of the EVM network. A hexadecimal number.
-   *
-   * @type {?string}
-   */
-  chainId?: string;
-  /**
-   * The RPC endpoint used for the on-chain NFT check.
-   *
-   * @type {string}
-   */
-  rpcUrl: string;
-  /**
-   * A flag indicating if this is a main network or not.
-   *
-   * @type {boolean}
-   */
-  isMainnet: boolean;
-  /**
-   * The block explorer URL for the network.
-   *
-   * @type {?string}
-   */
-  blockExplorerUrl?: string;
-  /**
-   * The name of the chain.
-   *
-   * @type {?string}
-   */
-  chainName?: string;
-  /**
-   * The name of the chain.
-   *
-   * @type {?BlockchainNativeCurrency}
-   */
-  nativeCurrency?: BlockchainNativeCurrency;
-}
-
-export interface BlockchainNativeCurrency {
-  /**
-   * The name of the currency.
-   *
-   * @type {string}
-   */
-  name: string;
-  /**
-   * The symbol of the currency.
-   *
-   * @type {string}
-   */
-  symbol: string;
-  /**
-   * The number of decimals of the currency.
-   *
-   * @type {number}
-   */
-  decimals: number;
-}
-
 export interface Country {
   /**
    * English name of the country.
@@ -755,6 +683,45 @@ export interface ApiStatus {
   persona: PersonaStatus;
   enabled_networks: BlockchainNetwork[];
   smart_contracts_info: SmartContractsByBlockchainNetwork;
+}
+
+export interface CurrencyData {
+  /**
+   * The name of the currency.
+   *
+   * @type {string}
+   */
+  name: string;
+  /**
+   * The symbol of the currency.
+   *
+   * @type {string}
+   */
+  symbol: string;
+  /**
+   * The number of decimals of the currency.
+   *
+   * @type {number}
+   */
+  decimals: number;
+}
+
+export interface ExplorerData {
+  name: string;
+  url: string;
+  transaction_path: string;
+}
+
+export interface NetworkMetadata {
+  id: BlockchainNetwork;
+  blockchain: Blockchain;
+  name: string;
+  caip2id: string;
+  chain_id?: number; // only for EVM networks
+  native_currency: CurrencyData;
+  explorer: ExplorerData;
+  testnet: boolean;
+  rpc_urls: string[];
 }
 
 export interface PersonaSessionData {

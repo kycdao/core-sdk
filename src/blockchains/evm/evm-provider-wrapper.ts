@@ -20,7 +20,7 @@ import {
   WalletError,
   unwrapEVMError,
 } from '../../errors';
-import { BlockchainNetworkInfo } from '../../types';
+import { NetworkMetadata } from '../../types';
 import { poll, TimeOutError } from '../../utils';
 import BN from 'bn.js';
 
@@ -97,13 +97,14 @@ export class EvmProviderWrapper {
     });
   }
 
-  public async switchOrAddNetwork(networkDetails: BlockchainNetworkInfo): Promise<void> {
+  public async switchOrAddNetwork(networkDetails: NetworkMetadata): Promise<void> {
     // throw error if chainId is not provided
-    if (!networkDetails.chainId) {
-      throw new InternalError('switchOrAddNetwork error: ChainId for enabled network is null');
+    if (!networkDetails.chain_id) {
+      throw new InternalError('switchOrAddNetwork error: chain ID for requested network is null');
     }
+
     try {
-      await this.switchNetwork(networkDetails.chainId);
+      await this.switchNetwork(hexEncodeUint(networkDetails.chain_id, { addPrefix: true }));
     } catch (error) {
       if (this.isChainMissingError(error)) {
         await this.addNetwork(networkDetails);
@@ -117,17 +118,21 @@ export class EvmProviderWrapper {
     return e instanceof WalletError && e.errorCode === 'ChainMissing';
   }
 
-  public async addNetwork(networkDetails: BlockchainNetworkInfo): Promise<void> {
+  public async addNetwork(networkDetails: NetworkMetadata): Promise<void> {
+    if (!networkDetails.chain_id) {
+      throw new InternalError('addNetwork error: chain ID for requested network is null');
+    }
+
     return this.provider.request({
       method: 'wallet_addEthereumChain',
       params: [
         {
-          chainId: networkDetails.chainId,
-          blockExplorerUrls: [networkDetails.blockExplorerUrl],
-          chainName: networkDetails.chainName,
+          chainId: hexEncodeUint(networkDetails.chain_id, { addPrefix: true }),
+          blockExplorerUrls: [networkDetails.explorer.url],
+          chainName: networkDetails.name,
           // iconUrls: [], //?string[];
-          nativeCurrency: networkDetails.nativeCurrency,
-          rpcUrls: [networkDetails.rpcUrl],
+          nativeCurrency: networkDetails.native_currency,
+          rpcUrls: networkDetails.rpc_urls,
         },
       ],
     });
