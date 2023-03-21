@@ -1891,21 +1891,29 @@ export class KycDao extends ApiBase {
       subscription_duration: subscriptionDuration,
     };
 
-    const res = await this.post<MintingAuthorizationResponse>('authorize_minting', data);
-    const txHash = res.token.authorization_tx_id;
+    try {
+      const res = await this.post<MintingAuthorizationResponse>('authorize_minting', data);
+      const txHash = res.token.authorization_tx_id;
 
-    if (!txHash) {
-      // Either txHash or transaction is required
-      if (!res.transaction) {
-        throw new InternalError('Transaction ID not found');
+      if (!txHash) {
+        // Either txHash or transaction is required
+        if (!res.transaction) {
+          throw new InternalError('Transaction ID not found');
+        }
+      } else {
+        const transaction = await this.waitForTransaction(chainAndAddress, txHash);
+        if (transaction.status === 'Failure') {
+          throw new TransactionError('TransactionFailed');
+        }
       }
-    } else {
-      const transaction = await this.waitForTransaction(chainAndAddress, txHash);
-      if (transaction.status === 'Failure') {
-        throw new TransactionError('TransactionFailed');
+      return res;
+    } catch (error) {
+      if (error instanceof KycDaoApiError && error.errorCode === 'NetworkPriceTooHigh') {
+        throw new StatusError('NetworkPriceTooHigh');
+      } else {
+        throw error;
       }
     }
-    return res;
   }
 
   private async mint(
