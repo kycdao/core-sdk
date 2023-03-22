@@ -173,4 +173,30 @@ export class EvmJsonRpcProvider implements IKycDaoJsonRpcProvider {
       };
     }
   }
+
+  public async getGasPrice(): Promise<number> {
+    return parseInt(
+      await this.fetchJsonRpc<string>({
+        method: 'eth_gasPrice',
+      }),
+      16,
+    );
+  }
+
+  public async getMaxPriorityFeePerGas(): Promise<number> {
+    return parseInt(
+      await this.fetchJsonRpc<string>({
+        method: 'eth_maxPriorityFeePerGas',
+      }),
+      16,
+    );
+  }
+
+  public async getBaseFeePerGas(): Promise<number> {
+    const block = await this.fetchJsonRpc<{ baseFeePerGas: string }>({
+      method: 'eth_getBlockByNumber',
+      params: ['latest', false],
+    });
+    return parseInt(block['baseFeePerGas'], 16);
+  }
 }

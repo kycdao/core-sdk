@@ -23,16 +23,19 @@ import {
 import { NetworkMetadata } from '../../types';
 import { poll, TimeOutError } from '../../utils';
 import BN from 'bn.js';
+import { EvmJsonRpcProvider } from './evm-json-rpc-provider';
 
 export class EvmProviderWrapper {
   private provider: EvmProvider;
   private decoder: EvmResponseDecoder;
+  private networkMetadata: NetworkMetadata[];
 
   private tokenTransferEventHash?: string;
 
-  constructor(provider: EvmProvider) {
+  constructor(provider: EvmProvider, networkMetadata: NetworkMetadata[]) {
     this.provider = provider;
     this.decoder = new EvmResponseDecoder();
+    this.networkMetadata = networkMetadata;
   }
 
   public isWalletConnect(): boolean {
@@ -145,8 +148,8 @@ export class EvmProviderWrapper {
     });
   }
 
-  public async getGasPrice(): Promise<string> {
-    return await this.provider.request<string>({
+  public async getGasPrice(): Promise<number> {
+    return await this.provider.request<number>({
       method: 'eth_gasPrice',
     });
   }
@@ -215,7 +218,8 @@ export class EvmProviderWrapper {
     data: string,
     toAddress: string,
     fromAddress: string,
-    gasPrice: string,
+    maxFeePerGas: string,
+    maxPriorityFeePerGas: string,
     gasLimit: string,
     value?: string,
   ): Promise<string> {
@@ -226,7 +230,8 @@ export class EvmProviderWrapper {
           data: data,
           to: toAddress,
           from: fromAddress,
-          gasPrice: gasPrice,
+          maxFeePerGas,
+          maxPriorityFeePerGas,
           gas: gasLimit,
           value,
         },
@@ -324,12 +329,29 @@ export class EvmProviderWrapper {
         throw e;
       }
     }
+    const chainId = await this.getChainId();
+    const networkMeta = this.networkMetadata.find((n) => n.chain_id === Number(chainId));
 
-    const providerGasPriceHex = await this.getGasPrice();
-    const providerGasPriceDec = parseInt(providerGasPriceHex, 16);
-    const minGasPriceDec = parseUnits(50, 'gwei');
-    const gasPriceDec = Math.max(Math.round(providerGasPriceDec * 1.2), minGasPriceDec);
-    const gasPriceHex = hexEncodeUint(gasPriceDec, {
+    let maxFee, maxPrioFee;
+    if (networkMeta) {
+      const jsonRpcProvider = new EvmJsonRpcProvider(toAddress, networkMeta.rpc_urls[0]);
+      const baseFeePerGas = await jsonRpcProvider.getBaseFeePerGas();
+      const prioFeePerGas = await jsonRpcProvider.getMaxPriorityFeePerGas();
+      maxFee = baseFeePerGas * 2 + prioFeePerGas;
+      maxPrioFee = prioFeePerGas;
+    }
+
+    // Fall back to legacy fee calculation
+    if (!maxFee || !maxPrioFee) {
+      const gasPrice = Math.round((await this.getGasPrice()) * 1.2);
+      maxFee = gasPrice;
+      maxPrioFee = gasPrice;
+    }
+
+    const maxFeeHex = hexEncodeUint(maxFee, {
+      addPrefix: true,
+    });
+    const maxPrioFeeHex = hexEncodeUint(maxPrioFee, {
       addPrefix: true,
     });
 
@@ -337,7 +359,8 @@ export class EvmProviderWrapper {
       data,
       toAddress,
       fromAddress,
-      gasPriceHex,
+      maxFeeHex,
+      maxPrioFeeHex,
       gasLimitHex,
       mintCostWithSlippageHex,
     );

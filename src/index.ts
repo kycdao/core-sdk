@@ -989,7 +989,10 @@ export class KycDao extends ApiBase {
         }
       });
 
-      kycDao.evmProvider = new EvmProviderWrapper(evmProvider);
+      kycDao.evmProvider = new EvmProviderWrapper(
+        evmProvider,
+        Object.values(kycDao.networkDetails),
+      );
     }
 
     // initialize NEAR if there is an available NEAR network
