@@ -335,40 +335,50 @@ export class EvmProviderWrapper {
     let maxFee, maxPrioFee;
     if (networkMeta) {
       const jsonRpcProvider = new EvmJsonRpcProvider(toAddress, networkMeta.rpc_urls[0]);
-      const baseFeePerGas = await jsonRpcProvider.getBaseFeePerGas();
-      const prioFeePerGas = await jsonRpcProvider.getMaxPriorityFeePerGas();
-      maxFee = baseFeePerGas * 2 + prioFeePerGas;
-      maxPrioFee = prioFeePerGas;
-    }
-
-    // Fall back to legacy fee calculation
-    if (!maxFee || !maxPrioFee) {
-      const gasPrice = Math.round((await this.getGasPrice()) * 1.2);
-      maxFee = gasPrice;
-      maxPrioFee = gasPrice;
-    }
-
-    const maxFeeHex = hexEncodeUint(maxFee, {
-      addPrefix: true,
-    });
-    const maxPrioFeeHex = hexEncodeUint(maxPrioFee, {
-      addPrefix: true,
-    });
-
-    const txHash = await this.sendTransaction(
-      data,
-      toAddress,
-      fromAddress,
-      maxFeeHex,
-      maxPrioFeeHex,
-      gasLimitHex,
-      mintCostWithSlippageHex,
-    );
-
-    if (txHash !== hexEncodeUint(0, { addPrefix: true, padToBytes: 32 })) {
-      return txHash;
+      for (let i = 4; i >= 0; i--) {
+        try {
+          const baseFeePerGas = await jsonRpcProvider.getBaseFeePerGas();
+          const prioFeePerGas = await jsonRpcProvider.getMaxPriorityFeePerGas();
+          maxFee = baseFeePerGas * 2 + prioFeePerGas;
+          maxPrioFee = prioFeePerGas;
+          break;
+        } catch (e) {
+          if (i > 0) {
+            console.log(`Error while fetching fee: ${e}`);
+          } else {
+            throw e;
+          }
+        }
+      }
     } else {
-      return undefined;
+      throw new InternalError('Unable to load network metadata');
+    }
+
+    if (maxFee && maxPrioFee) {
+      const maxFeeHex = hexEncodeUint(maxFee, {
+        addPrefix: true,
+      });
+      const maxPrioFeeHex = hexEncodeUint(maxPrioFee, {
+        addPrefix: true,
+      });
+
+      const txHash = await this.sendTransaction(
+        data,
+        toAddress,
+        fromAddress,
+        maxFeeHex,
+        maxPrioFeeHex,
+        gasLimitHex,
+        mintCostWithSlippageHex,
+      );
+
+      if (txHash !== hexEncodeUint(0, { addPrefix: true, padToBytes: 32 })) {
+        return txHash;
+      } else {
+        return undefined;
+      }
+    } else {
+      throw new InternalError('Unable to estimate gas');
     }
   }
 
