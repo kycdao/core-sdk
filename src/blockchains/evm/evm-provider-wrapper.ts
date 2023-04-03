@@ -5,13 +5,7 @@ import {
   EvmTransactionReceipt,
   EvmTransactionReceiptResponse,
 } from './types';
-import {
-  hexEncodeAddress,
-  hexEncodeString,
-  hexEncodeUint,
-  parseUnits,
-  removeHexPrefix,
-} from './utils';
+import { hexEncodeAddress, hexEncodeString, hexEncodeUint, removeHexPrefix } from './utils';
 import {
   Catch,
   EVMError,
@@ -23,16 +17,19 @@ import {
 import { NetworkMetadata } from '../../types';
 import { poll, TimeOutError } from '../../utils';
 import BN from 'bn.js';
+import { EvmJsonRpcProvider } from './evm-json-rpc-provider';
 
 export class EvmProviderWrapper {
   private provider: EvmProvider;
   private decoder: EvmResponseDecoder;
+  private networkMetadata: NetworkMetadata[];
 
   private tokenTransferEventHash?: string;
 
-  constructor(provider: EvmProvider) {
+  constructor(provider: EvmProvider, networkMetadata: NetworkMetadata[]) {
     this.provider = provider;
     this.decoder = new EvmResponseDecoder();
+    this.networkMetadata = networkMetadata;
   }
 
   public isWalletConnect(): boolean {
@@ -145,8 +142,8 @@ export class EvmProviderWrapper {
     });
   }
 
-  public async getGasPrice(): Promise<string> {
-    return await this.provider.request<string>({
+  public async getGasPrice(): Promise<number> {
+    return await this.provider.request<number>({
       method: 'eth_gasPrice',
     });
   }
@@ -215,7 +212,8 @@ export class EvmProviderWrapper {
     data: string,
     toAddress: string,
     fromAddress: string,
-    gasPrice: string,
+    maxFeePerGas: string,
+    maxPriorityFeePerGas: string,
     gasLimit: string,
     value?: string,
   ): Promise<string> {
@@ -226,7 +224,8 @@ export class EvmProviderWrapper {
           data: data,
           to: toAddress,
           from: fromAddress,
-          gasPrice: gasPrice,
+          maxFeePerGas,
+          maxPriorityFeePerGas,
           gas: gasLimit,
           value,
         },
@@ -324,28 +323,56 @@ export class EvmProviderWrapper {
         throw e;
       }
     }
+    const chainId = await this.getChainId();
+    const networkMeta = this.networkMetadata.find((n) => n.chain_id === Number(chainId));
 
-    const providerGasPriceHex = await this.getGasPrice();
-    const providerGasPriceDec = parseInt(providerGasPriceHex, 16);
-    const minGasPriceDec = parseUnits(50, 'gwei');
-    const gasPriceDec = Math.max(Math.round(providerGasPriceDec * 1.2), minGasPriceDec);
-    const gasPriceHex = hexEncodeUint(gasPriceDec, {
-      addPrefix: true,
-    });
-
-    const txHash = await this.sendTransaction(
-      data,
-      toAddress,
-      fromAddress,
-      gasPriceHex,
-      gasLimitHex,
-      mintCostWithSlippageHex,
-    );
-
-    if (txHash !== hexEncodeUint(0, { addPrefix: true, padToBytes: 32 })) {
-      return txHash;
+    let maxFee, maxPrioFee;
+    if (networkMeta) {
+      const jsonRpcProvider = new EvmJsonRpcProvider(toAddress, networkMeta.rpc_urls[0]);
+      for (let i = 4; i >= 0; i--) {
+        try {
+          const baseFeePerGas = await jsonRpcProvider.getBaseFeePerGas();
+          const prioFeePerGas = await jsonRpcProvider.getMaxPriorityFeePerGas();
+          maxFee = baseFeePerGas * 2 + prioFeePerGas;
+          maxPrioFee = prioFeePerGas;
+          break;
+        } catch (e) {
+          if (i > 0) {
+            console.log(`Error while fetching fee: ${e}`);
+          } else {
+            throw e;
+          }
+        }
+      }
     } else {
-      return undefined;
+      throw new InternalError('Unable to load network metadata');
+    }
+
+    if (maxFee && maxPrioFee) {
+      const maxFeeHex = hexEncodeUint(maxFee, {
+        addPrefix: true,
+      });
+      const maxPrioFeeHex = hexEncodeUint(maxPrioFee, {
+        addPrefix: true,
+      });
+
+      const txHash = await this.sendTransaction(
+        data,
+        toAddress,
+        fromAddress,
+        maxFeeHex,
+        maxPrioFeeHex,
+        gasLimitHex,
+        mintCostWithSlippageHex,
+      );
+
+      if (txHash !== hexEncodeUint(0, { addPrefix: true, padToBytes: 32 })) {
+        return txHash;
+      } else {
+        return undefined;
+      }
+    } else {
+      throw new InternalError('Unable to estimate gas');
     }
   }
 

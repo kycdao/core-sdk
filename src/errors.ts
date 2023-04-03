@@ -56,6 +56,8 @@ export const StatusErrors = ensureType<Record<string, string>>()({
   NetworkNotEnabled: 'Selected network is not enabled',
   /** Network switching failed */
   NetworkSwitchingFailed: 'Network switching failed',
+  /** The backend refused the request because network price is too high at the moment */
+  NetworkPriceTooHigh: 'Network price too high, try again later',
 });
 
 /**
