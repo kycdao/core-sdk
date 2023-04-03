@@ -5,13 +5,7 @@ import {
   EvmTransactionReceipt,
   EvmTransactionReceiptResponse,
 } from './types';
-import {
-  hexEncodeAddress,
-  hexEncodeString,
-  hexEncodeUint,
-  parseUnits,
-  removeHexPrefix,
-} from './utils';
+import { hexEncodeAddress, hexEncodeString, hexEncodeUint, removeHexPrefix } from './utils';
 import {
   Catch,
   EVMError,

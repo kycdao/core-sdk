@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.6.12] - 2023-04-03
+
+### Changed
+- changed fee calculation to be compliant with EIP-1559 upgrade
+
 ## [0.6.11] - 2023-03-20
 
 ### Changed
