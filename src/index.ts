@@ -60,6 +60,7 @@ import {
   isFulfilled,
   isLike,
   isEqual,
+  isSameAddress,
   partition,
   poll,
   typedKeys,
@@ -211,6 +212,8 @@ export class KycDao extends ApiBase {
     return details;
   }
 
+  private sentry: SentryWrapper;
+
   private apiStatus?: ApiStatus;
 
   private near?: NearSdk;
@@ -319,12 +322,9 @@ export class KycDao extends ApiBase {
       throw new InternalError('User has no blockchain accounts.');
     }
 
-    const address =
-      chainAndAddress.blockchain === 'Ethereum'
-        ? chainAndAddress.address.toLowerCase()
-        : chainAndAddress.address;
+    const { blockchain, address } = chainAndAddress;
 
-    const accountsFound = accounts.filter((acc) => acc.address === address);
+    const accountsFound = accounts.filter((acc) => isSameAddress(blockchain, acc.address, address));
 
     if (accountsFound.length > 1) {
       throw new InternalError('Multiple blockchain accounts found for the same wallet address.');
@@ -667,11 +667,16 @@ export class KycDao extends ApiBase {
   // clear the session/user if they don't match the chain + address
   private syncUserAndSessionWithWallet(): void {
     if (this.user) {
-      const isSameUser = this.user.blockchain_accounts.some(
-        (account) =>
-          account.blockchain === this._chainAndAddress?.blockchain &&
-          account.address === this._chainAndAddress.address,
-      );
+      let isSameUser = false;
+
+      if (this._chainAndAddress) {
+        const { blockchain, address } = this._chainAndAddress;
+        isSameUser = this.user.blockchain_accounts.some(
+          (account) =>
+            account.blockchain === blockchain &&
+            isSameAddress(blockchain, account.address, address),
+        );
+      }
 
       if (!isSameUser) {
         this.user = undefined;
@@ -712,11 +717,12 @@ export class KycDao extends ApiBase {
         // if there is an initialized chain + address, try creating a new session
         if (this._chainAndAddress) {
           await createSession(this._chainAndAddress);
+        } else {
+          // if there is no valid cookie and no chain + address specified, there is no session/user we can speak of
+          this.session = undefined;
+          this.user = undefined;
         }
 
-        // if there is no valid cookie and no chain + address specified, there is no session/user we can speak of
-        this.session = undefined;
-        this.user = undefined;
         return this.session;
       }
 
@@ -912,6 +918,8 @@ export class KycDao extends ApiBase {
     this.verificationStatus = {
       personaSessionData: undefined,
     };
+
+    this.sentry = new SentryWrapper();
   }
 
   /**
@@ -926,11 +934,6 @@ export class KycDao extends ApiBase {
   @Catch()
   public static async initialize(config: SdkConfiguration): Promise<KycDaoInitializationResult> {
     const kycDao = new KycDao(config);
-
-    if (config.sentryConfiguration) {
-      const sentry = new SentryWrapper(config.sentryConfiguration);
-      void sentry.lazyLoad(); // don't wait for it to load, if it's configured properly and the CDN is available it should be quick
-    }
 
     // TODO handle and return specific error
     kycDao.apiStatus = await kycDao.get<ApiStatus>('status');
@@ -1439,8 +1442,10 @@ export class KycDao extends ApiBase {
         }
 
         if (!addresses.length) {
-          console.error('No connected EVM networks detected');
-          throw new StatusError('WalletNotConnected');
+          throw new StatusError(
+            'WalletNotConnected',
+            'Failed to get user accounts/permissions from EVM provider (browser extension)',
+          );
         }
 
         const blockchainNetwork = await this.ensureValidProviderNetwork(blockchain, true);

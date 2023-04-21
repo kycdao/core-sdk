@@ -60,8 +60,16 @@ export class EvmProviderWrapper {
     return this.tokenTransferEventHash;
   }
 
-  public request<T>(args: EvmRequestArguments): Promise<T> {
-    return this.provider.request(args);
+  public async request<T>(args: EvmRequestArguments, isNullable = false): Promise<T> {
+    return this.provider.request<T>(args).then((value) => {
+      if (!isNullable && value == null) {
+        throw new InternalError(
+          `EVM provider request method '${args.method}' returned no value. This can indicate an unsupported Ethereum wallet browser extension or multiple conflicting extensions. Please make sure that you are only using a single, supported extension and try again.`,
+        );
+      }
+
+      return value;
+    });
   }
 
   public on<T>(event: string, callback: (data: T) => void): void {
@@ -69,29 +77,32 @@ export class EvmProviderWrapper {
   }
 
   public async getAccounts(): Promise<string[]> {
-    return await this.provider.request<string[]>({
+    return this.request<string[]>({
       method: 'eth_accounts',
     });
   }
 
   public async requestAccounts(): Promise<string[]> {
-    return await this.provider.request<string[]>({
+    return this.request<string[]>({
       method: 'eth_requestAccounts',
     });
   }
 
   public async getChainId(): Promise<string> {
-    return await this.provider.request<string>({
+    return this.request<string>({
       method: 'eth_chainId',
     });
   }
 
   @Catch()
   public async switchNetwork(chainId: string): Promise<void> {
-    return this.provider.request({
-      method: 'wallet_switchEthereumChain',
-      params: [{ chainId }],
-    });
+    return this.request(
+      {
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId }],
+      },
+      true,
+    );
   }
 
   public async switchOrAddNetwork(networkDetails: NetworkMetadata): Promise<void> {
@@ -120,30 +131,33 @@ export class EvmProviderWrapper {
       throw new InternalError('addNetwork error: chain ID for requested network is null');
     }
 
-    return this.provider.request({
-      method: 'wallet_addEthereumChain',
-      params: [
-        {
-          chainId: hexEncodeUint(networkDetails.chain_id, { addPrefix: true }),
-          blockExplorerUrls: [networkDetails.explorer.url],
-          chainName: networkDetails.name,
-          // iconUrls: [], //?string[];
-          nativeCurrency: networkDetails.native_currency,
-          rpcUrls: networkDetails.rpc_urls,
-        },
-      ],
-    });
+    return this.request(
+      {
+        method: 'wallet_addEthereumChain',
+        params: [
+          {
+            chainId: hexEncodeUint(networkDetails.chain_id, { addPrefix: true }),
+            blockExplorerUrls: [networkDetails.explorer.url],
+            chainName: networkDetails.name,
+            // iconUrls: [], //?string[];
+            nativeCurrency: networkDetails.native_currency,
+            rpcUrls: networkDetails.rpc_urls,
+          },
+        ],
+      },
+      true,
+    );
   }
 
   public async personalSign(message: string, address: string): Promise<string> {
-    return this.provider.request<string>({
+    return this.request<string>({
       method: 'personal_sign',
       params: [hexEncodeString(message, { addPrefix: true }), address],
     });
   }
 
   public async getGasPrice(): Promise<number> {
-    return await this.provider.request<number>({
+    return this.request<number>({
       method: 'eth_gasPrice',
     });
   }
@@ -195,7 +209,7 @@ export class EvmProviderWrapper {
   }
 
   public async estimateGas(data: string, toAddress: string, fromAddress: string, value: string) {
-    return await this.provider.request<string>({
+    return this.request<string>({
       method: 'eth_estimateGas',
       params: [
         {
@@ -217,7 +231,7 @@ export class EvmProviderWrapper {
     gasLimit: string,
     value?: string,
   ): Promise<string> {
-    return await this.provider.request<string>({
+    return this.request<string>({
       method: 'eth_sendTransaction',
       params: [
         {
@@ -234,10 +248,13 @@ export class EvmProviderWrapper {
   }
 
   public async getTransactionReceipt(txHash: string): Promise<EvmTransactionReceipt | null> {
-    const response = await this.provider.request<EvmTransactionReceiptResponse | null>({
-      method: 'eth_getTransactionReceipt',
-      params: [txHash],
-    });
+    const response = await this.request<EvmTransactionReceiptResponse | null>(
+      {
+        method: 'eth_getTransactionReceipt',
+        params: [txHash],
+      },
+      true,
+    );
 
     return response ? this.decoder.transactionReceipt(response) : null;
   }
@@ -255,7 +272,7 @@ export class EvmProviderWrapper {
     try {
       return await poll(
         () =>
-          this.provider.request<string>({
+          this.request<string>({
             method: 'eth_call',
             params: [
               {

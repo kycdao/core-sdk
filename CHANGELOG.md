@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.6.13] - 2023-04-21
+
+### Added
+- better handling of kycDAO server request errors (network and response JSON formatting errors), indicating a possible ad blocker issue
+- better error handling for non-nullable EVM provider requests returning null, indicating a possible unsopported browser extension or a conflict of multiple extensions
+
+### Changed
+- Sentry will be always initialized with a separate client and hub so it always sends error logs without conflicting with 3rd party integrator sites
+- StatusError.UserNotLoggedIn human readable message to include reminder to enable 3rd party cookies in browser
+
+### Fixed
+- ethereum address comparison bug
+- refreshSession logical bugs that caused extra requests and a possible incorrect internal session/user state
+
 ## [0.6.12] - 2023-04-03
 
 ### Changed
