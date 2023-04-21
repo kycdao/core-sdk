@@ -2,8 +2,20 @@
 
 import { WalletError as SolanaWalletError } from '@solana/wallet-adapter-base';
 import { KycDaoApiError } from './api-base';
-import { SentryConfiguration } from './types';
-import { getRandomAlphanumericString, isLike, waitForDomElement } from './utils';
+import { getRandomAlphanumericString, isLike } from './utils';
+import {
+  BrowserClient,
+  Hub,
+  defaultIntegrations,
+  defaultStackParser,
+  makeFetchTransport,
+} from '@sentry/browser';
+
+declare global {
+  interface Window {
+    kycDaoSentry?: SentryWrapper;
+  }
+}
 
 function ensureType<T>() {
   return <Actual extends T>(a: Actual) => a;
@@ -16,15 +28,8 @@ export interface SentryTags {
 }
 
 export function sentryCaptureSDKError(error: KycDaoSDKError, tags?: SentryTags) {
-  const sentry = (window as any).Sentry as any;
-  if (sentry != null) {
-    sentry.captureException(error, {
-      tags: {
-        ...tags,
-        errorCode: error.errorCode,
-        referenceId: error.referenceId,
-      },
-    });
+  if (window.kycDaoSentry) {
+    window.kycDaoSentry.captureSDKError(error, tags);
   }
 }
 
@@ -34,7 +39,8 @@ export function sentryCaptureSDKError(error: KycDaoSDKError, tags?: SentryTags) 
  */
 export const StatusErrors = ensureType<Record<string, string>>()({
   /** The called API function requires an active logged in user */
-  UserNotLoggedIn: 'User is not logged in',
+  UserNotLoggedIn:
+    'User is not logged in. Please make sure that third party cookies are enabled in your browser and try again.',
   /** The provided email address is invalid */
   InvalidEmailAddress: 'Invalid email address',
   /** The provided tax residency is invalid */
@@ -467,9 +473,10 @@ export function Catch(handler?: (_: unknown) => void) {
 export type Environment = 'local' | 'development' | 'production' | 'unknown';
 
 export class SentryWrapper {
-  private _config: SentryConfiguration;
-  get config() {
-    return this._config;
+  private _dsn =
+    'https://23dafecec027439b9413cd50eb22567d@o1184096.ingest.sentry.io/4504559638413313';
+  get dsn() {
+    return this._dsn;
   }
 
   private _environment: Environment;
@@ -477,7 +484,7 @@ export class SentryWrapper {
     return this._environment;
   }
 
-  private _isLoaded: boolean;
+  private _hub: Hub;
 
   // This implementation might not be perfect for all browsers but at least it will not return the wrong env from inside an iframe
   private getEnvironment(): Environment {
@@ -516,53 +523,30 @@ export class SentryWrapper {
     return 'unknown';
   }
 
-  constructor(config: SentryConfiguration) {
-    this._config = config;
+  constructor() {
     this._environment = this.getEnvironment();
-    this._isLoaded = false;
-  }
 
-  private async loadScript(): Promise<void> {
-    const sentry = (window as any).Sentry as any;
-    if (sentry != null) {
-      throw new Error('window.Sentry is already defined');
-    }
-
-    if (this._isLoaded === false) {
-      const tag = document.createElement('script');
-      tag.type = 'text/javascript';
-      tag.src = 'https://browser.sentry-cdn.com/7.33.0/bundle.min.js';
-      tag.integrity = 'sha384-fqi7Nj+xYL2iw/JEQszlVbuFt0CckGZmcb7XqOEOF5DBR0Ajzp3ZAlG3CT765hE3';
-      tag.crossOrigin = 'anonymous';
-      document.body.appendChild(tag);
-      this._isLoaded = true;
-    }
-
-    await waitForDomElement((window) => window.Sentry);
-  }
-
-  private init(): void {
-    const sentry = (window as any).Sentry as any;
-    sentry.onLoad(() => {
-      sentry.init({
-        dsn: this._config.dsn,
-        environment: this._environment,
-      });
-
-      /* sentry.configureScope(scope => {
-        scope.setTag( ... );
-      }); */
+    const client = new BrowserClient({
+      dsn: this._dsn,
+      environment: this._environment,
+      transport: makeFetchTransport,
+      stackParser: defaultStackParser,
+      integrations: defaultIntegrations,
     });
 
-    sentry.forceLoad();
+    this._hub = new Hub(client);
+
+    window.kycDaoSentry = this;
   }
 
-  public async lazyLoad(): Promise<void> {
-    try {
-      await this.loadScript();
-      this.init();
-    } catch (e) {
-      console.warn('kycDAO Sentry loading/initialization failed', e);
-    }
+  public captureSDKError(error: KycDaoSDKError, tags?: SentryTags) {
+    this._hub.withScope((_) => {
+      this._hub.setTags({
+        ...tags,
+        errorCode: error.errorCode,
+        referenceId: error.referenceId,
+      });
+      this._hub.captureException(error);
+    });
   }
 }

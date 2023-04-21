@@ -6,6 +6,7 @@ overrides:
   tar: ^6.1.13
 
 specifiers:
+  '@sentry/browser': ^7.48.0
   '@solana/buffer-layout': ^4.0.1
   '@solana/wallet-adapter-base': ^0.9.22
   '@solana/wallet-adapter-wallets': ^0.19.15
@@ -41,6 +42,7 @@ specifiers:
   webpack-dev-server: ^4.11.1
 
 dependencies:
+  '@sentry/browser': 7.48.0
   '@solana/buffer-layout': 4.0.1
   '@solana/wallet-adapter-base': 0.9.22_@solana+web3.js@1.73.3
   '@solana/wallet-adapter-wallets': 0.19.15_bdvkyrejymdypjcf7tsuw4bzte
@@ -596,6 +598,59 @@ packages:
       '@solana/web3.js': 1.73.3
       bs58: 4.0.1
       eventemitter3: 4.0.7
+    dev: false
+
+  /@sentry-internal/tracing/7.48.0:
+    resolution: {integrity: sha512-MFAPDTrvCtfSm0/Zbmx7HA0Q5uCfRadOUpN8Y8rP1ndz+329h2kA3mZRCuC+3/aXL11zs2CHUhcAkGjwH2vogg==}
+    engines: {node: '>=8'}
+    dependencies:
+      '@sentry/core': 7.48.0
+      '@sentry/types': 7.48.0
+      '@sentry/utils': 7.48.0
+      tslib: 1.14.1
+    dev: false
+
+  /@sentry/browser/7.48.0:
+    resolution: {integrity: sha512-tdx/2nhuiykncmXFlV4Dpp+Hxgt/v31LiyXE79IcM560wc+QmWKtzoW9azBWQ0xt5KOO3ERMib9qPE4/ql1/EQ==}
+    engines: {node: '>=8'}
+    dependencies:
+      '@sentry-internal/tracing': 7.48.0
+      '@sentry/core': 7.48.0
+      '@sentry/replay': 7.48.0
+      '@sentry/types': 7.48.0
+      '@sentry/utils': 7.48.0
+      tslib: 1.14.1
+    dev: false
+
+  /@sentry/core/7.48.0:
+    resolution: {integrity: sha512-8FYuJTMpyuxRZvlen3gQ3rpOtVInSDmSyXqWEhCLuG/w34AtWoTiW7G516rsAAh6Hy1TP91GooMWbonP3XQNTQ==}
+    engines: {node: '>=8'}
+    dependencies:
+      '@sentry/types': 7.48.0
+      '@sentry/utils': 7.48.0
+      tslib: 1.14.1
+    dev: false
+
+  /@sentry/replay/7.48.0:
+    resolution: {integrity: sha512-8fRHMGJ0NJeIZi6UucxUTvfDPaBa7+jU1kCTLjCcuH3X/UVz5PtGLMtFSO5U8HP+mUDlPs97MP1uoDvMa4S2Ng==}
+    engines: {node: '>=12'}
+    dependencies:
+      '@sentry/core': 7.48.0
+      '@sentry/types': 7.48.0
+      '@sentry/utils': 7.48.0
+    dev: false
+
+  /@sentry/types/7.48.0:
+    resolution: {integrity: sha512-kkAszZwQ5/v4n7Yyw/DPNRWx7h724mVNRGZIJa9ggUMvTgMe7UKCZZ5wfQmYiKVlGbwd9pxXAcP8Oq15EbByFQ==}
+    engines: {node: '>=8'}
+    dev: false
+
+  /@sentry/utils/7.48.0:
+    resolution: {integrity: sha512-d977sghkFVMfld0LrEyyY2gYrfayLPdDEpUDT+hg5y79r7zZDCFyHtdB86699E5K89MwDZahW7Erk+a1nk4x5w==}
+    engines: {node: '>=8'}
+    dependencies:
+      '@sentry/types': 7.48.0
+      tslib: 1.14.1
     dev: false
 
   /@socket.io/component-emitter/3.1.0:

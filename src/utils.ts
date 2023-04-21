@@ -1,4 +1,10 @@
-import { BlockchainNetwork, MintingResult, NetworkMetadata, TokenDetails } from './types';
+import {
+  Blockchain,
+  BlockchainNetwork,
+  MintingResult,
+  NetworkMetadata,
+  TokenDetails,
+} from './types';
 
 export const AlphanumericChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
@@ -38,6 +44,14 @@ export function isFulfilled<T>(input: PromiseSettledResult<T>): input is Promise
 
 export function isRejected(input: PromiseSettledResult<unknown>): input is PromiseRejectedResult {
   return input.status === 'rejected';
+}
+
+export function isSameAddress(blockchain: Blockchain, address1: string, address2: string): boolean {
+  if (blockchain === 'Ethereum') {
+    return address1.toLowerCase() === address2.toLowerCase();
+  }
+
+  return address1 === address2;
 }
 
 /**

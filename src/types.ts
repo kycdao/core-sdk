@@ -131,6 +131,8 @@ export interface BlockchainNetworkConfiguration {
 }
 
 /**
+ * @deprecated since version 0.6.13
+ *
  * Sentry configuration options.
  *
  * @interface SentryConfiguration
@@ -215,6 +217,8 @@ export interface SdkConfiguration {
     Record<BlockchainNetwork, BlockchainNetworkConfiguration>
   >;
   /**
+   * @deprecated since version 0.6.13, Sentry will be always initialized with a standalone hub and client to prevent conflicts, using the kycDAO Sentry DSN.
+   *
    * Optional configuration for Sentry. If a configuration is provided the Sentry package will be lazy-loaded by the SDK and errors will be reported.
    *
    * @type {?SentryConfiguration}

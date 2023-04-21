@@ -1,6 +1,6 @@
 {
   "name": "@kycdao/kycdao-sdk",
-  "version": "0.6.12",
+  "version": "0.6.13",
   "description": "kycDAO SDK for TypeScript and JavaScript",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -55,6 +55,7 @@
     "styled-components": "^5"
   },
   "dependencies": {
+    "@sentry/browser": "^7.48.0",
     "@solana/buffer-layout": "^4.0.1",
     "@solana/wallet-adapter-base": "^0.9.22",
     "@solana/wallet-adapter-wallets": "^0.19.15",

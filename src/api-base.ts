@@ -1,4 +1,5 @@
 import { KYCDAO_PUBLIC_API_PATH } from './constants';
+import { InternalError } from './errors';
 import { KycDaoCustomApiError, KycDaoDefaultApiError, SdkConfiguration } from './types';
 
 /**
@@ -80,9 +81,17 @@ export abstract class ApiBase {
       credentials: 'include',
     };
 
-    const response = await fetch(url, requestOptions);
+    const response = await fetch(url, requestOptions).catch((reason) => {
+      throw new InternalError(
+        `The kycDAO server at ${this.baseUrl} is unreachable. Reason: ${reason}. If you have an ad blocker please disable it and try again.`,
+      );
+    });
     const isJson = response.headers.get('content-type')?.includes('application/json');
-    const data = isJson ? await response.json() : null;
+    const data = isJson
+      ? await response.json().catch((reason) => {
+          throw new InternalError(`kycDAO server JSON response is invalid. Reason: ${reason}`);
+        })
+      : null;
 
     if (!response.ok) {
       let status = response.status;
