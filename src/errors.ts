@@ -306,8 +306,12 @@ function publicErrorHandler(error: unknown): void {
   if (error instanceof KycDaoSDKError) {
     err = error;
   } else if (error instanceof KycDaoApiError) {
-    const message = `${error.errorCode} - ${error.message}`;
-    err = new InternalError(message, error.referenceId);
+    if (error.statusCode === 401) {
+      err = new StatusError('UserNotLoggedIn');
+    } else {
+      const message = `${error.errorCode} - ${error.message}`;
+      err = new InternalError(message, error.referenceId);
+    }
   }
   // apply error transformations
   for (const fn of [transformSolanaErrors, transformEVMErrors]) {

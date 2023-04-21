@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.6.14] - 2023-04-21
+
+### Changed
+- global error handler will always return StatusError.UserNotLoggedIn for kycDAO responses with HTTP status 401
+
 ## [0.6.13] - 2023-04-21
 
 ### Added
