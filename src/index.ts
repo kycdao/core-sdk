@@ -615,7 +615,7 @@ export class KycDao extends ApiBase {
 
   private validateEmail(email: string): void {
     // email format validation
-    const emailRegExp = new RegExp('^[^@]+@[a-z0-9-]+.[a-z]+$');
+    const emailRegExp = new RegExp('^[^@]+@([\\w-]+\\.)+[\\w-]{2,}$');
     if (!email.match(emailRegExp)) {
       throw new StatusError('InvalidEmailAddress');
     }
