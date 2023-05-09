@@ -23,6 +23,7 @@ export const EvmBlockchainNetworks = {
   EthereumMainnet: 'EthereumMainnet',
   PolygonMainnet: 'PolygonMainnet',
   PolygonMumbai: 'PolygonMumbai',
+  BaseGoerli: 'BaseGoerli',
 } as const;
 
 /**

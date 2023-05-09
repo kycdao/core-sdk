@@ -206,6 +206,7 @@ export function getChainExplorerUrlForTransaction(
     SolanaDevnet: '?cluster=devnet',
     SolanaMainnet: '',
     SolanaTestnet: '?cluster=testnet',
+    BaseGoerli: '',
   };
 
   const { url, transaction_path } = networkDetails.explorer;
