@@ -207,6 +207,10 @@ export function getChainExplorerUrlForTransaction(
     SolanaMainnet: '',
     SolanaTestnet: '?cluster=testnet',
     BaseGoerli: '',
+    ArbitrumMainnet: '',
+    ArbitrumGoerli: '',
+    ZKSyncMainnet: '',
+    ZKSyncGoerli: '',
   };
 
   const { url, transaction_path } = networkDetails.explorer;
