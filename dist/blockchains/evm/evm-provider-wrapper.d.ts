@@ -1,0 +1,33 @@
+import { EvmProvider, EvmRequestArguments, EvmTransactionReceipt } from './types';
+import { NetworkMetadata } from '../../types';
+export declare class EvmProviderWrapper {
+    private provider;
+    private decoder;
+    private networkMetadata;
+    private tokenTransferEventHash?;
+    constructor(provider: EvmProvider, networkMetadata: NetworkMetadata[]);
+    isWalletConnect(): boolean;
+    walletConnectEnable(): Promise<string[]>;
+    walletConnectDisconnect(): Promise<void>;
+    private getTokenTransferEventHash;
+    request<T>(args: EvmRequestArguments, isNullable?: boolean): Promise<T>;
+    on<T>(event: string, callback: (data: T) => void): void;
+    getAccounts(): Promise<string[]>;
+    requestAccounts(): Promise<string[]>;
+    getChainId(): Promise<string>;
+    switchNetwork(chainId: string): Promise<void>;
+    switchOrAddNetwork(networkDetails: NetworkMetadata): Promise<void>;
+    private isChainMissingError;
+    addNetwork(networkDetails: NetworkMetadata): Promise<void>;
+    personalSign(message: string, address: string): Promise<string>;
+    getGasPrice(): Promise<number>;
+    web3Sha3(input: string): Promise<string>;
+    private isRepeatableError;
+    getSighash(functionSignature: string): Promise<string>;
+    estimateGas(data: string, toAddress: string, fromAddress: string, value: string): Promise<string>;
+    sendTransaction(data: string, toAddress: string, fromAddress: string, maxFeePerGas: string, maxPriorityFeePerGas: string, gasLimit: string, value?: string): Promise<string>;
+    getTransactionReceipt(txHash: string): Promise<EvmTransactionReceipt | null>;
+    getMintingCostForCode(toAddress: string, fromAddress: string, authCode: string): Promise<string>;
+    mint(toAddress: string, fromAddress: string, authCode: string): Promise<string | undefined>;
+    getTokenIdFromReceipt(receipt: EvmTransactionReceipt): Promise<string | undefined>;
+}
