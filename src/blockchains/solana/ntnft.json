@@ -284,15 +284,6 @@
           "kind": "struct",
           "fields": [
             {
-              "name": "ethSigner",
-              "type": {
-                "array": [
-                  "u8",
-                  20
-                ]
-              }
-            },
-            {
               "name": "pricePerYear",
               "type": "u64"
             },
