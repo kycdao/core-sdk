@@ -1,7 +1,8 @@
-import { InternalError, UnreachableCaseError } from '../errors';
+import { UnreachableCaseError } from '../errors';
 import { Blockchain, NetworkAndAddress, NftCheckResponse } from '../types';
 import { EvmJsonRpcProvider } from './evm/evm-json-rpc-provider';
 import { NearJsonRpcProvider } from './near/near-json-rpc-provider';
+import { SolanaJsonRpcProvider } from './solana/solana-json-rpc-provider';
 
 export interface IKycDaoJsonRpcProvider {
   hasValidNft(targetAddress: string): Promise<boolean>;
@@ -22,7 +23,7 @@ export class KycDaoJsonRpcProvider implements IKycDaoJsonRpcProvider {
         break;
       }
       case 'Solana': {
-        throw new InternalError('Solana is not supported yet.');
+        this.provider = new SolanaJsonRpcProvider(contractAddress, url);
         break;
       }
       default:

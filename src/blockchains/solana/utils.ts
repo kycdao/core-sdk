@@ -3,6 +3,8 @@
  */
 import { blob, Layout, offset, struct, u32 } from '@solana/buffer-layout';
 import { PublicKey } from '@solana/web3.js';
+import { web3 } from '@coral-xyz/anchor';
+import { KYCDAO_STATUS_KYC_SEED, TOKEN_METADATA_PROGRAM_ID } from './constants';
 
 /**
  * Encodes and decodes an utf-8 string for solana function calls
@@ -33,6 +35,20 @@ export function publicKey(property: string) {
     property,
   );
 }
+
+export const getStatusId = async (receiver: web3.PublicKey, programId: web3.PublicKey) => {
+  return web3.PublicKey.findProgramAddressSync(
+    [Buffer.from(KYCDAO_STATUS_KYC_SEED), receiver.toBuffer()],
+    programId,
+  );
+};
+
+export const getMetadata = async (mint: web3.PublicKey): Promise<web3.PublicKey> => {
+  return web3.PublicKey.findProgramAddressSync(
+    [Buffer.from('metadata'), TOKEN_METADATA_PROGRAM_ID.toBuffer(), mint.toBuffer()],
+    TOKEN_METADATA_PROGRAM_ID,
+  )[0];
+};
 
 /**
  * Custom layout representing a fixed length 8-bit bytearray
