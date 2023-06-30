@@ -70,6 +70,7 @@ import { EvmProvider, EvmTransactionReceipt } from './blockchains/evm/types';
 import { KycDaoJsonRpcProvider } from './blockchains/kycdao-json-rpc-provider';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets';
 import { SolanaProviderWrapper } from './blockchains/solana/solana-provider-wrapper';
+import { SolanaJsonRpcProvider } from './blockchains/solana/solana-json-rpc-provider';
 import { Transaction as SolanaTransaction } from '@solana/web3.js';
 import {
   Catch,
@@ -425,7 +426,19 @@ export class KycDao extends ApiBase {
           throw new ConfigurationError('Solana support is not enabled.');
         }
 
-        return await this.solana.getTransaction(txHash);
+        const rpcUrl = this.getNetworkDetails(chainAndAddress.blockchainNetwork).rpc_urls[0];
+
+        // We actually don't use the contract address for the getTransaction call so 
+        // it's fine that we've hardcoded the VerificationType to KYC here.
+        const contractAddress =
+          this.apiStatus?.smart_contracts_info?.[chainAndAddress.blockchainNetwork]?.[VerificationTypes.KYC]?.address;
+        if (!contractAddress) {
+          throw new InternalError('No contract address found for Solana.');
+        }
+
+        const solanaProvider = new SolanaJsonRpcProvider(contractAddress, rpcUrl);
+
+        return await solanaProvider.getTransaction(txHash);
       default:
         throw new UnreachableCaseError(chainAndAddress.blockchain);
     }
