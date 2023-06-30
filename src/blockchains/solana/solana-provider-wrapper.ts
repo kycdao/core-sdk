@@ -8,9 +8,7 @@ import {
 import { clusterApiUrl, Connection, Transaction } from '@solana/web3.js';
 import bs58 from 'bs58';
 import { InternalError } from '../../errors';
-import {
-  SolanaBlockchainNetwork,
-} from '../../types';
+import { SolanaBlockchainNetwork } from '../../types';
 import { isLike } from '../../utils';
 
 const WalletAdapterNetworkMapping: Record<SolanaBlockchainNetwork, WalletAdapterNetwork> = {
@@ -96,5 +94,5 @@ export class SolanaProviderWrapper {
     }
 
     return await this._adapter.sendTransaction(mintTransaction, this._connection);
-  }    
+  }
 }

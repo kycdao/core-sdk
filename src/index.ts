@@ -421,17 +421,19 @@ export class KycDao extends ApiBase {
           };
         }
       }
-      case 'Solana':
+      case 'Solana': {
         if (!this.solana) {
           throw new ConfigurationError('Solana support is not enabled.');
         }
 
         const rpcUrl = this.getNetworkDetails(chainAndAddress.blockchainNetwork).rpc_urls[0];
 
-        // We actually don't use the contract address for the getTransaction call so 
+        // We actually don't use the contract address for the getTransaction call so
         // it's fine that we've hardcoded the VerificationType to KYC here.
         const contractAddress =
-          this.apiStatus?.smart_contracts_info?.[chainAndAddress.blockchainNetwork]?.[VerificationTypes.KYC]?.address;
+          this.apiStatus?.smart_contracts_info?.[chainAndAddress.blockchainNetwork]?.[
+            VerificationTypes.KYC
+          ]?.address;
         if (!contractAddress) {
           throw new InternalError('No contract address found for Solana.');
         }
@@ -439,6 +441,7 @@ export class KycDao extends ApiBase {
         const solanaProvider = new SolanaJsonRpcProvider(contractAddress, rpcUrl);
 
         return await solanaProvider.getTransaction(txHash);
+      }
       default:
         throw new UnreachableCaseError(chainAndAddress.blockchain);
     }
