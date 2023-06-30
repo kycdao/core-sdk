@@ -1,5 +1,9 @@
 import { IKycDaoJsonRpcProvider } from '../kycdao-json-rpc-provider';
 import { NetworkAndAddress, NftCheckResponse, TokenMetadata } from '../../types';
+import {
+  Transaction as SdkTransaction,
+  TransactionStatus as SdkTransactionStatus,
+} from '../../types';
 import { Catch, InternalError, KycDaoSDKError } from '../../errors';
 import { Program, web3, BN } from '@coral-xyz/anchor';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
@@ -36,6 +40,42 @@ export class SolanaJsonRpcProvider implements IKycDaoJsonRpcProvider {
         networkAndAddress: targetAddress,
         hasValidNft: false,
       };
+    }
+  }
+
+  public async getTransaction(txHash: string): Promise<SdkTransaction> {
+    try {
+      const receipt = await this.connection.getTransaction(txHash, {
+        commitment: 'finalized',
+        maxSupportedTransactionVersion: 0, // it has to be a number and the only number version is 0
+      });
+
+      if (receipt === null) {
+        throw new InternalError(`Transaction ${txHash} doesn't exist`);
+      } else {
+        const postTokenBalances = receipt.meta?.postTokenBalances;
+        const status: SdkTransactionStatus = receipt.meta?.err === null ? 'Success' : 'Unknown'; // TODO Should this be failure? I'm not sure how this works.
+        if (postTokenBalances && postTokenBalances.length === 1) {
+          const tokenAmount = postTokenBalances[0].uiTokenAmount;
+          if (tokenAmount.uiAmount === 1 && tokenAmount.decimals === 0) {
+            const tokenId = postTokenBalances[0].mint;
+            return {
+              status: status,
+              data: tokenId.toString(),
+            };
+          } else {
+            return {
+              status: status,
+            };
+          }
+        } else {
+          return {
+            status: status,
+          };
+        }
+      }
+    } catch (e) {
+      throw new InternalError(`Unexpected error while checking Solana transaction: ${e}`);
     }
   }
 

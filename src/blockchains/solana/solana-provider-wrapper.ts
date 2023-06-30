@@ -8,11 +8,7 @@ import {
 import { clusterApiUrl, Connection, Transaction } from '@solana/web3.js';
 import bs58 from 'bs58';
 import { InternalError } from '../../errors';
-import {
-  SolanaBlockchainNetwork,
-  Transaction as SdkTransaction,
-  TransactionStatus as SdkTransactionStatus,
-} from '../../types';
+import { SolanaBlockchainNetwork } from '../../types';
 import { isLike } from '../../utils';
 
 const WalletAdapterNetworkMapping: Record<SolanaBlockchainNetwork, WalletAdapterNetwork> = {
@@ -98,41 +94,5 @@ export class SolanaProviderWrapper {
     }
 
     return await this._adapter.sendTransaction(mintTransaction, this._connection);
-  }
-
-  public async getTransaction(txHash: string): Promise<SdkTransaction> {
-    try {
-      const receipt = await this._connection.getTransaction(txHash, {
-        commitment: 'finalized',
-        maxSupportedTransactionVersion: 0, // it has to be a number and the only number version is 0
-      });
-
-      if (receipt === null) {
-        throw new InternalError(`Transaction ${txHash} doesn't exist`);
-      } else {
-        const postTokenBalances = receipt.meta?.postTokenBalances;
-        const status: SdkTransactionStatus = receipt.meta?.err === null ? 'Success' : 'Unknown'; // TODO Should this be failure? I'm not sure how this works.
-        if (postTokenBalances && postTokenBalances.length === 1) {
-          const tokenAmount = postTokenBalances[0].uiTokenAmount;
-          if (tokenAmount.uiAmount === 1 && tokenAmount.decimals === 0) {
-            const tokenId = postTokenBalances[0].mint;
-            return {
-              status: status,
-              data: tokenId.toString(),
-            };
-          } else {
-            return {
-              status: status,
-            };
-          }
-        } else {
-          return {
-            status: status,
-          };
-        }
-      }
-    } catch (e) {
-      throw new InternalError(`Unexpected error while checking Solana transaction: ${e}`);
-    }
   }
 }
