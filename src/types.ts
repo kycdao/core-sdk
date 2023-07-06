@@ -183,6 +183,13 @@ export interface SdkConfiguration {
    */
   baseUrl: string;
   /**
+   * Path of the public API. Defaults to "api/public/v1" for backward compatibility reasons.
+   * The "api" prefix is not needed with newer backends in a separate subdomain (e.g. backend.staging.kycdao.xyz). In that case the value should be "public/v1"
+   *
+   * @type {?string}
+   */
+  publicApiPath?: string;
+  /**
    * List of {@link BlockchainNetworks} to be available to use. This can influence what third party providers will get initialized.
    * As a rule of thumb test networks will be available when connecting to a kycDAO test server and main networks when connecting to the kycDAO production server (see {@link baseUrl}).
    *

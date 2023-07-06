@@ -1,4 +1,3 @@
-import { KYCDAO_PUBLIC_API_PATH } from './constants';
 import { InternalError } from './errors';
 import { KycDaoCustomApiError, KycDaoDefaultApiError, SdkConfiguration } from './types';
 
@@ -25,6 +24,7 @@ export class KycDaoApiError extends Error {
 export abstract class ApiBase {
   private _apiKey?: string;
   private _baseUrl: string;
+  private _publicApiPath: string;
 
   /**
    * Returns the base URL of the configured kycDAO server.
@@ -39,6 +39,8 @@ export abstract class ApiBase {
   constructor(config: SdkConfiguration) {
     this._apiKey = config.apiKey;
     this._baseUrl = config.baseUrl.endsWith('/') ? config.baseUrl : config.baseUrl + '/';
+    const apiPath = config.publicApiPath ?? 'api/public/';
+    this._publicApiPath = apiPath.endsWith('/') ? apiPath : apiPath + '/';
   }
 
   protected url(path: string): string {
@@ -50,7 +52,7 @@ export abstract class ApiBase {
       path = path.slice(0, path.length - 1);
     }
 
-    return this._baseUrl + KYCDAO_PUBLIC_API_PATH + path;
+    return this._baseUrl + this._publicApiPath + path;
   }
 
   protected async request<T>(path: string, options?: RequestInit): Promise<T> {
