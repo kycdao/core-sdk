@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.6.20] - 2023-07-06
+
+### Added
+- `publicApiPath` optional config parameter to specify public API path
+
+## [0.6.19] - 2023-06-30
+
+### Changed
+- use Solana RPC Url from the network info provided by the Backend instead of the default one
+
+## [0.6.18] - 2023-06-23
+
+### Added
+- Support `hasValidToken` on Solana
+
+## [0.6.17] - 2023-05-12
+
+### Added
+- Support for Arbitrum and zkSync networks
+
+## [0.6.16] - 2023-05-09
+
+### Added
+- Support for BaseGoerli network
+
+## [0.6.15] - 2023-05-03
+
+### Changed
+- better email validation regexp supporting subdomains (e.g. `@something.else.com`)
+
 ## [0.6.14] - 2023-04-21
 
 ### Changed
