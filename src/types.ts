@@ -10,6 +10,7 @@ import {
   NearBlockchainNetworks,
   TokenImageTypes,
   SolanaBlockchainNetworks,
+  AptosBlockchainNetworks,
   VerificationProviders,
   VerificationStasuses,
   VerificationTypes,
@@ -45,6 +46,14 @@ export type NearBlockchainNetwork = keyof typeof NearBlockchainNetworks;
  * @typedef {SolanaBlockchainNetwork}
  */
 export type SolanaBlockchainNetwork = keyof typeof SolanaBlockchainNetworks;
+
+/**
+ * Union type of string values of {@link AptosBlockchainNetworks}.
+ *
+ * @typedef {AptosBlockchainNetwork}
+ *
+ */
+export type AptosBlockchainNetwork = keyof typeof AptosBlockchainNetworks;
 
 /**
  * Union type of string values of {@link BlockchainNetworks}.
@@ -284,6 +293,13 @@ export interface SdkStatus {
    * @type {(BlockchainNetwork | null)}
    */
   solanaNetworkConnected: SolanaBlockchainNetwork | null;
+  /**
+   * The Aptos blockchain network currently used by the SDK, `null` if there is none.\
+   * This value will depend on the {@link SdkConfiguration} provided and the available networks on the connected kycDAO server.
+   *
+   * @type {(BlockchainNetwork | null)}
+   */
+  aptosNetworkConnected: AptosBlockchainNetwork | null;
 }
 
 /**
@@ -873,8 +889,18 @@ export interface MintingAuthorizationRequest {
   subscription_duration?: string;
 }
 
+export interface MintDetails {
+  signature: string;
+  metadata_cid: string;
+  expiry: number;
+  seconds_to_pay: number;
+  verification_tier: string;
+}
+
 export interface MintingAuthorizationResponse {
   token: TokenDetails;
   metadata_url?: string;
   transaction?: string;
+  signature?: string;
+  mint_details?: MintDetails;
 }

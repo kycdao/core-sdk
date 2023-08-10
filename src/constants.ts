@@ -9,6 +9,7 @@ export const Blockchains = {
   Ethereum: 'Ethereum',
   Near: 'Near',
   Solana: 'Solana',
+  Aptos: 'Aptos',
 } as const;
 
 /**
@@ -52,6 +53,17 @@ export const SolanaBlockchainNetworks = {
 } as const;
 
 /**
+ * Collection of supported Aptos blockchain networks.
+ *
+ * @enum
+ */
+export const AptosBlockchainNetworks = {
+  AptosDevnet: 'AptosDevnet',
+  AptosMainnet: 'AptosMainnet',
+  AptosTestnet: 'AptosTestnet',
+} as const;
+
+/**
  * Collection of supported blockchain networks.
  *
  * @enum
@@ -60,6 +72,7 @@ export const BlockchainNetworks = {
   ...EvmBlockchainNetworks,
   ...NearBlockchainNetworks,
   ...SolanaBlockchainNetworks,
+  ...AptosBlockchainNetworks,
 } as const;
 
 /**
