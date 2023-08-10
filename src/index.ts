@@ -16,6 +16,7 @@ import {
 } from './constants';
 import {
   ApiStatus,
+  AptosBlockchainNetwork,
   Blockchain,
   BlockchainAccountDetails,
   BlockchainNetwork,
@@ -71,6 +72,8 @@ import { KycDaoJsonRpcProvider } from './blockchains/kycdao-json-rpc-provider';
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets';
 import { SolanaProviderWrapper } from './blockchains/solana/solana-provider-wrapper';
 import { SolanaJsonRpcProvider } from './blockchains/solana/solana-json-rpc-provider';
+import { AptosProviderWrapper } from './blockchains/aptos/aptos-provider-wrapper';
+import { AptosJsonRpcProvider } from './blockchains/aptos/aptos-json-rpc-provider';
 import { Transaction as SolanaTransaction } from '@solana/web3.js';
 import {
   Catch,
@@ -82,6 +85,7 @@ import {
   UnreachableCaseError,
   WalletError,
 } from './errors';
+import { AptosSignature } from './blockchains/aptos/types';
 
 export { ApiBase, KycDaoApiError } from './api-base';
 export {
@@ -91,6 +95,7 @@ export {
   NearBlockchainNetworks,
   KycDaoEnvironments,
   SolanaBlockchainNetworks,
+  AptosBlockchainNetworks,
   VerificationTypes,
 } from './constants';
 export { ConnectConfig as NearConnectConfig } from 'near-api-js';
@@ -220,6 +225,7 @@ export class KycDao extends ApiBase {
   private near?: NearSdk;
   private evmProvider?: EvmProviderWrapper;
   private solana?: SolanaProviderWrapper;
+  private aptos?: AptosProviderWrapper;
 
   private _chainAndAddress?: ChainAndAddress;
 
@@ -240,6 +246,7 @@ export class KycDao extends ApiBase {
       evmProviderConfigured: !!this.evmProvider,
       nearNetworkConnected: this.near?.blockchainNetwork || null,
       solanaNetworkConnected: this.solana?.blockchainNetwork || null,
+      aptosNetworkConnected: this.aptos?.blockchainNetwork || null,
     };
   }
 
@@ -441,6 +448,14 @@ export class KycDao extends ApiBase {
         const solanaProvider = new SolanaJsonRpcProvider(contractAddress, rpcUrl);
 
         return await solanaProvider.getTransaction(txHash);
+      }
+      case 'Aptos': {
+        if (!this.aptos) {
+          throw new ConfigurationError('Aptos support is not enabled.');
+        }
+
+        const aptosProvider = new AptosJsonRpcProvider('', this.aptos.blockchainNetwork);
+        return await aptosProvider.getTransaction(txHash);
       }
       default:
         throw new UnreachableCaseError(chainAndAddress.blockchain);
@@ -1030,6 +1045,14 @@ export class KycDao extends ApiBase {
       kycDao.solana = new SolanaProviderWrapper(solanaNetwork);
     }
 
+    // initialize Aptos if there is an available Aptos network
+    const aptosNetwork = kycDao.blockchainNetworks.find((network) =>
+      network.startsWith('Aptos'),
+    ) as AptosBlockchainNetwork;
+    if (aptosNetwork) {
+      kycDao.aptos = new AptosProviderWrapper(aptosNetwork);
+    }
+
     const redirectResult = await kycDao.handleRedirect();
 
     return {
@@ -1114,7 +1137,7 @@ export class KycDao extends ApiBase {
       throw new InternalError('Smart contract address not found.');
     }
 
-    return new KycDaoJsonRpcProvider(blockchain, contractAddress, rpcUrl);
+    return new KycDaoJsonRpcProvider(blockchain, contractAddress, rpcUrl, blockchainNetwork);
   }
 
   private async checkValidNft(
@@ -1168,6 +1191,7 @@ export class KycDao extends ApiBase {
     options?: NftCheckOptions,
   ): Promise<NftCheckResponse> {
     const chainAndAddress = this.getChainAndAddressForNftCheck(options);
+
     const provider = this.getRpcProviderForWallet(verificationType, chainAndAddress);
 
     return await provider.getValidNfts(chainAndAddress);
@@ -1332,6 +1356,15 @@ export class KycDao extends ApiBase {
         }
 
         blockchainNetwork = this.solana.blockchainNetwork;
+
+        break;
+      }
+      case 'Aptos': {
+        if (!this.aptos) {
+          throw new ConfigurationError('Aptos support is not enabled.');
+        }
+
+        blockchainNetwork = this.aptos.blockchainNetwork;
 
         break;
       }
@@ -1519,6 +1552,28 @@ export class KycDao extends ApiBase {
         };
         break;
       }
+      case 'Aptos': {
+        if (!this.aptos) {
+          throw new ConfigurationError('Aptos support is not enabled.');
+        }
+
+        await this.aptos.connect();
+
+        const address = await this.aptos.address();
+
+        if (!address) {
+          throw new InternalError('Wallet address not found.');
+        }
+
+        const blockchainNetwork = this.aptos.blockchainNetwork;
+
+        this._chainAndAddress = {
+          blockchain: 'Aptos',
+          blockchainNetwork,
+          address,
+        };
+        break;
+      }
       default:
         throw new UnreachableCaseError(blockchain);
     }
@@ -1563,6 +1618,14 @@ export class KycDao extends ApiBase {
           }
           break;
         }
+        case 'Aptos': {
+          if (this.aptos) {
+            await this.aptos.disconnect();
+          } else {
+            throw new ConfigurationError('Aptos support is not enabled.');
+          }
+          break;
+        }
         default:
           throw new UnreachableCaseError(this._chainAndAddress.blockchain);
       }
@@ -1591,7 +1654,7 @@ export class KycDao extends ApiBase {
       this.session = await this.post<Session>('session', this._chainAndAddress);
 
       if (!this.session.user) {
-        let signature: Signature | string;
+        let signature: Signature | string | AptosSignature;
 
         switch (this._chainAndAddress.blockchain) {
           case 'Near': {
@@ -1627,18 +1690,38 @@ export class KycDao extends ApiBase {
             signature = await this.solana.signMessage(toSign);
             break;
           }
+          case 'Aptos': {
+            if (!this.aptos) {
+              throw new ConfigurationError('Aptos support is not enabled.');
+            }
+
+            const toSign = `kycDAO-login-${this.session.nonce}`;
+
+            signature = await this.aptos.signMessage(toSign);
+            break;
+          }
           default:
             throw new UnreachableCaseError(this._chainAndAddress.blockchain);
         }
 
-        const payload =
-          typeof signature === 'string'
-            ? { signature }
-            : {
-                signature: `ed25519:${base_encode(signature.signature)}`,
-                public_key: signature.publicKey.toString(),
-              };
-
+        const payload = (() => {
+          if (typeof signature === 'string') {
+            return { signature };
+            // Aptos
+          } else if ('network' in signature) {
+            return {
+              signature: signature.signature,
+              public_key: signature.publicKey,
+              network: signature.network,
+            };
+            // Solana
+          } else {
+            return {
+              signature: `ed25519:${base_encode(signature.signature)}`,
+              public_key: signature.publicKey.toString(),
+            };
+          }
+        })();
         const user = await this.post<UserDetails>('user', payload);
         this.user = user;
         return;
@@ -1920,9 +2003,9 @@ export class KycDao extends ApiBase {
       const txHash = res.token.authorization_tx_id;
 
       if (!txHash) {
-        // Either txHash or transaction is required
-        if (!res.transaction) {
-          throw new InternalError('Transaction ID not found');
+        // Either txHash, transaction or mint_details is required
+        if (!res.transaction && !res.mint_details) {
+          throw new InternalError('Either Transaction ID or MintDetails not found');
         }
       } else {
         const transaction = await this.waitForTransaction(chainAndAddress, txHash);
@@ -1938,6 +2021,20 @@ export class KycDao extends ApiBase {
         throw error;
       }
     }
+  }
+
+  private async checkMetadataUrl(tokenMetadataUrl: string): Promise<boolean> {
+    const tokenMetadataResponse = await fetch(tokenMetadataUrl);
+    const isJson = tokenMetadataResponse.headers.get('content-type')?.includes('application/json');
+    const tokenMetadata = isJson ? await tokenMetadataResponse.json() : null;
+
+    return (
+      !tokenMetadataResponse.ok ||
+      !isLike<TokenMetadata>(tokenMetadata) ||
+      typeof tokenMetadata.name !== 'string' ||
+      typeof tokenMetadata.description !== 'string' ||
+      typeof tokenMetadata.image !== 'string'
+    );
   }
 
   private async mint(
@@ -2048,19 +2145,7 @@ export class KycDao extends ApiBase {
           throw new InternalError('Token metadata not found');
         }
 
-        const tokenMetadataResponse = await fetch(tokenMetadataUrl);
-        const isJson = tokenMetadataResponse.headers
-          .get('content-type')
-          ?.includes('application/json');
-        const tokenMetadata = isJson ? await tokenMetadataResponse.json() : null;
-
-        if (
-          !tokenMetadataResponse.ok ||
-          !isLike<TokenMetadata>(tokenMetadata) ||
-          typeof tokenMetadata.name !== 'string' ||
-          typeof tokenMetadata.description !== 'string' ||
-          typeof tokenMetadata.image !== 'string'
-        ) {
+        if (await this.checkMetadataUrl(tokenMetadataUrl)) {
           throw new InternalError('Token metadata is invalid');
         }
 
@@ -2077,6 +2162,36 @@ export class KycDao extends ApiBase {
           tokenId = transaction.data as string;
         } else {
           throw new InternalError('Backend transaction not found');
+        }
+        break;
+      }
+      case 'Aptos': {
+        if (!this.aptos) {
+          throw new ConfigurationError('Aptos support is not enabled.');
+        }
+
+        if (!contractAddress) {
+          throw new InternalError('Smart contract address not found');
+        }
+
+        if (!tokenMetadataUrl) {
+          throw new InternalError('Token metadata not found');
+        }
+
+        if (await this.checkMetadataUrl(tokenMetadataUrl)) {
+          throw new InternalError('Token metadata is invalid');
+        }
+
+        if (mintAuthResponse.mint_details) {
+          txHash = await this.aptos.mint(contractAddress, mintAuthResponse.mint_details);
+          const transaction = await this.waitForTransaction(chainAndAddress, txHash);
+          if (transaction.status === 'Failure') {
+            throw new TransactionError('TransactionFailed');
+          }
+
+          tokenId = transaction.data as string;
+        } else {
+          throw new InternalError('Backend signature not found');
         }
         break;
       }

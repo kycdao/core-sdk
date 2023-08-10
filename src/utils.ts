@@ -211,6 +211,9 @@ export function getChainExplorerUrlForTransaction(
     ArbitrumGoerli: '',
     ZKSyncMainnet: '',
     ZKSyncGoerli: '',
+    AptosDevnet: '?network=devnet',
+    AptosMainnet: '?network=mainnet',
+    AptosTestnet: '?network=testnet',
   };
 
   const { url, transaction_path } = networkDetails.explorer;

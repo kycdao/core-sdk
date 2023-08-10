@@ -7,6 +7,7 @@ export {
   EvmBlockchainNetworks,
   NearBlockchainNetworks,
   SolanaBlockchainNetworks,
+  AptosBlockchainNetworks,
   VerificationTypes,
 } from './constants';
 
